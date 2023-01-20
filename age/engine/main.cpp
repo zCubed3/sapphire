@@ -6,6 +6,8 @@
 #include <rs_opengl4/rs_opengl4.h>
 
 #include <assets/asset_loader.h>
+#include <assets/static_mesh_asset.h>
+#include <assets/shader_asset.h>
 
 int main(int argc, char **argv) {
     AssetLoader::register_engine_asset_loaders();
@@ -27,6 +29,10 @@ int main(int argc, char **argv) {
             SDL_WINDOW_OPENGL);
 
     SDLWindowRenderTarget rt_window(main_window);
+
+    // We need to load our model and our shader
+    MeshAsset* model = static_cast<MeshAsset*>(AssetLoader::load_asset("test.obj"));
+    ShaderAsset* shader = static_cast<ShaderAsset*>(AssetLoader::load_asset("test.glsl"));
 
     // Each render target has clear operations associated with it
     rt_window.clear_flags = RenderTarget::CLEAR_DEPTH | RenderTarget::CLEAR_COLOR;

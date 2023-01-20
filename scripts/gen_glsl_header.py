@@ -1,0 +1,1 @@
+# Inspired by Godot's GLSL header generator

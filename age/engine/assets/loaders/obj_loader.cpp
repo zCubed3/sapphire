@@ -130,6 +130,12 @@ Asset *OBJLoader::load_from_path(const std::string &path) {
         }
 
         auto mesh = new StaticMeshAsset();
+        
+        mesh->set_position_data(weld_positions.data(), welded);
+        mesh->set_normal_data(weld_normals.data(), welded);
+        mesh->set_uv0_data(weld_tex_coords.data(), welded);
+
+        mesh->set_triangle_data(weld_indices.data(), weld_indices.size());
 
         return mesh;
     }
