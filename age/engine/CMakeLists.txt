@@ -1,4 +1,8 @@
 set(AGE_ENGINE_SOURCES
+    "assets/asset.cpp"
+    "assets/asset_loader.cpp"
+    "assets/loaders/mesh_loader.cpp"
+
     "data/aabb.cpp"
     "data/color.cpp"
 

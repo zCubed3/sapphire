@@ -5,17 +5,15 @@
 
 typedef struct SDL_Window SDL_Window;
 
-namespace AGE {
-    class SDLWindowRenderTarget : public RenderTarget {
-    protected:
-        SDL_Window* window;
+class SDLWindowRenderTarget : public RenderTarget {
+protected:
+    SDL_Window *window;
 
-    public:
-        SDLWindowRenderTarget() = delete;
-        SDLWindowRenderTarget(const SDLWindowRenderTarget&) = delete;
+public:
+    SDLWindowRenderTarget() = delete;
+    SDLWindowRenderTarget(const SDLWindowRenderTarget &) = delete;
 
-        SDLWindowRenderTarget(SDL_Window* p_window);
-    };
-}
+    SDLWindowRenderTarget(SDL_Window *p_window);
+};
 
 #endif

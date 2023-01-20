@@ -1,7 +1,6 @@
 #ifndef AGE_COLOR_H
 #define AGE_COLOR_H
 
-namespace AGE {
     // Wrapper around color types
     // Avoids including GLM in whenever color is needed
     class Color {
@@ -17,6 +16,5 @@ namespace AGE {
             return backing[index];
         }
     };
-}
 
 #endif

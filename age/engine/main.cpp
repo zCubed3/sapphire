@@ -9,8 +9,6 @@
 #include <rendering/rt_sdl_window.h>
 #include <rs_opengl4/rs_opengl4.h>
 
-using namespace AGE;
-
 int main(int argc, char** argv) {
     SDL_Init(SDL_INIT_EVERYTHING);
 
