@@ -10,6 +10,8 @@ protected:
     RenderServer *singleton = nullptr;
 
 public:
+    virtual void register_rs_asset_loaders() = 0;
+
     virtual const char *get_name() = 0;
     virtual const char *get_error() = 0;
 

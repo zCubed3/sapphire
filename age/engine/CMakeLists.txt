@@ -1,7 +1,14 @@
 set(AGE_ENGINE_SOURCES
     "assets/asset.cpp"
     "assets/asset_loader.cpp"
-    "assets/loaders/mesh_loader.cpp"
+    "assets/mesh_asset.cpp"
+    "assets/static_mesh_asset.cpp"
+    "assets/shader_asset.cpp"
+
+    "assets/loaders/obj_loader.cpp"
+    "assets/loaders/mmdl_loader.cpp"
+
+    "console/console.cpp"
 
     "data/aabb.cpp"
     "data/color.cpp"
@@ -20,6 +27,11 @@ target_include_directories(AGE PUBLIC
     ${AGE_DIR}
     ${THIRD_PARTY_DIR}/SDL/include
     ${THIRD_PARTY_DIR}/glm/glm
+)
+
+target_compile_definitions(AGE PUBLIC
+    RS_OPENGL4_LINKED
+    _CRT_SECURE_NO_WARNINGS
 )
 
 target_link_libraries(AGE PUBLIC

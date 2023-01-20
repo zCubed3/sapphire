@@ -17,6 +17,8 @@ protected:
     void *gl_context = nullptr;
 
 public:
+    void register_rs_asset_loaders() override;
+
     const char *get_name() override;
     const char *get_error() override;
 

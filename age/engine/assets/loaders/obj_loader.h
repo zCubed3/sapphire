@@ -1,5 +1,5 @@
-#ifndef AGE_MESH_LOADER_H
-#define AGE_MESH_LOADER_H
+#ifndef AGE_OBJ_LOADER_H
+#define AGE_OBJ_LOADER_H
 
 #include <glm.hpp>
 
@@ -7,7 +7,7 @@
 
 #include <engine/assets/asset_loader.h>
 
-class MeshLoader : public AssetLoader {
+class OBJLoader : public AssetLoader {
 public:
     std::vector<std::string> get_extensions() override;
 

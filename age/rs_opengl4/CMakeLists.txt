@@ -1,6 +1,10 @@
 set(AGE_RS_OPENGL4_SOURCES
     "glad/src/glad.c"
+
     "rs_opengl4.cpp"
+
+    "assets/glsl_shader_asset.cpp"
+    "assets/glsl_shader_asset_loader.cpp"
 )
 
 add_library(AGE_RS_OPENGL4 STATIC ${AGE_RS_OPENGL4_SOURCES})

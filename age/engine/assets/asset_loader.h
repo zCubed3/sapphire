@@ -17,7 +17,7 @@ public:
     virtual Asset *load_from_path(const std::string &path) = 0;
 
 public:
-    static void register_engine_loaders();
+    static void register_engine_asset_loaders();
 
     template<class T>
     static void register_loader() {

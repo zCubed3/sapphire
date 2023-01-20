@@ -3,7 +3,14 @@
 #include <SDL.h>
 #include <glad/glad.h>
 
+#include <engine/assets/asset_loader.h>
 #include <engine/rendering/render_target.h>
+
+#include <rs_opengl4/assets/glsl_shader_asset_loader.h>
+
+void OpenGL4RenderServer::register_rs_asset_loaders() {
+    AssetLoader::register_loader<GLSLShaderAssetLoader>();
+}
 
 const char *OpenGL4RenderServer::get_name() {
     return "OpenGL 4.6";// TODO: Other versions?
