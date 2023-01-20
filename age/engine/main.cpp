@@ -44,6 +44,10 @@ int main(int argc, char** argv) {
                 keep_running = false; // TEMPORARY!
         }
 
+        server->begin_render(&rt_window);
+
+        server->end_render(&rt_window);
+
         server->present(main_window);
     }
 

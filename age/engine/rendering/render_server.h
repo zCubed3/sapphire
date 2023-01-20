@@ -19,8 +19,8 @@ namespace AGE {
         virtual bool present(SDL_Window* p_window) = 0;
 
         // Whenever we begin rendering to a target, we call this function
-        virtual bool begin_render(RenderTarget* target) = 0;
-        virtual bool end_render() = 0;
+        virtual bool begin_render(RenderTarget* p_target) = 0;
+        virtual bool end_render(RenderTarget* p_target) = 0;
     };
 }
 

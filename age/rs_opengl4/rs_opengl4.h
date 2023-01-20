@@ -10,7 +10,8 @@ namespace AGE {
             ERR_NONE,
             ERR_SINGLETON_CLASH,
             ERR_WINDOW_NULLPTR,
-            ERR_CONTEXT_NULLPTR
+            ERR_CONTEXT_NULLPTR,
+            ERR_TARGET_NULLPTR
         };
 
         int error = Error::ERR_NONE;
@@ -25,7 +26,7 @@ namespace AGE {
         bool present(SDL_Window* p_window) override;
 
         bool begin_render(RenderTarget* p_target) override;
-        bool end_render() override;
+        bool end_render(RenderTarget* p_target) override;
     };
 }
 

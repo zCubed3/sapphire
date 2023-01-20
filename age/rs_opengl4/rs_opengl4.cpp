@@ -61,6 +61,7 @@ namespace AGE {
 
     bool OpenGL4RenderServer::present(SDL_Window* p_window) {
         if (p_window == nullptr) {
+            error = ERR_WINDOW_NULLPTR;
             return false;
         }
 
@@ -71,6 +72,7 @@ namespace AGE {
 
     bool OpenGL4RenderServer::begin_render(RenderTarget* p_target) {
         if (p_target == nullptr) {
+            error = ERR_TARGET_NULLPTR;
             return false;
         }
 
@@ -83,7 +85,7 @@ namespace AGE {
 
             if (p_target->clear_flags & RenderTarget::ClearFlags::CLEAR_COLOR) {
                 clear_flags |= GL_COLOR_BUFFER_BIT;
-                glClearColor(0, 0, 0, 1); // TODO: Clear color
+                glClearColor(p_target->color[0], p_target->color[1], p_target->color[2], p_target->color[3]);
             }
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -92,7 +94,12 @@ namespace AGE {
         return true;
     }
 
-    bool OpenGL4RenderServer::end_render() {
+    bool OpenGL4RenderServer::end_render(RenderTarget* p_target) {
+        if (p_target == nullptr) {
+            error = ERR_TARGET_NULLPTR;
+            return false;
+        }
+
         return true;
     }
 }
