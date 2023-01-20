@@ -5,6 +5,7 @@
 
 // Abstract render server mesh info
 class MeshBuffer {
+
 };
 
 #endif

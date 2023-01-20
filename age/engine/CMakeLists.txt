@@ -23,7 +23,6 @@ target_include_directories(AGE PUBLIC
 )
 
 target_link_libraries(AGE PUBLIC
-    AGE_STD
     AGE_RS_OPENGL4
     SDL2
     SDL2main

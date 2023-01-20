@@ -12,6 +12,8 @@ protected:
     static std::vector<AssetLoader *> loaders;
 
 public:
+    virtual std::vector<std::string> get_extensions() = 0;
+
     virtual Asset *load_from_path(const std::string &path) = 0;
 
 public:

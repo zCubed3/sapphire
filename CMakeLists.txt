@@ -15,7 +15,5 @@ set(AGE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/age)
 # TODO: Null driver to remove SDL dependency?
 add_subdirectory(${THIRD_PARTY_DIR}/SDL)
 
-add_subdirectory(${AGE_DIR}/age_std)
-
 add_subdirectory(${AGE_DIR}/rs_opengl4)
 add_subdirectory(${AGE_DIR}/engine)

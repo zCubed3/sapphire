@@ -9,6 +9,8 @@
 
 class MeshLoader : public AssetLoader {
 public:
+    std::vector<std::string> get_extensions() override;
+
     Asset *load_from_path(const std::string &path) override;
 };
 
