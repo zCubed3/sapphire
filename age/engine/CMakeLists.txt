@@ -1,4 +1,6 @@
 set(AGE_ENGINE_SOURCES
+    "rendering/render_target.cpp"
+    "rendering/rt_sdl_window.cpp"
     "rendering/render_server.cpp"
 
     "main.cpp"
@@ -14,6 +16,7 @@ target_include_directories(AGE PUBLIC
 
 target_link_libraries(AGE PUBLIC
     AGE_STD
+    AGE_RS_OPENGL4
     SDL2
     SDL2main
 )
