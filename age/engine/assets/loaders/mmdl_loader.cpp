@@ -1,5 +1,7 @@
 #include "mmdl_loader.h"
 
+void MMDLLoader::load_placeholders() {}
+
 std::vector<std::string> MMDLLoader::get_extensions() {
     return {"mmdl"};
 }

@@ -1,5 +1,7 @@
 #include "static_mesh_asset.h"
 
+#include <engine/rendering/mesh_buffer.h>
+
 void StaticMeshAsset::set_position_data(glm::vec3 *data, size_t length) {
     delete[] position_data;
 
@@ -51,21 +53,55 @@ void StaticMeshAsset::set_triangle_data(uint32_t *data, size_t length) {
 }
 
 glm::vec3 *StaticMeshAsset::get_position_data(size_t *p_length) {
-    return nullptr;
+    if (p_length != nullptr) {
+        *p_length = vertex_count;
+    }
+
+    return position_data;
 }
 
 glm::vec3 *StaticMeshAsset::get_normal_data(size_t *p_length) {
-    return nullptr;
+    if (p_length != nullptr) {
+        *p_length = vertex_count;
+    }
+
+    return normal_data;
 }
 
 glm::vec2 *StaticMeshAsset::get_uv0_data(size_t *p_length) {
-    return nullptr;
+    if (p_length != nullptr) {
+        *p_length = vertex_count;
+    }
+
+    return uv0_data;
 }
 
 glm::vec4 *StaticMeshAsset::get_tangent_data(size_t *p_length) {
-    return nullptr;
+    if (p_length != nullptr) {
+        *p_length = vertex_count;
+    }
+
+    return tangent_data;
 }
 
 uint32_t *StaticMeshAsset::get_triangle_data(size_t *p_length) {
-    return nullptr;
+    if (p_length != nullptr) {
+        *p_length = triangle_count;
+    }
+
+    return triangle_data;
+}
+
+uint32_t StaticMeshAsset::get_vertex_count() {
+    return vertex_count;
+}
+
+uint32_t StaticMeshAsset::get_triangle_count() {
+    return triangle_count;
+}
+
+void StaticMeshAsset::render() {
+    if (buffer != nullptr) {
+        buffer->render(shader);
+    }
 }

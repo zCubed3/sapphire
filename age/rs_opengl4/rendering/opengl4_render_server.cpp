@@ -1,12 +1,14 @@
-#include "rs_opengl4.h"
+#include "opengl4_render_server.h"
 
 #include <SDL.h>
 #include <glad/glad.h>
 
 #include <engine/assets/asset_loader.h>
+#include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_target.h>
 
 #include <rs_opengl4/assets/glsl_shader_asset_loader.h>
+#include <rs_opengl4/rendering/opengl4_mesh_buffer.h>
 
 void OpenGL4RenderServer::register_rs_asset_loaders() {
     AssetLoader::register_loader<GLSLShaderAssetLoader>();
@@ -62,6 +64,13 @@ bool OpenGL4RenderServer::initialize(SDL_Window *p_window) {
 
     singleton = this;
 
+    // TODO: Move this to render targets
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
     return true;
 }
 
@@ -107,4 +116,8 @@ bool OpenGL4RenderServer::end_render(RenderTarget *p_target) {
     }
 
     return true;
+}
+
+void OpenGL4RenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
+    p_mesh_asset->buffer = new OpenGL4MeshBuffer(p_mesh_asset);
 }

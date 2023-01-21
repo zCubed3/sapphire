@@ -29,3 +29,11 @@ Asset *AssetLoader::load_asset(const std::string &path) {
 
     return nullptr;
 }
+
+void AssetLoader::load_all_placeholders() {
+    for (AssetLoader* loader : loaders) {
+        if (loader != nullptr) {
+            loader->load_placeholders();
+        }
+    }
+}

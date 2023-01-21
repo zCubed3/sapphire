@@ -11,6 +11,8 @@ class AssetLoader {
 protected:
     static std::vector<AssetLoader *> loaders;
 
+    virtual void load_placeholders() = 0;
+
 public:
     virtual std::vector<std::string> get_extensions() = 0;
 
@@ -19,6 +21,7 @@ public:
 public:
     static Asset *load_asset(const std::string& path);
 
+    static void load_all_placeholders();
     static void register_engine_asset_loaders();
 
     template<class T>

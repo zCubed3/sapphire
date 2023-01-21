@@ -8,6 +8,9 @@
 #include <engine/assets/asset_loader.h>
 
 class OBJLoader : public AssetLoader {
+protected:
+    void load_placeholders() override;
+
 public:
     std::vector<std::string> get_extensions() override;
 

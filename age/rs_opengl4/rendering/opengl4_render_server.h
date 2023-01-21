@@ -1,5 +1,5 @@
-#ifndef AGE_RS_OPENGL4_H
-#define AGE_RS_OPENGL4_H
+#ifndef AGE_OPENGL4_RENDER_SERVER_H
+#define AGE_OPENGL4_RENDER_SERVER_H
 
 #include <engine/rendering/render_server.h>
 
@@ -28,6 +28,8 @@ public:
 
     bool begin_render(RenderTarget *p_target) override;
     bool end_render(RenderTarget *p_target) override;
+
+    void populate_mesh_buffer(MeshAsset *p_mesh_asset) const override;
 };
 
 #endif

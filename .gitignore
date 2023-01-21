@@ -7,8 +7,11 @@ build*/
 bin*/
 .cache*/
 
-# Raw_files
+# Raw files
 *.blend*
+
+# Script generated files
+*.gen.h
 
 # Prevent configuration files from being carried over
 compile_commands.json

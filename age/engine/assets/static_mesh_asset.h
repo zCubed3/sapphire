@@ -20,6 +20,9 @@ protected:
     size_t triangle_count = 0;
 
 public:
+    void set_vertex_count(size_t length);
+    void set_triangle_count(size_t length);
+
     void set_position_data(glm::vec3* data, size_t length);
     void set_normal_data(glm::vec3* data, size_t length);
     void set_uv0_data(glm::vec2* data, size_t length);
@@ -31,6 +34,11 @@ public:
     glm::vec2 *get_uv0_data(size_t *p_length) override;
     glm::vec4 *get_tangent_data(size_t *p_length) override;
     uint32_t *get_triangle_data(size_t *p_length) override;
+
+    uint32_t get_vertex_count() override;
+    uint32_t get_triangle_count() override;
+
+    void render() override;
 };
 
 #endif

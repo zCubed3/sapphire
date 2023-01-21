@@ -1,0 +1,24 @@
+#ifndef AGE_OPENGL4_MESH_BUFFER_H
+#define AGE_OPENGL4_MESH_BUFFER_H
+
+#include <cstdint>
+#include <engine/rendering/mesh_buffer.h>
+
+class MeshAsset;
+
+class OpenGL4MeshBuffer : public MeshBuffer {
+protected:
+    uint32_t vao;
+    uint32_t vbo;
+    uint32_t ibo;
+
+    uint32_t tri_count;
+
+public:
+    OpenGL4MeshBuffer(MeshAsset *p_mesh_asset);
+
+    void render(ShaderAsset* p_shader_asset) override;
+};
+
+
+#endif
