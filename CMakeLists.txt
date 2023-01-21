@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(AGE)
+project(sapphire)
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -11,11 +11,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 set(ROOT_DIR ${CMAKE_SOURCE_DIR})
 set(SCRIPT_DIR ${CMAKE_SOURCE_DIR}/scripts)
-set(AGE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/age)
+set(CODE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sapphire)
 set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 
 # TODO: Null driver to remove SDL dependency?
 add_subdirectory(${THIRD_PARTY_DIR}/SDL)
 
-add_subdirectory(${AGE_DIR}/rs_opengl4)
-add_subdirectory(${AGE_DIR}/engine)
+add_subdirectory(${CODE_DIR}/rs_opengl4)
+add_subdirectory(${CODE_DIR}/engine)

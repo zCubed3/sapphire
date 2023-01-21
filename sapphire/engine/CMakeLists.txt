@@ -1,4 +1,4 @@
-set(AGE_ENGINE_SOURCES
+set(SAPPHIRE_ENGINE_SOURCES
     "assets/asset.cpp"
     "assets/asset_loader.cpp"
     "assets/mesh_asset.cpp"
@@ -21,26 +21,26 @@ set(AGE_ENGINE_SOURCES
     "main.cpp"
 )
 
-add_executable(AGE ${AGE_ENGINE_SOURCES})
+add_executable(SAPPHIRE_ENGINE ${SAPPHIRE_ENGINE_SOURCES})
 
-target_include_directories(AGE PUBLIC
+target_include_directories(SAPPHIRE_ENGINE PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${AGE_DIR}
+    ${CODE_DIR}
     ${THIRD_PARTY_DIR}/SDL/include
     ${THIRD_PARTY_DIR}/glm/glm
 )
 
-target_compile_definitions(AGE PUBLIC
+target_compile_definitions(SAPPHIRE_ENGINE PUBLIC
     RS_OPENGL4_LINKED
     _CRT_SECURE_NO_WARNINGS
 )
 
-target_link_libraries(AGE PUBLIC
-    AGE_RS_OPENGL4
+target_link_libraries(SAPPHIRE_ENGINE PUBLIC
+    SAPPHIRE_RS_OPENGL4
     SDL2
     SDL2main
 )
 
-set_target_properties(AGE PROPERTIES
-    OUTPUT_NAME "arcane_engine"
+set_target_properties(SAPPHIRE_ENGINE PROPERTIES
+    OUTPUT_NAME "sapphire"
 )

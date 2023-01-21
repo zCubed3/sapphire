@@ -15,13 +15,13 @@ int main(int argc, char **argv) {
     SDL_Init(SDL_INIT_EVERYTHING);
 
     // The render server requires a main window to get things started
-    // TODO: AGE splash screen?
+    // TODO: Splash screen?
     RenderServer *server = new OpenGL4RenderServer();
     server->register_rs_asset_loaders();
 
-    // TODO: Abstract window class!
+    // TODO: Abstract window class?
     SDL_Window *main_window = SDL_CreateWindow(
-            "AGE Window",
+            "Sapphire",
             SDL_WINDOWPOS_UNDEFINED,
             SDL_WINDOWPOS_UNDEFINED,
             800,
