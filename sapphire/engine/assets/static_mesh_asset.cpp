@@ -100,8 +100,8 @@ uint32_t StaticMeshAsset::get_triangle_count() {
     return triangle_count;
 }
 
-void StaticMeshAsset::render() {
+void StaticMeshAsset::render(const Transform &transform) {
     if (buffer != nullptr) {
-        buffer->render(shader);
+        buffer->render(transform, shader);
     }
 }

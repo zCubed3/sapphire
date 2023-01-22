@@ -12,11 +12,14 @@ class RenderServer {
 protected:
     static RenderServer *singleton;
 
+    RenderTarget *current_target = nullptr;
+
 public:
     static const RenderServer *get_singleton();
 
     virtual void register_rs_asset_loaders() = 0;
 
+    virtual RenderTarget *get_current_target() const;
     virtual const char *get_name() = 0;
     virtual const char *get_error() = 0;
 

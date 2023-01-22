@@ -17,7 +17,9 @@ protected:
 public:
     OpenGL4MeshBuffer(MeshAsset *p_mesh_asset);
 
-    void render(ShaderAsset* p_shader_asset) override;
+    void render(const Transform &transform, ShaderAsset *p_shader_asset) override;
+    void render(const glm::mat4 &matrix, ShaderAsset *p_shader_asset) override;
+    void render(ShaderAsset *p_shader_asset) override;
 };
 
 

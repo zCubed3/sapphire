@@ -64,6 +64,9 @@ bool OpenGL4RenderServer::initialize(SDL_Window *p_window) {
 
     singleton = this;
 
+    // TODO: VSync option
+    SDL_GL_SetSwapInterval(1);
+
     // TODO: Move this to render targets
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -91,6 +94,11 @@ bool OpenGL4RenderServer::begin_render(RenderTarget *p_target) {
         return false;
     }
 
+    // TODO: Not set this per frame?
+    // TODO: If and when Vulkan is added, make this conformant to Vulkan and not OpenGL!
+    Rect rect = p_target->get_rect();
+    glViewport(rect.x, rect.y, rect.width, rect.height);
+
     if (p_target->clear_flags != 0) {
         uint32_t clear_flags = 0;
 
@@ -106,6 +114,11 @@ bool OpenGL4RenderServer::begin_render(RenderTarget *p_target) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
+    p_target->begin_attach();
+
+    // TODO: Let's find a better way to do this :P
+    current_target = p_target;
+
     return true;
 }
 
@@ -114,6 +127,8 @@ bool OpenGL4RenderServer::end_render(RenderTarget *p_target) {
         error = ERR_TARGET_NULLPTR;
         return false;
     }
+
+    current_target = nullptr;
 
     return true;
 }

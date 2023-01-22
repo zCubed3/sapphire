@@ -2,6 +2,7 @@
 #define AGE_MESH_ASSET_H
 
 #include <engine/assets/asset.h>
+#include <engine/data/transform.h>
 
 #include <glm.hpp>
 
@@ -23,7 +24,7 @@ public:
     virtual uint32_t get_vertex_count() = 0;
     virtual uint32_t get_triangle_count() = 0;
 
-    virtual void render() = 0;
+    virtual void render(const Transform &transform) = 0;
 };
 
 

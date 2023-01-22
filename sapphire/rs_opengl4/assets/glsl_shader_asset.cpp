@@ -2,18 +2,18 @@
 
 #include <glad/glad.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 #include <gtc/type_ptr.hpp>
 
-#include <preludes/vert_prelude.glsl.gen.h>
 #include <preludes/frag_prelude.glsl.gen.h>
+#include <preludes/vert_prelude.glsl.gen.h>
 
 #include <shaders/error.glsl.gen.h>
 
-GLSLShaderAsset* GLSLShaderAsset::placeholder = nullptr;
+GLSLShaderAsset *GLSLShaderAsset::placeholder = nullptr;
 
 uint32_t GLSLShaderAsset::get_uniform(const std::string &var) {
     auto iter = uniform_cache.find(var);
@@ -38,7 +38,7 @@ std::string GLSLShaderAsset::get_shader_error(uint32_t handle) {
 
         glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &log_size);
 
-        char* log = new char[log_size];
+        char *log = new char[log_size];
 
         glGetShaderInfoLog(handle, log_size, nullptr, log);
 
@@ -51,27 +51,29 @@ std::string GLSLShaderAsset::get_shader_error(uint32_t handle) {
     return "";
 }
 
-uint32_t GLSLShaderAsset::create_shader(uint32_t type, const std::vector<const char*> &sources) {
+uint32_t GLSLShaderAsset::create_shader(uint32_t type, const std::vector<const char *> &sources) {
     uint32_t handle = glCreateShader(type);
     glShaderSource(handle, 2, sources.data(), nullptr);
     glCompileShader(handle);
 
-    for (const auto src : sources)
+    /*
+    for (const auto src: sources) {
         std::cout << src << std::endl;
+    }
+    */
 
     return handle;
 }
 
 GLSLShaderAsset::GLSLShaderAsset() {
-
 }
 
 GLSLShaderAsset::GLSLShaderAsset(const std::string &path) {
     this->source_path = path;
-    compile_from_disc();
+    compile_from_disk();
 }
 
-void GLSLShaderAsset::compile_from_disc() {
+void GLSLShaderAsset::compile_from_disk() {
     std::ifstream file(source_path);
 
     if (file.is_open()) {
@@ -87,6 +89,20 @@ void GLSLShaderAsset::compile_from_disc() {
 void GLSLShaderAsset::compile_source(const std::string &source) {
     uint32_t vert_shader = create_shader(GL_VERTEX_SHADER, {VERT_PRELUDE_CONTENTS, source.c_str()});
     uint32_t frag_shader = create_shader(GL_FRAGMENT_SHADER, {FRAG_PRELUDE_CONTENTS, source.c_str()});
+
+    std::string vert_error = get_shader_error(vert_shader);
+    std::string frag_error = get_shader_error(frag_shader);
+
+    bool failure = false;
+    if (!vert_error.empty()) {
+        std::cout << "Vertex program failed to compile!\n\n" << vert_error << std::endl;
+        failure = true;
+    }
+
+    if (!frag_error.empty()) {
+        std::cout << "Fragment program failed to compile!\n\n" << frag_error << std::endl;
+        failure = true;
+    }
 
     // TODO: ERROR CHECKING!
     uint32_t program = glCreateProgram();
@@ -106,19 +122,20 @@ void GLSLShaderAsset::compile_source(const std::string &source) {
 }
 
 void GLSLShaderAsset::set_float(const std::string &var, float val) {
-
 }
 
 void GLSLShaderAsset::set_vec2(const std::string &var, const glm::vec2 &val) {
-
 }
 
 void GLSLShaderAsset::set_vec3(const std::string &var, const glm::vec3 &val) {
-
 }
 
 void GLSLShaderAsset::set_vec4(const std::string &var, const glm::vec4 &val) {
+    uint32_t loc = get_uniform(var);
 
+    if (loc != GL_INVALID_INDEX) {
+        glUniform4fv(loc, 1, glm::value_ptr(val));
+    }
 }
 
 void GLSLShaderAsset::set_mat4(const std::string &var, const glm::mat4 &val) {

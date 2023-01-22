@@ -3,6 +3,9 @@
 #include <gtc/matrix_transform.hpp>
 
 #include <engine/assets/mesh_asset.h>
+#include <engine/rendering/render_server.h>
+#include <engine/rendering/render_target.h>
+#include <engine/scene/world.h>
 #include <glad/glad.h>
 #include <rs_opengl4/assets/glsl_shader_asset.h>
 
@@ -23,13 +26,13 @@ OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
 
     // TODO: Updating buffers post-construction
     // TODO: Optional channels?
-    InterleavedVertexData* vertices = new InterleavedVertexData[p_mesh_asset->get_vertex_count()];
+    InterleavedVertexData *vertices = new InterleavedVertexData[p_mesh_asset->get_vertex_count()];
 
-    uint32_t* triangles = p_mesh_asset->get_triangle_data(nullptr);
-    glm::vec3* positions = p_mesh_asset->get_position_data(nullptr);
-    glm::vec3* normals = p_mesh_asset->get_normal_data(nullptr);
-    glm::vec2*tex_coords = p_mesh_asset->get_uv0_data(nullptr);
-    glm::vec4* tangents = p_mesh_asset->get_tangent_data(nullptr);
+    uint32_t *triangles = p_mesh_asset->get_triangle_data(nullptr);
+    glm::vec3 *positions = p_mesh_asset->get_position_data(nullptr);
+    glm::vec3 *normals = p_mesh_asset->get_normal_data(nullptr);
+    glm::vec2 *tex_coords = p_mesh_asset->get_uv0_data(nullptr);
+    glm::vec4 *tangents = p_mesh_asset->get_tangent_data(nullptr);
 
     tri_count = p_mesh_asset->get_triangle_count();
 
@@ -64,18 +67,32 @@ OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void OpenGL4MeshBuffer::render(ShaderAsset* p_shader_asset) {
-    GLSLShaderAsset* glsl_shader = static_cast<GLSLShaderAsset*>(p_shader_asset);
+void OpenGL4MeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_asset) {
+    GLSLShaderAsset *glsl_shader = static_cast<GLSLShaderAsset *>(p_shader_asset);
 
-    if (glsl_shader == nullptr)
+    if (glsl_shader == nullptr) {
         glsl_shader = GLSLShaderAsset::get_placeholder();
+    }
 
-    glm::mat4 view = glm::lookAt(glm::vec3(0, 0, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-    glm::mat4 proj = glm::perspective(30.0F, 1.0F, 0.001F, 1000.0F);
+    const RenderServer *server = RenderServer::get_singleton();
+    if (server != nullptr) {
+        RenderTarget *target = server->get_current_target();
 
-    //glsl_shader->set_vec4("AGE_TIME", proj * view);
-    glsl_shader->set_mat4("AGE_MVP", proj * view);
-    glsl_shader->set_mat4("AGE_MVP", proj * view);
+        if (target != nullptr) {
+            if (target->world != nullptr) {
+                glsl_shader->set_vec4("AGE_TIME", glm::vec4(target->world->elapsed_time));
+            }
+
+            glsl_shader->set_mat4("AGE_MVP", target->eye * transform.get_model());
+            glsl_shader->set_mat4("AGE_M", transform.get_model());
+            glsl_shader->set_mat4("AGE_M_I", transform.get_model_inverse());
+            glsl_shader->set_mat4("AGE_M_IT", transform.get_model_inverse_transpose());
+            glsl_shader->set_mat4("AGE_V", target->view);
+            glsl_shader->set_mat4("AGE_P", target->projection);
+        } else {
+            glsl_shader->set_mat4("AGE_MVP", glm::identity<glm::mat4>());
+        }
+    }
 
     glUseProgram(glsl_shader->shader_handle);
 
@@ -104,4 +121,12 @@ void OpenGL4MeshBuffer::render(ShaderAsset* p_shader_asset) {
     glDisableVertexAttribArray(3);
 
     glBindVertexArray(0);
+}
+
+void OpenGL4MeshBuffer::render(const glm::mat4 &matrix, ShaderAsset *p_shader_asset) {
+    render(Transform(matrix), p_shader_asset);
+}
+
+void OpenGL4MeshBuffer::render(ShaderAsset *p_shader_asset) {
+    render(Transform(), p_shader_asset);
 }

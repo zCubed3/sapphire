@@ -14,6 +14,10 @@ public:
     SDLWindowRenderTarget(const SDLWindowRenderTarget &) = delete;
 
     SDLWindowRenderTarget(SDL_Window *p_window);
+
+    Rect get_rect() override;
+
+    void begin_attach() override;
 };
 
 #endif

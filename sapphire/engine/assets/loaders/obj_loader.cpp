@@ -51,7 +51,7 @@ Asset *OBJLoader::load_from_path(const std::string &path) {
                 // Texcoord
                 if (id[1] == 't') {
                     // TODO: Replace sscanf?
-                    glm::vec2 uv {};
+                    glm::vec2 uv{};
 
                     sscanf(contents.c_str(), "%f %f", &uv.x, &uv.y);
                     unweld_tex_coords.emplace_back(uv);
@@ -59,7 +59,7 @@ Asset *OBJLoader::load_from_path(const std::string &path) {
                     continue;
                 }
 
-                glm::vec3 v3_data {};
+                glm::vec3 v3_data{};
                 sscanf(contents.c_str(), "%f %f %f", &v3_data.x, &v3_data.y, &v3_data.z);
 
                 if (id[1] == 'n')
@@ -75,12 +75,11 @@ Asset *OBJLoader::load_from_path(const std::string &path) {
 
                 size_t pos;
                 while (true) {
-                    OBJTriangle tri {};
+                    OBJTriangle tri{};
                     pos = face.find(' ');
 
                     sscanf(face.c_str(), "%i/%i/%i",
-                           &tri.v, &tri.t, &tri.n
-                    );
+                           &tri.v, &tri.t, &tri.n);
 
                     face.erase(0, pos + 1);
 
@@ -120,7 +119,7 @@ Asset *OBJLoader::load_from_path(const std::string &path) {
                 glm::vec3 test_normal = weld_normals[o];
 
                 if (position == test_position && tex_coord == test_tex_coord && normal == test_normal) {
-                    weld_triangles.emplace_back((uint32_t)o);
+                    weld_triangles.emplace_back((uint32_t) o);
                     matching = true;
                     break;
                 }
