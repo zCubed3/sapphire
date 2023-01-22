@@ -1,5 +1,5 @@
-#ifndef AGE_MESH_ASSET_H
-#define AGE_MESH_ASSET_H
+#ifndef SAPPHIRE_MESH_ASSET_H
+#define SAPPHIRE_MESH_ASSET_H
 
 #include <engine/assets/asset.h>
 #include <engine/data/transform.h>

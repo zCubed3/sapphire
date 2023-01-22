@@ -1,5 +1,5 @@
-#ifndef AGE_STATIC_MESH_ASSET_H
-#define AGE_STATIC_MESH_ASSET_H
+#ifndef SAPPHIRE_STATIC_MESH_ASSET_H
+#define SAPPHIRE_STATIC_MESH_ASSET_H
 
 #include <engine/assets/mesh_asset.h>
 

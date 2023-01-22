@@ -2,12 +2,14 @@
 
 #include <SDL.h>
 
-#include <assets/asset_loader.h>
-#include <assets/shader_asset.h>
-#include <assets/static_mesh_asset.h>
-#include <rendering/rt_sdl_window.h>
+#include <engine/assets/asset_loader.h>
+#include <engine/assets/shader_asset.h>
+#include <engine/assets/static_mesh_asset.h>
+#include <engine/rendering/rt_sdl_window.h>
+#include <engine/scene/world.h>
+
 #include <rs_opengl4/rendering/opengl4_render_server.h>
-#include <scene/world.h>
+#include <rs_vulkan/rendering/vulkan_render_server.h>
 
 #include <glm.hpp>
 

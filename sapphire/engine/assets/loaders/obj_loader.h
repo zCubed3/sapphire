@@ -1,5 +1,5 @@
-#ifndef AGE_OBJ_LOADER_H
-#define AGE_OBJ_LOADER_H
+#ifndef SAPPHIRE_OBJ_LOADER_H
+#define SAPPHIRE_OBJ_LOADER_H
 
 #include <glm.hpp>
 

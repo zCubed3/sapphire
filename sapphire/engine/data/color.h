@@ -1,5 +1,5 @@
-#ifndef AGE_COLOR_H
-#define AGE_COLOR_H
+#ifndef SAPPHIRE_COLOR_H
+#define SAPPHIRE_COLOR_H
 
 // Wrapper around color types
 // Avoids including GLM in whenever color is needed

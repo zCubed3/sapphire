@@ -1,5 +1,5 @@
-#ifndef AGE_RENDER_TARGET_H
-#define AGE_RENDER_TARGET_H
+#ifndef SAPPHIRE_RENDER_TARGET_H
+#define SAPPHIRE_RENDER_TARGET_H
 
 #include <engine/data/color.h>
 #include <engine/data/rect.h>

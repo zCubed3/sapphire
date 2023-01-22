@@ -1,5 +1,5 @@
-#ifndef AGE_WINDOW_TARGET_H
-#define AGE_WINDOW_TARGET_H
+#ifndef SAPPHIRE_WINDOW_TARGET_H
+#define SAPPHIRE_WINDOW_TARGET_H
 
 #include "render_target.h"
 

@@ -1,5 +1,5 @@
-#ifndef AGE_ASSET_H
-#define AGE_ASSET_H
+#ifndef SAPPHIRE_ASSET_H
+#define SAPPHIRE_ASSET_H
 
 class Asset {
 };

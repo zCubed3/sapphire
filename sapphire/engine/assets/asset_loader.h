@@ -1,5 +1,5 @@
-#ifndef AGE_ASSET_LOADER_H
-#define AGE_ASSET_LOADER_H
+#ifndef SAPPHIRE_ASSET_LOADER_H
+#define SAPPHIRE_ASSET_LOADER_H
 
 #include <string>
 #include <vector>

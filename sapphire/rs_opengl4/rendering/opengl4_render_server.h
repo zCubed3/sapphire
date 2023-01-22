@@ -1,5 +1,5 @@
-#ifndef AGE_OPENGL4_RENDER_SERVER_H
-#define AGE_OPENGL4_RENDER_SERVER_H
+#ifndef SAPPHIRE_OPENGL4_RENDER_SERVER_H
+#define SAPPHIRE_OPENGL4_RENDER_SERVER_H
 
 #include <engine/rendering/render_server.h>
 

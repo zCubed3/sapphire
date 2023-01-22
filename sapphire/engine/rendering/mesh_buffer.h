@@ -1,5 +1,5 @@
-#ifndef AGE_MESH_BUFFER_H
-#define AGE_MESH_BUFFER_H
+#ifndef SAPPHIRE_MESH_BUFFER_H
+#define SAPPHIRE_MESH_BUFFER_H
 
 // TODO: Come up with a better name than "MeshBuffer"?
 
@@ -12,9 +12,9 @@ class ShaderAsset;
 // Abstract render server mesh info
 class MeshBuffer {
 public:
-    virtual void render(const Transform &transform, ShaderAsset *p_shader_asset) = 0;
-    virtual void render(const glm::mat4 &matrix, ShaderAsset *p_shader_asset) = 0;
-    virtual void render(ShaderAsset *p_shader_asset) = 0;
+    virtual void render(const Transform &transform, ShaderAsset *p_shader_asset);
+    virtual void render(const glm::mat4 &matrix, ShaderAsset *p_shader_asset);
+    virtual void render(ShaderAsset *p_shader_asset);
 };
 
 #endif

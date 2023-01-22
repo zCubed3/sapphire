@@ -70,29 +70,12 @@ OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
 void OpenGL4MeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_asset) {
     GLSLShaderAsset *glsl_shader = static_cast<GLSLShaderAsset *>(p_shader_asset);
 
+    // TODO: ShaderAsset contains get_placeholder() instead?
     if (glsl_shader == nullptr) {
         glsl_shader = GLSLShaderAsset::get_placeholder();
     }
 
-    const RenderServer *server = RenderServer::get_singleton();
-    if (server != nullptr) {
-        RenderTarget *target = server->get_current_target();
-
-        if (target != nullptr) {
-            if (target->world != nullptr) {
-                glsl_shader->set_vec4("AGE_TIME", glm::vec4(target->world->elapsed_time));
-            }
-
-            glsl_shader->set_mat4("AGE_MVP", target->eye * transform.get_model());
-            glsl_shader->set_mat4("AGE_M", transform.get_model());
-            glsl_shader->set_mat4("AGE_M_I", transform.get_model_inverse());
-            glsl_shader->set_mat4("AGE_M_IT", transform.get_model_inverse_transpose());
-            glsl_shader->set_mat4("AGE_V", target->view);
-            glsl_shader->set_mat4("AGE_P", target->projection);
-        } else {
-            glsl_shader->set_mat4("AGE_MVP", glm::identity<glm::mat4>());
-        }
-    }
+    MeshBuffer::render(transform, p_shader_asset);
 
     glUseProgram(glsl_shader->shader_handle);
 
@@ -121,12 +104,4 @@ void OpenGL4MeshBuffer::render(const Transform &transform, ShaderAsset *p_shader
     glDisableVertexAttribArray(3);
 
     glBindVertexArray(0);
-}
-
-void OpenGL4MeshBuffer::render(const glm::mat4 &matrix, ShaderAsset *p_shader_asset) {
-    render(Transform(matrix), p_shader_asset);
-}
-
-void OpenGL4MeshBuffer::render(ShaderAsset *p_shader_asset) {
-    render(Transform(), p_shader_asset);
 }

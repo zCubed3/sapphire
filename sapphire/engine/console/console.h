@@ -1,5 +1,5 @@
-#ifndef AGE_CONSOLE_H
-#define AGE_CONSOLE_H
+#ifndef SAPPHIRE_CONSOLE_H
+#define SAPPHIRE_CONSOLE_H
 
 
 class Console {

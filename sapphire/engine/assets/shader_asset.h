@@ -1,5 +1,5 @@
-#ifndef AGE_SHADER_H
-#define AGE_SHADER_H
+#ifndef SAPPHIRE_SHADER_H
+#define SAPPHIRE_SHADER_H
 
 #include <engine/assets/asset.h>
 #include <glm.hpp>

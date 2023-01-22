@@ -1,5 +1,5 @@
-#ifndef AGE_MMDL_LOADER_H
-#define AGE_MMDL_LOADER_H
+#ifndef SAPPHIRE_MMDL_LOADER_H
+#define SAPPHIRE_MMDL_LOADER_H
 
 #include <glm.hpp>
 

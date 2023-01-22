@@ -1,5 +1,5 @@
-#ifndef AGE_GLSL_SHADER_LOADER_H
-#define AGE_GLSL_SHADER_LOADER_H
+#ifndef SAPPHIRE_GLSL_SHADER_LOADER_H
+#define SAPPHIRE_GLSL_SHADER_LOADER_H
 
 #include <engine/assets/asset_loader.h>
 

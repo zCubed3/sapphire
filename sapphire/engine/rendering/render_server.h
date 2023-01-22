@@ -1,11 +1,12 @@
-#ifndef AGE_RENDER_SERVER_H
-#define AGE_RENDER_SERVER_H
+#ifndef SAPPHIRE_RENDER_SERVER_H
+#define SAPPHIRE_RENDER_SERVER_H
+
+#include <cstdint>
 
 typedef struct SDL_Window SDL_Window;
 
-class RenderTarget;
-
 class MeshAsset;
+class RenderTarget;
 
 // Abstraction over various rendering APIs
 class RenderServer {
@@ -22,7 +23,9 @@ public:
     virtual RenderTarget *get_current_target() const;
     virtual const char *get_name() = 0;
     virtual const char *get_error() = 0;
+    virtual uint32_t *get_window_flags() = 0;
 
+    // TODO: Remove SDL dependency?
     virtual bool initialize(SDL_Window *p_window) = 0;
 
     virtual bool present(SDL_Window *p_window) = 0;

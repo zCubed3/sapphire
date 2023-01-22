@@ -1,5 +1,5 @@
-#ifndef AGE_AABB_H
-#define AGE_AABB_H
+#ifndef SAPPHIRE_AABB_H
+#define SAPPHIRE_AABB_H
 
 #include <glm.hpp>
 

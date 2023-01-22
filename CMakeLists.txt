@@ -18,4 +18,6 @@ set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 add_subdirectory(${THIRD_PARTY_DIR}/SDL)
 
 add_subdirectory(${CODE_DIR}/rs_opengl4)
+add_subdirectory(${CODE_DIR}/rs_vulkan)
+
 add_subdirectory(${CODE_DIR}/engine)

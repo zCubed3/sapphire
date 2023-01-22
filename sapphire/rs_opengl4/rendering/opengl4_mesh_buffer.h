@@ -1,5 +1,5 @@
-#ifndef AGE_OPENGL4_MESH_BUFFER_H
-#define AGE_OPENGL4_MESH_BUFFER_H
+#ifndef SAPPHIRE_OPENGL4_MESH_BUFFER_H
+#define SAPPHIRE_OPENGL4_MESH_BUFFER_H
 
 #include <cstdint>
 #include <engine/rendering/mesh_buffer.h>
@@ -18,8 +18,6 @@ public:
     OpenGL4MeshBuffer(MeshAsset *p_mesh_asset);
 
     void render(const Transform &transform, ShaderAsset *p_shader_asset) override;
-    void render(const glm::mat4 &matrix, ShaderAsset *p_shader_asset) override;
-    void render(ShaderAsset *p_shader_asset) override;
 };
 
 
