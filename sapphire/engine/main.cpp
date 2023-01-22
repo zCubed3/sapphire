@@ -23,17 +23,20 @@ int main(int argc, char **argv) {
 
     // The render server requires a main window to get things started
     // TODO: Splash screen?
-    RenderServer *render_server = new OpenGL4RenderServer();
+    //RenderServer *render_server = new OpenGL4RenderServer();
+    RenderServer *render_server = new VulkanRenderServer();
     render_server->register_rs_asset_loaders();
+
+    uint32_t window_flags = render_server->get_sdl_window_flags();
 
     // TODO: Abstract window class?
     SDL_Window *main_window = SDL_CreateWindow(
             "Sapphire",
             SDL_WINDOWPOS_UNDEFINED,
             SDL_WINDOWPOS_UNDEFINED,
-            800,
-            600,
-            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
+            1280,
+            720,
+            window_flags | SDL_WINDOW_RESIZABLE
     );
 
     SDLWindowRenderTarget rt_window(main_window);

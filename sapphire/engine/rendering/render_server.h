@@ -2,6 +2,7 @@
 #define SAPPHIRE_RENDER_SERVER_H
 
 #include <cstdint>
+#include <string>
 
 typedef struct SDL_Window SDL_Window;
 
@@ -21,9 +22,9 @@ public:
     virtual void register_rs_asset_loaders() = 0;
 
     virtual RenderTarget *get_current_target() const;
-    virtual const char *get_name() = 0;
-    virtual const char *get_error() = 0;
-    virtual uint32_t *get_window_flags() = 0;
+    virtual std::string get_name() const = 0;
+    virtual std::string get_error() const = 0;
+    virtual uint32_t get_sdl_window_flags() const = 0;
 
     // TODO: Remove SDL dependency?
     virtual bool initialize(SDL_Window *p_window) = 0;

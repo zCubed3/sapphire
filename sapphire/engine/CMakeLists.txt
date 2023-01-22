@@ -39,6 +39,7 @@ target_compile_definitions(SAPPHIRE_ENGINE PUBLIC
 
 target_link_libraries(SAPPHIRE_ENGINE PUBLIC
         SAPPHIRE_RS_OPENGL4
+        SAPPHIRE_RS_VULKAN
         SDL2
         SDL2main
         )

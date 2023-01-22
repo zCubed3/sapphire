@@ -19,8 +19,9 @@ protected:
 public:
     void register_rs_asset_loaders() override;
 
-    const char *get_name() override;
-    const char *get_error() override;
+    std::string get_name() const override;
+    std::string get_error() const override;
+    uint32_t get_sdl_window_flags() const override;
 
     bool initialize(SDL_Window *p_window) override;
 

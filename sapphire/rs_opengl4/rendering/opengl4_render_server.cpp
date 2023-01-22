@@ -14,11 +14,11 @@ void OpenGL4RenderServer::register_rs_asset_loaders() {
     AssetLoader::register_loader<GLSLShaderAssetLoader>();
 }
 
-const char *OpenGL4RenderServer::get_name() {
+std::string OpenGL4RenderServer::get_name() const {
     return "OpenGL 4.6";// TODO: Other versions?
 }
 
-const char *OpenGL4RenderServer::get_error() {
+std::string OpenGL4RenderServer::get_error() const {
     switch (error) {
         case ERR_SINGLETON_CLASH:
             return "Singleton not nullptr!";
@@ -30,7 +30,11 @@ const char *OpenGL4RenderServer::get_error() {
             return "gl_context was nullptr!";
     }
 
-    return nullptr;
+    return "";
+}
+
+uint32_t OpenGL4RenderServer::get_sdl_window_flags() const {
+    return SDL_WINDOW_OPENGL;
 }
 
 // TODO: Abstract window class?
