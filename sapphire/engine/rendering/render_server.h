@@ -19,6 +19,8 @@ protected:
 public:
     static const RenderServer *get_singleton();
 
+    virtual ~RenderServer();
+
     virtual void register_rs_asset_loaders() = 0;
 
     virtual RenderTarget *get_current_target() const;
@@ -31,9 +33,14 @@ public:
 
     virtual bool present(SDL_Window *p_window) = 0;
 
+    virtual void on_window_resized();
+
+    virtual bool begin_frame() = 0;
+    virtual bool end_frame() = 0;
+
     // Whenever we begin rendering to a target, we call this function
-    virtual bool begin_render(RenderTarget *p_target) = 0;
-    virtual bool end_render(RenderTarget *p_target) = 0;
+    virtual bool begin_target(RenderTarget *p_target) = 0;
+    virtual bool end_target(RenderTarget *p_target) = 0;
 
     // Whenever a mesh is loaded various structures must be created
     virtual void populate_mesh_buffer(MeshAsset *p_mesh_asset) const = 0;

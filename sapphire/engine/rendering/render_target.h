@@ -18,7 +18,7 @@ public:
     };
 
     int clear_flags = ClearFlags::CLEAR_COLOR | ClearFlags::CLEAR_DEPTH;
-    Color color = Color(0.1F, 0.1F, 0.1F, 1.0F);
+    Color clear_color = Color(0.1F, 0.1F, 0.1F, 1.0F);
 
     // Render targets may have their own view and projection matrices
     // The top most camera will usually set these

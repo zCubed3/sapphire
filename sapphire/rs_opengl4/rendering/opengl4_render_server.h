@@ -27,8 +27,8 @@ public:
 
     bool present(SDL_Window *p_window) override;
 
-    bool begin_render(RenderTarget *p_target) override;
-    bool end_render(RenderTarget *p_target) override;
+    bool begin_target(RenderTarget *p_target) override;
+    bool end_target(RenderTarget *p_target) override;
 
     void populate_mesh_buffer(MeshAsset *p_mesh_asset) const override;
 };

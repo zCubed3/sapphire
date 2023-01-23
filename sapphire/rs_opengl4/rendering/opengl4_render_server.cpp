@@ -92,7 +92,7 @@ bool OpenGL4RenderServer::present(SDL_Window *p_window) {
     return true;
 }
 
-bool OpenGL4RenderServer::begin_render(RenderTarget *p_target) {
+bool OpenGL4RenderServer::begin_target(RenderTarget *p_target) {
     if (p_target == nullptr) {
         error = ERR_TARGET_NULLPTR;
         return false;
@@ -112,7 +112,7 @@ bool OpenGL4RenderServer::begin_render(RenderTarget *p_target) {
 
         if (p_target->clear_flags & RenderTarget::ClearFlags::CLEAR_COLOR) {
             clear_flags |= GL_COLOR_BUFFER_BIT;
-            glClearColor(p_target->color[0], p_target->color[1], p_target->color[2], p_target->color[3]);
+            glClearColor(p_target->clear_color[0], p_target->clear_color[1], p_target->clear_color[2], p_target->clear_color[3]);
         }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -126,7 +126,7 @@ bool OpenGL4RenderServer::begin_render(RenderTarget *p_target) {
     return true;
 }
 
-bool OpenGL4RenderServer::end_render(RenderTarget *p_target) {
+bool OpenGL4RenderServer::end_target(RenderTarget *p_target) {
     if (p_target == nullptr) {
         error = ERR_TARGET_NULLPTR;
         return false;

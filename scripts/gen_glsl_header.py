@@ -9,7 +9,7 @@ out_path = sys.argv[2]
 
 source = ""
 
-out_name = os.path.basename(out_path);
+out_name = os.path.basename(out_path)
 
 source_name = os.path.basename(in_path)
 source_name = os.path.splitext(source_name)[0]

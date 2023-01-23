@@ -44,11 +44,16 @@ int main(int argc, char **argv) {
     // Each render target has clear operations associated with it
     rt_window.clear_flags = RenderTarget::CLEAR_DEPTH | RenderTarget::CLEAR_COLOR;
 
-    render_server->initialize(main_window);
+    if (!render_server->initialize(main_window)) {
+        std::cout << render_server->get_error() << std::endl;
+        return 1;
+    }
 
     // We need to load our model and our shader
     MeshAsset *mesh = static_cast<MeshAsset *>(AssetLoader::load_asset("test.obj"));
-    ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.glsl"));
+
+    ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.spv"));
+    //ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.glsl"));
 
     World *world = new World();
 
@@ -61,10 +66,24 @@ int main(int argc, char **argv) {
 
     glm::mat4 model = glm::identity<glm::mat4>();
 
+    bool resized = false;
+
     while (keep_running) {
         while (SDL_PollEvent(&event) != 0) {
-            if (event.type == SDL_QUIT)
+            if (event.type == SDL_QUIT) {
                 keep_running = false;// TEMPORARY!
+            }
+
+            if (event.type == SDL_WINDOWEVENT) {
+                if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                    resized = true;
+                }
+            }
+        }
+
+        if (resized) {
+            render_server->on_window_resized();
+            resized = false;
         }
 
         // TODO: Update the world properly
@@ -79,19 +98,27 @@ int main(int argc, char **argv) {
 
         glm::vec3 euler = glm::vec3(0, world->elapsed_time * 90, 0);
 
+        //rt_window.clear_color = Color(abs(sin(world->elapsed_time)), 0, 0, 1);
+
         model = glm::identity<glm::mat4>();
         model *= glm::toMat4(glm::quat(glm::radians(euler)));
 
-        render_server->begin_render(&rt_window);
+        render_server->begin_frame();
+
+        render_server->begin_target(&rt_window);
 
         // TODO: MeshRenderer
         mesh->shader = shader;
         mesh->render(model);
 
-        render_server->end_render(&rt_window);
+        render_server->end_target(&rt_window);
+
+        render_server->end_frame();
 
         render_server->present(main_window);
     }
+
+    delete render_server;
 
     return 0;
 }
