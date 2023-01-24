@@ -276,6 +276,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     // TODO: Optional SDL
     val_create_info.sdl_window = p_window;
     val_create_info.instance_extensions = ValExtension::get_sdl_instance_extensions(p_window);
+    val_create_info.device_extensions = {{VK_KHR_SWAPCHAIN_EXTENSION_NAME, 0}};
 
 #ifdef RS_VULKAN_DEBUG
     val_create_info.validation_layers = {
@@ -291,112 +292,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     val_instance = ValInstance::create_val_instance(&val_create_info);
 
-    //
-    // Physical devices
-    //
-
-    if (enumeration_count == 0) {
-        // TODO: Error there are no vulkan supported GPUs!
-        return false;
-    }
-
-    enumeration_count = 0;
-
-#ifdef RS_VULKAN_DEBUG
-    std::cout << "Found GPUs:" << std::endl;
-    uint32_t gpu_index = 0;
-#endif
-
-#ifdef RS_VULKAN_DEBUG
-    std::cout << std::endl;
-#endif
-
-    //
-    // Logical device
-    //
-    std::vector<const char*> enabled_device_extensions {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
-    };
-    std::vector<VkExtensionProperties> user_device_extensions;
-
-    std::vector<uint32_t> device_queues = vk_families.get_all();
-    std::vector<VkDeviceQueueCreateInfo> device_queue_infos;
-
-    float queue_priority = 1;
-
-    for (uint32_t queue: device_queues) {
-        VkDeviceQueueCreateInfo queue_create_info{};
-        queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queue_create_info.queueFamilyIndex = queue;
-        queue_create_info.queueCount = 1;
-        queue_create_info.pQueuePriorities = &queue_priority;
-
-        device_queue_infos.emplace_back(queue_create_info);
-    }
-
-    vkEnumerateDeviceExtensionProperties(vk_physical_device, nullptr, &enumeration_count, nullptr);
-    user_device_extensions.resize(enumeration_count);
-    vkEnumerateDeviceExtensionProperties(vk_physical_device, nullptr, &enumeration_count, user_device_extensions.data());
-
-    enumeration_count = 0;
-
-    std::vector<const char *> missing_device_extensions;
-    for (const char *extension: enabled_device_extensions) {
-        bool has_extension = false;
-        for (VkExtensionProperties properties: user_device_extensions) {
-            if (strcmp(extension, properties.extensionName) == 0) {
-                has_extension = true;
-                break;
-            }
-        }
-
-        if (!has_extension) {
-            missing_device_extensions.push_back(extension);
-        }
-    }
-
-    if (!missing_device_extensions.empty()) {
-        std::cout << "Missing Device Extension(s):" << std::endl;
-        for (const char *missing: missing_device_extensions) {
-            std::cout << '\t' << missing << std::endl;
-        }
-
-        return false;
-    }
-
-
-#ifdef RS_VULKAN_DEBUG
-    std::cout << "Found Device Extensions:" << std::endl;
-    for (VkExtensionProperties properties: user_device_extensions) {
-        std::cout << '\t' << properties.extensionName << std::endl;
-    }
-
-    std::cout << "Enabled Device Extensions:" << std::endl;
-    for (const char* extension: enabled_device_extensions) {
-        std::cout << '\t' << extension << std::endl;
-    }
-
-    std::cout << std::endl;
-#endif
-
-    VkDeviceCreateInfo device_create_info{};
-    device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-
-    device_create_info.pQueueCreateInfos = device_queue_infos.data();
-    device_create_info.queueCreateInfoCount = device_queue_infos.size();
-
-    device_create_info.ppEnabledExtensionNames = enabled_device_extensions.data();
-    device_create_info.enabledExtensionCount = enabled_device_extensions.size();
-
-    device_create_info.enabledLayerCount = 0;
-
-    if (vkCreateDevice(vk_physical_device, &device_create_info, nullptr, &vk_device) != VK_SUCCESS) {
-        return false;
-    }
-
-    vkGetDeviceQueue(vk_device, vk_families.graphics, 0, &vk_graphics_queue);
-    vkGetDeviceQueue(vk_device, vk_families.present, 0, &vk_present_queue);
-    vkGetDeviceQueue(vk_device, vk_families.transfer, 0, &vk_transfer_queue);
+    uint32_t enumeration_count = 0;
 
     //
     // Format decision

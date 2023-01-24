@@ -35,6 +35,32 @@ std::vector<ValExtension> ValInstance::validate_instance_extensions(ValInstanceC
     return missing_extensions;
 }
 
+std::vector<ValExtension> ValInstance::validate_device_extensions(VkPhysicalDevice vk_gpu, ValInstanceCreateInfo* p_create_info) {
+    std::vector<VkExtensionProperties> found_extensions;
+    uint32_t found_extension_count;
+
+    vkEnumerateDeviceExtensionProperties(vk_gpu, nullptr, &found_extension_count, nullptr);
+    found_extensions.resize(found_extension_count);
+    vkEnumerateDeviceExtensionProperties(vk_gpu, nullptr, &found_extension_count, found_extensions.data());
+
+    std::vector<ValExtension> missing_extensions;
+    for (const ValExtension& extension: p_create_info->instance_extensions) {
+        bool has_extension = false;
+        for (VkExtensionProperties properties: found_extensions) {
+            if (strcmp(extension.name, properties.extensionName) == 0) {
+                has_extension = true;
+                break;
+            }
+        }
+
+        if (!has_extension) {
+            missing_extensions.push_back(extension);
+        }
+    }
+
+    return missing_extensions;
+}
+
 std::vector<ValLayer> ValInstance::validate_layers(ValInstanceCreateInfo* p_create_info) {
     std::vector<VkLayerProperties> found_layers;
     uint32_t found_layer_count;
@@ -190,7 +216,7 @@ VkInstance ValInstance::create_vk_instance(ValInstanceCreateInfo *p_create_info)
         }
     }
 
-    instance_create_info.ppEnabledExtensionNames = enabled_layers.data();
+    instance_create_info.ppEnabledLayerNames = enabled_layers.data();
     instance_create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layers.size());
 
 
@@ -201,7 +227,7 @@ VkInstance ValInstance::create_vk_instance(ValInstanceCreateInfo *p_create_info)
     return vk_instance;
 }
 
-VkPhysicalDevice ValInstance::pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_surface, ValInstanceCreateInfo *p_create_info) {
+ValInstance::ChosenGPU ValInstance::pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_surface, ValInstanceCreateInfo *p_create_info) {
     uint32_t gpu_count;
     std::vector<VkPhysicalDevice> gpus;
 
@@ -229,6 +255,7 @@ VkPhysicalDevice ValInstance::pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_s
         uint32_t queue_index = 0;
         std::vector<ValQueue> queues;
 
+        // TODO: Better queue exclusivity?
         for (VkQueueFamilyProperties queue_family: queue_families) {
             for (ValQueue::QueueType type: p_create_info->requested_queues) {
                 // Ensure we haven't already found a suitable queue
@@ -248,10 +275,13 @@ VkPhysicalDevice ValInstance::pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_s
                 queue.type = type;
                 queue.family = queue_index;
 
+                bool unique = false;
+
                 switch (type) {
                     case ValQueue::QUEUE_TYPE_GRAPHICS: {
                         if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
                             queues.push_back(queue);
+                            unique = true;
                         }
 
                         break;
@@ -260,6 +290,7 @@ VkPhysicalDevice ValInstance::pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_s
                     case ValQueue::QUEUE_TYPE_TRANSFER: {
                         if (queue_family.queueFlags & VK_QUEUE_TRANSFER_BIT) {
                             queues.push_back(queue);
+                            unique = true;
                         }
 
                         break;
@@ -272,11 +303,16 @@ VkPhysicalDevice ValInstance::pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_s
 
                         if (surface_support) {
                             queues.push_back(queue);
+                            unique = true;
                         }
 
                         break;
                     }
 #endif
+                }
+
+                if (unique) {
+                    break;
                 }
             }
 
@@ -287,8 +323,91 @@ VkPhysicalDevice ValInstance::pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_s
         // TODO: GPU ranking / picking
         // TODO: Config option to manually decide GPU?
         // TODO: Go through ALL GPUs and don't pick GPU0 as the default always!
-        break;
+
+        return ValInstance::ChosenGPU {gpu, queues};
     }
+
+    return ValInstance::ChosenGPU {};
+}
+
+VkDevice ValInstance::create_vk_device(ValInstanceCreateInfo* p_create_info, VkPhysicalDevice vk_gpu, std::vector<ValQueue>& val_queues) {
+    VkDevice vk_device = nullptr;
+
+    std::vector<uint32_t> device_queues;
+    std::vector<VkDeviceQueueCreateInfo> device_queue_infos;
+
+    float queue_priority = 1;
+
+    for (const ValQueue& queue : val_queues) {
+        device_queues.push_back(queue.family);
+
+        VkDeviceQueueCreateInfo queue_info {};
+        queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queue_info.queueFamilyIndex = queue.family;
+        queue_info.queueCount = 1;
+        queue_info.pQueuePriorities = &queue_priority;
+
+        device_queue_infos.push_back(queue_info);
+    }
+
+    for (uint32_t queue: device_queues) {
+        VkDeviceQueueCreateInfo queue_create_info{};
+
+
+    }
+
+    VkDeviceCreateInfo device_create_info{};
+    device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
+    device_create_info.pQueueCreateInfos = device_queue_infos.data();
+    device_create_info.queueCreateInfoCount = static_cast<uint32_t>(device_queue_infos.size());
+
+    //
+    // Extensions
+    //
+    std::vector<const char*> enabled_extensions {};
+    std::vector<ValExtension> missing_extensions = validate_device_extensions(vk_gpu, p_create_info);
+
+    for (const ValExtension& extension: p_create_info->device_extensions) {
+        bool missing_extension = false;
+        bool mandatory_extension = false;
+        for (const ValExtension &missing: missing_extensions) {
+            if (strcmp(extension.name, missing.name) == 0) {
+                missing_extension = true;
+
+                if (extension.flags & ValExtension::EXTENSION_FLAG_OPTIONAL) {
+                    continue;
+                }
+
+                mandatory_extension = true;
+            }
+        }
+
+        if (!missing_extension) {
+            enabled_extensions.push_back(extension.name);
+        } else {
+            if (mandatory_extension) {
+                last_error = ERR_VK_MISSING_INSTANCE_EXTENSION;
+                return nullptr;
+            }
+        }
+    }
+
+    device_create_info.ppEnabledExtensionNames = enabled_extensions.data();
+    device_create_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extensions.size());
+
+    device_create_info.enabledLayerCount = 0;
+
+    if (vkCreateDevice(vk_gpu, &device_create_info, nullptr, &vk_device) != VK_SUCCESS) {
+        last_error = ERR_VK_DEVICE_FAILURE;
+        return nullptr;
+    }
+
+    for (ValQueue& queue : val_queues) {
+        vkGetDeviceQueue(vk_device, queue.family, 0, &queue.queue);
+    }
+
+    return vk_device;
 }
 
 ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_info) {
@@ -306,15 +425,19 @@ ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_in
     }
 
 #if SDL_SUPPORT
-    ValWindow window;
-    if (!window->create_surface(p_create_info->sdl_window, vk_instance)) {
-        return nullptr;
-    }
+    ValWindow* window = new ValWindow(p_create_info->sdl_window, vk_instance);
 #endif
+
+    // TODO: Proper multiple window support (thanks windows for making presenting harder :| )
+    ChosenGPU gpu = pick_gpu(vk_instance, window->vk_surface, p_create_info);
+    VkDevice vk_device = create_vk_device(p_create_info, gpu.vk_device, gpu.queues);
 
     ValInstance* instance = new ValInstance();
 
     instance->vk_instance = vk_instance;
+    instance->vk_physical_device = gpu.vk_device;
+    instance->val_queues = gpu.queues;
+    instance->vk_device = vk_device;
 
 #if SDL_SUPPORT
     instance->val_window = window;

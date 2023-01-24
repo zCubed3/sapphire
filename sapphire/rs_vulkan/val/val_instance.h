@@ -53,6 +53,11 @@ struct ValInstanceCreateInfo {
 
 class ValInstance {
 protected:
+    struct ChosenGPU {
+        VkPhysicalDevice vk_device;
+        std::vector<ValQueue> queues;
+    };
+
     enum CreationError {
         ERR_NONE,
         ERR_CREATE_INFO_NULLPTR,
@@ -67,10 +72,12 @@ protected:
     ValInstance() = default;
 
     static std::vector<ValExtension> validate_instance_extensions(ValInstanceCreateInfo* p_create_info);
+    static std::vector<ValExtension> validate_device_extensions(VkPhysicalDevice vk_gpu, ValInstanceCreateInfo* p_create_info);
     static std::vector<ValLayer> validate_layers(ValInstanceCreateInfo* p_create_info);
 
     static VkInstance create_vk_instance(ValInstanceCreateInfo* p_create_info);
-    static VkPhysicalDevice pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_surface, ValInstanceCreateInfo* p_create_info);
+    static ChosenGPU pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_surface, ValInstanceCreateInfo* p_create_info);
+    static VkDevice create_vk_device(ValInstanceCreateInfo* p_create_info, VkPhysicalDevice vk_gpu, std::vector<ValQueue>& val_queues);
 
 public:
     static const char* get_error();
@@ -82,7 +89,7 @@ public:
     VkPhysicalDevice vk_physical_device = nullptr;
 
 #ifdef SDL_SUPPORT
-    ValWindow val_window;
+    ValWindow* val_window;
 #endif
 
     std::vector<ValQueue> val_queues;
