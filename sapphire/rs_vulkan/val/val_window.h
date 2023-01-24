@@ -26,6 +26,8 @@ struct ValWindow {
 
     bool present_queue(ValInstance* p_val_instance);
 
+    static void release(ValWindow* p_window, ValInstance *p_val_instance);
+
     VkSurfaceKHR vk_surface = nullptr;
     VkSwapchainKHR vk_swapchain = nullptr;
     VkSurfaceCapabilitiesKHR vk_capabilities;

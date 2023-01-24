@@ -6,10 +6,14 @@
 
 class MeshAsset;
 
+struct ValBuffer;
+
 class VulkanMeshBuffer : public MeshBuffer {
 protected:
     uint32_t tri_count;
-    VkBuffer vk_buffer = nullptr;
+
+    ValBuffer* val_vbo = nullptr;
+    ValBuffer* val_ibo = nullptr;
 
 public:
     VulkanMeshBuffer(MeshAsset* p_mesh_asset);

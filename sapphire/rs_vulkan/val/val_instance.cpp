@@ -71,15 +71,15 @@ std::vector<ValLayer> ValInstance::validate_layers(ValInstanceCreateInfo* p_crea
 
     std::vector<ValLayer> missing_layers;
     for (const ValLayer& layer: p_create_info->validation_layers) {
-        bool has_extension = false;
+        bool has_layer = false;
         for (VkLayerProperties properties: found_layers) {
             if (strcmp(layer.name, properties.layerName) == 0) {
-                has_extension = true;
+                has_layer = true;
                 break;
             }
         }
 
-        if (!has_extension) {
+        if (!has_layer) {
             missing_layers.push_back(layer);
         }
     }
@@ -555,5 +555,21 @@ ValQueue ValInstance::get_queue(ValQueue::QueueType type) {
 void ValInstance::await_frame() {
     if (vk_device != nullptr && vk_flight_fence != nullptr) {
         vkWaitForFences(vk_device, 1, &vk_flight_fence, VK_TRUE, UINT64_MAX);
+    }
+}
+
+ValInstance::~ValInstance() {
+    await_frame();
+
+    if (vk_instance != nullptr) {
+        vkDestroyFence(vk_device, vk_flight_fence, nullptr);
+        vkDestroySemaphore(vk_device, vk_image_available_semaphore, nullptr);
+        vkDestroySemaphore(vk_device, vk_render_finished_semaphore, nullptr);
+
+        ValWindow::release(val_main_window, this);
+        delete val_main_window;
+
+        vkDestroyDevice(vk_device, nullptr);
+        vkDestroyInstance(vk_instance, nullptr);
     }
 }

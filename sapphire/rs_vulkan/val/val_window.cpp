@@ -289,3 +289,16 @@ bool ValWindow::present_queue(ValInstance *p_val_instance) {
 
     return true;
 }
+
+void ValWindow::release(ValWindow *p_window, ValInstance *p_val_instance) {
+    for (VkImageView view : p_window->vk_swapchain_image_views) {
+        vkDestroyImageView(p_val_instance->vk_device, view, nullptr);
+    }
+
+    for (VkFramebuffer framebuffer : p_window->vk_swapchain_framebuffers) {
+        vkDestroyFramebuffer(p_val_instance->vk_device, framebuffer, nullptr);
+    }
+
+    vkDestroySwapchainKHR(p_val_instance->vk_device, p_window->vk_swapchain, nullptr);
+    vkDestroySurfaceKHR(p_val_instance->vk_instance, p_window->vk_surface, nullptr);
+}

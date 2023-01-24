@@ -37,53 +37,24 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
     const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
     ValInstance* val_instance = render_server->val_instance;
 
-    size_t buffer_size = sizeof(Vertex) * p_mesh_asset->get_vertex_count();
+    size_t vbo_size = sizeof(Vertex) * p_mesh_asset->get_vertex_count();
+    size_t ibo_size = sizeof(uint32_t) * p_mesh_asset->get_triangle_count();
 
-    // TODO: Abstract this a bit
-    VkBufferCreateInfo staging_buffer_info = {};
-    staging_buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    staging_buffer_info.size = buffer_size;
-    staging_buffer_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    ValStagingBuffer* vbo_staging = new ValStagingBuffer(vbo_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, val_instance);
+    ValStagingBuffer* ibo_staging = new ValStagingBuffer(ibo_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, val_instance);
 
-    VkBufferCreateInfo final_buffer_info = {};
-    final_buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    final_buffer_info.size = buffer_size;
-    final_buffer_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-
-    VmaAllocationCreateInfo staging_alloc_info = {};
-    staging_alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
-    staging_alloc_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-    VmaAllocationCreateInfo final_alloc_info = {};
-    final_alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
-
-    VmaAllocationInfo staging_allocation_info;
-    VmaAllocation staging_allocation;
-    VkBuffer staging_buffer;
-
-    VmaAllocationInfo final_allocation_info;
-    VmaAllocation final_allocation;
-
-    vmaCreateBuffer(val_instance->vma_allocator, &staging_buffer_info, &staging_alloc_info, &staging_buffer, &staging_allocation, &staging_allocation_info);
-    vmaCreateBuffer(val_instance->vma_allocator, &final_buffer_info, &final_alloc_info, &vk_buffer, &final_allocation, &final_allocation_info);
-
-    void* data;
-    vmaMapMemory(val_instance->vma_allocator, staging_allocation, &data);
-
-    memcpy(data, vertices, buffer_size);
-
-    vmaUnmapMemory(val_instance->vma_allocator, staging_allocation);
+    vbo_staging->write(vertices, val_instance);
+    ibo_staging->write(triangles, val_instance);
 
     VkCommandBuffer command_buffer = render_server->begin_upload();
 
-    VkBufferCopy copy_region{};
-    copy_region.srcOffset = 0;
-    copy_region.dstOffset = 0;
-    copy_region.size = buffer_size;
-
-    vkCmdCopyBuffer(command_buffer, staging_buffer, vk_buffer, 1, &copy_region);
+    vbo_staging->copy_buffer(command_buffer);
+    ibo_staging->copy_buffer(command_buffer);
 
     render_server->end_upload(command_buffer);
+
+    val_vbo = ValStagingBuffer::finalize(vbo_staging, val_instance);
+    val_ibo = ValStagingBuffer::finalize(ibo_staging, val_instance);
 
     delete[] vertices;
 }
@@ -117,7 +88,9 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
     vkCmdSetScissor(window->vk_command_buffer, 0, 1, &scissor);
 
     VkDeviceSize offset = 0;
-    vkCmdBindVertexBuffers(window->vk_command_buffer, 0, 1, &vk_buffer, &offset);
+    vkCmdBindVertexBuffers(window->vk_command_buffer, 0, 1, &val_vbo->vk_buffer, &offset);
 
-    vkCmdDraw(window->vk_command_buffer, tri_count, 1, 0, 0);
+    vkCmdBindIndexBuffer(window->vk_command_buffer, val_ibo->vk_buffer, offset, VK_INDEX_TYPE_UINT32);
+
+    vkCmdDrawIndexed(window->vk_command_buffer, tri_count, 1, 0, 0, 0);
 }

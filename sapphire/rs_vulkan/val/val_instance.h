@@ -10,6 +10,8 @@
 #include <rs_vulkan/val/val_layer.h>
 #include <rs_vulkan/val/val_queue.h>
 #include <rs_vulkan/val/val_window.h>
+#include <rs_vulkan/val/val_buffer.h>
+#include <rs_vulkan/val/val_stagingbuffer.h>
 
 struct ValInstanceCreateInfo {
     enum VulkanAPIVersion {
@@ -87,13 +89,14 @@ protected:
 
 public:
     static const char* get_error();
-
     static ValInstance* create_val_instance(ValInstanceCreateInfo* p_create_info);
 
     ValQueue get_queue(ValQueue::QueueType type);
 
     // Waits until the next frame is done rendering
     void await_frame();
+
+    ~ValInstance();
 
     VkInstance vk_instance = nullptr;
     VkDevice vk_device = nullptr;
