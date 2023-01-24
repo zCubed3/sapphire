@@ -57,6 +57,8 @@ OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    delete[] vertices;
 }
 
 void OpenGL4MeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_asset) {

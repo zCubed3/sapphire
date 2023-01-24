@@ -4,22 +4,32 @@
 #include <engine/rendering/render_server.h>
 
 #include <vulkan/vulkan.h>
+#include <vk_mem_alloc.h>
 
 #include <vector>
 
 class VulkanRenderServer : public RenderServer {
 public:
+    struct QueueFamilies {
+        uint32_t graphics;
+        uint32_t present;
+        uint32_t transfer;
+
+        std::vector<uint32_t> get_all() const;
+    };
+
     SDL_Window* window;
 
     VkInstance vk_instance = nullptr;
     VkPhysicalDevice vk_physical_device = nullptr;
     VkDevice vk_device = nullptr;
 
+    // TODO: Organize family indices and their queues
     // TODO: Other queue families?
-    uint32_t vk_graphics_family;
-    uint32_t vk_present_family;
+    QueueFamilies vk_families;
     VkQueue vk_graphics_queue = nullptr;
     VkQueue vk_present_queue = nullptr;
+    VkQueue vk_transfer_queue = nullptr;
 
     VkSurfaceKHR vk_surface = nullptr;
     VkSwapchainKHR vk_swapchain = nullptr;
@@ -35,19 +45,27 @@ public:
 
     // TODO: Allow the user to create their own render passes?
     VkRenderPass vk_render_pass = nullptr;
-    VkCommandPool vk_command_pool = nullptr;
+
+    VkCommandPool vk_graphics_pool = nullptr;
+    VkCommandPool vk_transfer_pool = nullptr;
+
     VkCommandBuffer vk_active_command_buffer = nullptr;
+    VkCommandBuffer vk_upload_command_buffer = nullptr;
 
     uint32_t vk_frame_index = 0;
     VkSemaphore vk_image_available_semaphore;
     VkSemaphore vk_render_finished_semaphore;
     VkFence vk_flight_fence;
 
+    VmaAllocator vma_allocator;
+
     // Whenever the window is resized we need to recreate the swapchain entirely
     bool recreate_swapchain();
 
     // Waits for the frame to finish rendering continuing execution
     void await_frame();
+
+    bool create_command_pool(VkCommandPoolCreateFlags flags, uint32_t family, VkCommandPool* p_pool);
 
 public:
     ~VulkanRenderServer() override;
@@ -71,6 +89,10 @@ public:
     bool end_target(RenderTarget *p_target) override;
 
     void populate_mesh_buffer(MeshAsset *p_mesh_asset) const override;
+
+    // TODO: Make this more abstract?
+    VkCommandBuffer begin_upload() const;
+    void end_upload(VkCommandBuffer buffer) const;
 };
 
 #endif

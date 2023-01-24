@@ -54,12 +54,12 @@ std::vector<VkVertexInputAttributeDescription> VulkanShaderAsset::get_input_attr
     input_attributes[0].offset = 0;
 
     input_attributes[1].binding = 0;
-    input_attributes[1].location = 0;
+    input_attributes[1].location = 1;
     input_attributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
     input_attributes[1].offset = sizeof(glm::vec3);
 
     input_attributes[2].binding = 0;
-    input_attributes[2].location = 0;
+    input_attributes[2].location = 2;
     input_attributes[2].format = VK_FORMAT_R32G32_SFLOAT;
     input_attributes[2].offset = sizeof(glm::vec3) * 2;
 

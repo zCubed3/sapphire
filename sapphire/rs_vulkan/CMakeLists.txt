@@ -16,11 +16,13 @@ target_include_directories(SAPPHIRE_RS_VULKAN PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${THIRD_PARTY_DIR}/SDL/include
         ${THIRD_PARTY_DIR}/glm/glm
+        ${THIRD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${Vulkan_INCLUDE_DIRS}
         )
 
 target_link_libraries(SAPPHIRE_RS_VULKAN PUBLIC
         ${Vulkan_LIBRARY}
+        VulkanMemoryAllocator
         )
 
 target_compile_definitions(SAPPHIRE_RS_VULKAN PUBLIC

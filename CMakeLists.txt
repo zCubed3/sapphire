@@ -65,6 +65,7 @@ if (RS_VULKAN_SUPPORT)
     list(APPEND ENGINE_LINK_LIBRARIES SAPPHIRE_RS_VULKAN)
     list(APPEND ENGINE_DEFINITIONS RS_VULKAN_SUPPORT)
 
+    add_subdirectory(${THIRD_PARTY_DIR}/VulkanMemoryAllocator)
     add_subdirectory(${CODE_DIR}/rs_vulkan)
 endif()
 

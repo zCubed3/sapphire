@@ -20,7 +20,11 @@
 #define RS_VULKAN_DEBUG
 
 // Rather than making the glove fit the hand; The hand will fit the glove
-// Eg. Our engine will fit Vulkan, we won't try to make Vulkan fit us
+// E.g. Our engine will fit Vulkan, we won't try to make Vulkan fit us
+
+std::vector<uint32_t> VulkanRenderServer::QueueFamilies::get_all() const {
+    return {graphics,present,transfer};
+}
 
 // TODO: Move this into Vulkan render target code
 bool VulkanRenderServer::recreate_swapchain() {
@@ -48,7 +52,7 @@ bool VulkanRenderServer::recreate_swapchain() {
     }
 
     uint32_t image_count = vk_capabilities.minImageCount + 1;
-    std::vector<uint32_t> device_queues = {vk_graphics_family, vk_present_family};
+    std::vector<uint32_t> device_queues = {vk_families.graphics, vk_families.present};
 
     if (vk_capabilities.maxImageCount > 0 && image_count > vk_capabilities.maxImageCount) {
         image_count = vk_capabilities.maxImageCount;
@@ -73,7 +77,7 @@ bool VulkanRenderServer::recreate_swapchain() {
 
     swapchain_create_info.oldSwapchain = vk_swapchain;
 
-    if (vk_graphics_family != vk_present_family) {
+    if (vk_families.graphics != vk_families.present) {
         swapchain_create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         swapchain_create_info.queueFamilyIndexCount = device_queues.size();
         swapchain_create_info.pQueueFamilyIndices = device_queues.data();
@@ -162,6 +166,21 @@ void VulkanRenderServer::await_frame() {
     }
 }
 
+bool VulkanRenderServer::create_command_pool(VkCommandPoolCreateFlags flags, uint32_t family, VkCommandPool *p_pool) {
+    VkCommandPoolCreateInfo pool_create_info{};
+    pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    pool_create_info.flags = flags;
+    pool_create_info.queueFamilyIndex = family;
+
+    if (vkCreateCommandPool(vk_device, &pool_create_info, nullptr, p_pool) != VK_SUCCESS) {
+        // TODO: Error failed to create command pool
+        return false;
+    }
+
+    return true;
+}
+
+
 // TODO: Wait for rendering to finish
 VulkanRenderServer::~VulkanRenderServer() {
     await_frame();
@@ -195,11 +214,11 @@ VulkanRenderServer::~VulkanRenderServer() {
     }
 
     if (vk_active_command_buffer != nullptr) {
-        vkFreeCommandBuffers(vk_device, vk_command_pool, 1, &vk_active_command_buffer);
+        vkFreeCommandBuffers(vk_device, vk_graphics_pool, 1, &vk_active_command_buffer);
     }
 
     if (vk_active_command_buffer != nullptr) {
-        vkDestroyCommandPool(vk_device, vk_command_pool, nullptr);
+        vkDestroyCommandPool(vk_device, vk_graphics_pool, nullptr);
     }
 
     if (vk_device != nullptr) {
@@ -427,23 +446,28 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
         uint32_t graphics_family_index = -1;
         uint32_t present_family_index = -1;
+        uint32_t transfer_family_index = -1;
 
         uint32_t index = 0;
         for (VkQueueFamilyProperties queue_family: queue_families) {
-            if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT && graphics_family_index == -1) {
                 graphics_family_index = index;
             }
 
             VkBool32 surface_support = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(device, index, vk_surface, &surface_support);
-            if (surface_support) {
+            if (surface_support && present_family_index == -1) {
                 present_family_index = index;
+            }
+
+            if (queue_family.queueFlags & VK_QUEUE_TRANSFER_BIT && transfer_family_index == -1) {
+                transfer_family_index = index;
             }
 
             index++;
         }
 
-        if (graphics_family_index == -1 && present_family_index == -1) {
+        if (graphics_family_index == -1 && present_family_index == -1 && transfer_family_index == -1) {
             // TODO: Log this GPU as incompatible
             continue;
         }
@@ -463,8 +487,9 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
         // TODO: Go through ALL GPUs and don't pick GPU0 as the first always!
         vk_physical_device = device;
-        vk_graphics_family = graphics_family_index;
-        vk_present_family = present_family_index;
+        vk_families.graphics = graphics_family_index;
+        vk_families.present = present_family_index;
+        vk_families.transfer = transfer_family_index;
 
         gpu_index++;
         break;
@@ -482,7 +507,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     };
     std::vector<VkExtensionProperties> user_device_extensions;
 
-    std::vector<uint32_t> device_queues = {vk_graphics_family, vk_present_family};
+    std::vector<uint32_t> device_queues = vk_families.get_all();
     std::vector<VkDeviceQueueCreateInfo> device_queue_infos;
 
     float queue_priority = 1;
@@ -557,8 +582,9 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
         return false;
     }
 
-    vkGetDeviceQueue(vk_device, vk_graphics_family, 0, &vk_graphics_queue);
-    vkGetDeviceQueue(vk_device, vk_present_family, 0, &vk_present_queue);
+    vkGetDeviceQueue(vk_device, vk_families.graphics, 0, &vk_graphics_queue);
+    vkGetDeviceQueue(vk_device, vk_families.present, 0, &vk_present_queue);
+    vkGetDeviceQueue(vk_device, vk_families.transfer, 0, &vk_transfer_queue);
 
     //
     // Format decision
@@ -658,22 +684,16 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     recreate_swapchain();
 
     //
-    // Command pool
+    // Command pools
     //
-    VkCommandPoolCreateInfo pool_create_info{};
-    pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 
-    pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    pool_create_info.queueFamilyIndex = vk_graphics_family;
+    create_command_pool(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, vk_families.graphics, &vk_graphics_pool);
+    create_command_pool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, vk_families.transfer, &vk_transfer_pool);
 
-    if (vkCreateCommandPool(vk_device, &pool_create_info, nullptr, &vk_command_pool) != VK_SUCCESS) {
-        // TODO: Error failed to create command pool
-        return false;
-    }
-
+    // TODO: Abstract command buffers
     VkCommandBufferAllocateInfo command_buffer_alloc_info{};
     command_buffer_alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    command_buffer_alloc_info.commandPool = vk_command_pool;
+    command_buffer_alloc_info.commandPool = vk_graphics_pool;
     command_buffer_alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     command_buffer_alloc_info.commandBufferCount = 1;
 
@@ -681,6 +701,12 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
         // TODO: Error, failed top create command buffer
         return false;
     }
+
+    if (vkAllocateCommandBuffers(vk_device, &command_buffer_alloc_info, &vk_upload_command_buffer) != VK_SUCCESS) {
+        // TODO: Error, failed top create command buffer
+        return false;
+    }
+
 
     //
     // Sync objects
@@ -704,6 +730,12 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     if (vkCreateFence(vk_device, &fence_create_info, nullptr, &vk_flight_fence) != VK_SUCCESS) {
         return false;
     }
+
+    VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.physicalDevice = vk_physical_device;
+    allocatorInfo.device = vk_device;
+    allocatorInfo.instance = vk_instance;
+    vmaCreateAllocator(&allocatorInfo, &vma_allocator);
 
     singleton = this;
 
@@ -814,4 +846,45 @@ void VulkanRenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
     if (p_mesh_asset != nullptr) {
         p_mesh_asset->buffer = new VulkanMeshBuffer(p_mesh_asset);
     }
+}
+
+VkCommandBuffer VulkanRenderServer::begin_upload() const {
+    VkCommandBufferAllocateInfo command_buffer_alloc_info{};
+    command_buffer_alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    command_buffer_alloc_info.commandPool = vk_transfer_pool;
+    command_buffer_alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    command_buffer_alloc_info.commandBufferCount = 1;
+
+    VkCommandBuffer buffer;
+    if (vkAllocateCommandBuffers(vk_device, &command_buffer_alloc_info, &buffer) != VK_SUCCESS) {
+        // TODO: Error, failed top create command buffer
+        return nullptr;
+    }
+
+    VkCommandBufferBeginInfo buffer_begin_info{};
+    buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    if (vkBeginCommandBuffer(buffer, &buffer_begin_info) != VK_SUCCESS) {
+        // TODO: Failed to record buffer
+        vkFreeCommandBuffers(vk_device, vk_transfer_pool, 1, &buffer);
+        return nullptr;
+    }
+
+    return buffer;
+}
+
+void VulkanRenderServer::end_upload(VkCommandBuffer buffer) const {
+    VkSubmitInfo submit_info{};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &buffer;
+
+    vkEndCommandBuffer(buffer);
+
+    // TODO: Multiple uploads at once?
+    vkQueueSubmit(vk_transfer_queue, 1, &submit_info, VK_NULL_HANDLE);
+    vkQueueWaitIdle(vk_transfer_queue);
+
+    vkFreeCommandBuffers(vk_device, vk_transfer_pool, 1, &buffer);
 }
