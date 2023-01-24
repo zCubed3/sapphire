@@ -9,17 +9,18 @@
 #include <SDL.h>
 #include <SDL_vulkan.h>
 
+#include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_target.h>
 
 #include <rs_vulkan/assets/vulkan_shader_asset.h>
 #include <rs_vulkan/assets/vulkan_shader_asset_loader.h>
 
+#include <rs_vulkan/rendering/vulkan_mesh_buffer.h>
+
 #define RS_VULKAN_DEBUG
 
-// Rather than making the glove fit the hand;
-// The hand will fit the glove
-
-VulkanShaderAsset * test_shader;
+// Rather than making the glove fit the hand; The hand will fit the glove
+// Eg. Our engine will fit Vulkan, we won't try to make Vulkan fit us
 
 // TODO: Move this into Vulkan render target code
 bool VulkanRenderServer::recreate_swapchain() {
@@ -193,11 +194,11 @@ VulkanRenderServer::~VulkanRenderServer() {
         vkDestroyFence(vk_device, vk_flight_fence, nullptr);
     }
 
-    if (vk_command_buffer != nullptr) {
-        vkFreeCommandBuffers(vk_device, vk_command_pool, 1, &vk_command_buffer);
+    if (vk_active_command_buffer != nullptr) {
+        vkFreeCommandBuffers(vk_device, vk_command_pool, 1, &vk_active_command_buffer);
     }
 
-    if (vk_command_buffer != nullptr) {
+    if (vk_active_command_buffer != nullptr) {
         vkDestroyCommandPool(vk_device, vk_command_pool, nullptr);
     }
 
@@ -676,7 +677,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     command_buffer_alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     command_buffer_alloc_info.commandBufferCount = 1;
 
-    if (vkAllocateCommandBuffers(vk_device, &command_buffer_alloc_info, &vk_command_buffer) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(vk_device, &command_buffer_alloc_info, &vk_active_command_buffer) != VK_SUCCESS) {
         // TODO: Error, failed top create command buffer
         return false;
     }
@@ -703,31 +704,8 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     if (vkCreateFence(vk_device, &fence_create_info, nullptr, &vk_flight_fence) != VK_SUCCESS) {
         return false;
     }
-
-    // TODO: Better buffer recording
-    VkShaderModule vert_module = nullptr;
-    VkShaderModule frag_module = nullptr;
-
-
-    std::ifstream vert_file("./vk/test.vert.spv", std::ios::ate | std::ios::binary);
-    std::ifstream frag_file("./vk/test.frag.spv", std::ios::ate | std::ios::binary);
-
-    size_t vert_file_size = (size_t)vert_file.tellg();
-    std::vector<char> vert_buffer(vert_file_size);
-
-    vert_file.seekg(0);
-    vert_file.read(vert_buffer.data(), vert_file_size);
-
-    size_t frag_file_size = (size_t)frag_file.tellg();
-    std::vector<char> frag_buffer(frag_file_size);
-
-    frag_file.seekg(0);
-    frag_file.read(frag_buffer.data(), frag_file_size);
-
+    
     singleton = this;
-
-    test_shader = new VulkanShaderAsset();
-    test_shader->create_vert_frag(vert_buffer, frag_buffer);
 
     return true;
 }
@@ -747,7 +725,7 @@ bool VulkanRenderServer::present(SDL_Window *p_window) {
     submit_info.pSignalSemaphores = signal_semaphores;
 
     submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &vk_command_buffer;
+    submit_info.pCommandBuffers = &vk_active_command_buffer;
 
     if (vkQueueSubmit(vk_graphics_queue, 1, &submit_info, vk_flight_fence) != VK_SUCCESS) {
         // TODO: Error failed to submit buffer
@@ -798,7 +776,7 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     buffer_begin_info.flags = 0;
     buffer_begin_info.pInheritanceInfo = nullptr;
 
-    if (vkBeginCommandBuffer(vk_command_buffer, &buffer_begin_info) != VK_SUCCESS) {
+    if (vkBeginCommandBuffer(vk_active_command_buffer, &buffer_begin_info) != VK_SUCCESS) {
         // TODO: Failed to record buffer
         return false;
     }
@@ -817,38 +795,21 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     render_pass_info.clearValueCount = 1;
     render_pass_info.pClearValues = &clear_color;
 
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = (float)vk_extent.width;
-    viewport.height = (float)vk_extent.height;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-
-    VkRect2D scissor{};
-    scissor.offset = {0, 0};
-    scissor.extent = vk_extent;
-
-    vkCmdBeginRenderPass(vk_command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
-
-    vkCmdBindPipeline(vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, test_shader->pipeline);
-
-    vkCmdSetViewport(vk_command_buffer, 0, 1, &viewport);
-    vkCmdSetScissor(vk_command_buffer, 0, 1, &scissor);
-
-    vkCmdDraw(vk_command_buffer, 3, 1, 0, 0);
+    vkCmdBeginRenderPass(vk_active_command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
     return true;
 }
 
 bool VulkanRenderServer::end_target(RenderTarget *p_target) {
-    vkCmdEndRenderPass(vk_command_buffer);
+    vkCmdEndRenderPass(vk_active_command_buffer);
 
-    vkEndCommandBuffer(vk_command_buffer);
+    vkEndCommandBuffer(vk_active_command_buffer);
 
     return true;
 }
 
 void VulkanRenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
-    // TODO
+    if (p_mesh_asset != nullptr) {
+        p_mesh_asset->buffer = new VulkanMeshBuffer(p_mesh_asset);
+    }
 }

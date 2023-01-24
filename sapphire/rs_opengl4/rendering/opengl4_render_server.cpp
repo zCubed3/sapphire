@@ -138,5 +138,7 @@ bool OpenGL4RenderServer::end_target(RenderTarget *p_target) {
 }
 
 void OpenGL4RenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
-    p_mesh_asset->buffer = new OpenGL4MeshBuffer(p_mesh_asset);
+    if (p_mesh_asset != nullptr) {
+        p_mesh_asset->buffer = new OpenGL4MeshBuffer(p_mesh_asset);
+    }
 }

@@ -36,7 +36,7 @@ public:
     // TODO: Allow the user to create their own render passes?
     VkRenderPass vk_render_pass = nullptr;
     VkCommandPool vk_command_pool = nullptr;
-    VkCommandBuffer vk_command_buffer = nullptr;
+    VkCommandBuffer vk_active_command_buffer = nullptr;
 
     uint32_t vk_frame_index = 0;
     VkSemaphore vk_image_available_semaphore;

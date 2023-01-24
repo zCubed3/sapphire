@@ -4,6 +4,7 @@ set(SAPPHIRE_RS_VULKAN_SOURCES
 
         "rendering/vulkan_render_server.cpp"
         "rendering/vulkan_render_target_backing.cpp"
+        "rendering/vulkan_mesh_buffer.cpp"
         )
 
 find_package(Vulkan REQUIRED)
