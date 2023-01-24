@@ -1,5 +1,9 @@
 set(SAPPHIRE_RS_VULKAN_SOURCES
+        "assets/vulkan_shader_asset.cpp"
+        "assets/vulkan_shader_asset_loader.cpp"
+
         "rendering/vulkan_render_server.cpp"
+        "rendering/vulkan_render_target_backing.cpp"
         )
 
 find_package(Vulkan REQUIRED)
@@ -16,4 +20,13 @@ target_include_directories(SAPPHIRE_RS_VULKAN PUBLIC
 
 target_link_libraries(SAPPHIRE_RS_VULKAN PUBLIC
         ${Vulkan_LIBRARY}
+        )
+
+target_compile_definitions(SAPPHIRE_RS_VULKAN PUBLIC
+        ${SAPPHIRE_DEFINITIONS}
+        )
+
+
+target_compile_options(SAPPHIRE_RS_VULKAN PUBLIC
+        ${SAPPHIRE_COMPILE_OPTIONS}
         )

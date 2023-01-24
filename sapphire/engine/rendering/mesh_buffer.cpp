@@ -7,6 +7,8 @@
 
 void MeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_asset) {
     const RenderServer *server = RenderServer::get_singleton();
+
+    /*
     if (server != nullptr) {
         RenderTarget *target = server->get_current_target();
 
@@ -23,6 +25,7 @@ void MeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_asset)
             p_shader_asset->set_mat4("AGE_P", target->projection);
         }
     }
+     */
 }
 
 void MeshBuffer::render(const glm::mat4 &matrix, ShaderAsset *p_shader_asset) {

@@ -3,18 +3,22 @@
 # The first argument is the output
 # The rest are input files (in order of inclusion)
 
+import os
 import sys
 import subprocess
 
 out_path = sys.argv[1]
-temp_out_path = out_path + ".merge_temp.glsl"
+stage = sys.argv[2]
+
+temp_merge_path = out_path + ".merge_temp.glsl"
 
 source = ""
-for i in range(2, len(sys.argv)):
+for i in range(3, len(sys.argv)):
     with open(sys.argv[i], 'r') as src_file:
         source += src_file.read()
 
-with open(temp_out_path, "w") as merge_file:
+with open(temp_merge_path, "w") as merge_file:
     merge_file.write(source)
 
-subprocess.run(["glslc"])
+subprocess.run(["glslc", f"-fshader-stage={stage}", "-o", out_path, temp_merge_path])
+os.remove(temp_merge_path)

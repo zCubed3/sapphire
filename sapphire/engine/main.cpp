@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
     // We need to load our model and our shader
     MeshAsset *mesh = static_cast<MeshAsset *>(AssetLoader::load_asset("test.obj"));
 
-    ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.spv"));
+    ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.mspv"));
     //ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.glsl"));
 
     World *world = new World();

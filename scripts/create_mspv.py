@@ -20,7 +20,7 @@ with open(out_path, "wb") as merge_file:
     vert_len = len(vert_source)
     frag_len = len(frag_source)
 
-    merge_file.write("SMVS")
+    merge_file.write("MSPV".encode('ascii'))
 
     merge_file.write(vert_len.to_bytes(4, byteorder="little"))
     merge_file.write(vert_source)

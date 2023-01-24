@@ -33,15 +33,18 @@ target_include_directories(SAPPHIRE_ENGINE PUBLIC
         )
 
 target_compile_definitions(SAPPHIRE_ENGINE PUBLIC
-        RS_OPENGL4_LINKED
-        _CRT_SECURE_NO_WARNINGS
+        ${SAPPHIRE_DEFINITIONS}
+        ${ENGINE_DEFINITIONS}
         )
 
 target_link_libraries(SAPPHIRE_ENGINE PUBLIC
-        SAPPHIRE_RS_OPENGL4
-        SAPPHIRE_RS_VULKAN
+        ${ENGINE_LINK_LIBRARIES}
         SDL2
         SDL2main
+        )
+
+target_compile_options(SAPPHIRE_ENGINE PUBLIC
+        ${SAPPHIRE_COMPILE_OPTIONS}
         )
 
 set_target_properties(SAPPHIRE_ENGINE PROPERTIES
