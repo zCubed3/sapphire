@@ -1,7 +1,4 @@
 set(SAPPHIRE_RS_VULKAN_SOURCES
-        "assets/vulkan_shader_asset_loader.cpp"
-        "assets/vulkan_shader_asset.cpp"
-
         "rendering/vulkan_render_server.cpp"
         )
 

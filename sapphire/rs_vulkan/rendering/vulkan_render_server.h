@@ -8,7 +8,7 @@
 #include <vector>
 
 class VulkanRenderServer : public RenderServer {
-protected:
+public:
     SDL_Window* window;
 
     VkInstance vk_instance = nullptr;
