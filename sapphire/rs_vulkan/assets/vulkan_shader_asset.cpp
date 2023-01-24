@@ -1,6 +1,7 @@
 #include "vulkan_shader_asset.h"
 
 #include <rs_vulkan/rendering/vulkan_render_server.h>
+#include <rs_vulkan/rendering/vulkan_mesh_buffer.h>
 
 bool VulkanShaderAsset::create_module(const std::vector<char> &code, VkShaderModule *p_module) {
     VkShaderModuleCreateInfo create_info {};
@@ -35,7 +36,37 @@ VkPipelineShaderStageCreateInfo VulkanShaderAsset::create_stage(Stage stage, VkS
     return create_info;
 }
 
-std::vector<VkDynamicState> VulkanShaderAsset::get_dynamic_states(uint32_t flags) const {
+VkVertexInputBindingDescription VulkanShaderAsset::get_input_binding() {
+    VkVertexInputBindingDescription binding_description{};
+    binding_description.binding = 0;
+    binding_description.stride = sizeof(MeshBuffer::Vertex);
+    binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    return binding_description;
+}
+
+std::vector<VkVertexInputAttributeDescription> VulkanShaderAsset::get_input_attributes() {
+    std::vector<VkVertexInputAttributeDescription> input_attributes(3);
+
+    input_attributes[0].binding = 0;
+    input_attributes[0].location = 0;
+    input_attributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+    input_attributes[0].offset = 0;
+
+    input_attributes[1].binding = 0;
+    input_attributes[1].location = 0;
+    input_attributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    input_attributes[1].offset = sizeof(glm::vec3);
+
+    input_attributes[2].binding = 0;
+    input_attributes[2].location = 0;
+    input_attributes[2].format = VK_FORMAT_R32G32_SFLOAT;
+    input_attributes[2].offset = sizeof(glm::vec3) * 2;
+
+    return input_attributes;
+}
+
+std::vector<VkDynamicState> VulkanShaderAsset::get_dynamic_states(uint32_t flags) {
     std::vector<VkDynamicState> states {};
 
     if (flags & DynamicStateFlags::Viewport) {
@@ -67,12 +98,21 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     dynamic_state_create_info.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
     dynamic_state_create_info.pDynamicStates = dynamic_states.data();
 
+    VkVertexInputBindingDescription input_description = get_input_binding();
+    std::vector<VkVertexInputAttributeDescription> input_attributes = get_input_attributes();
+
     VkPipelineVertexInputStateCreateInfo vertex_input_create_info{};
     vertex_input_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertex_input_create_info.vertexBindingDescriptionCount = 0;
-    vertex_input_create_info.pVertexBindingDescriptions = nullptr; // Optional
-    vertex_input_create_info.vertexAttributeDescriptionCount = 0;
-    vertex_input_create_info.pVertexAttributeDescriptions = nullptr; // Optional
+    vertex_input_create_info.vertexBindingDescriptionCount = 1;
+    vertex_input_create_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(input_attributes.size());
+    vertex_input_create_info.pVertexBindingDescriptions = &input_description;
+    vertex_input_create_info.pVertexAttributeDescriptions = input_attributes.data();
+
+    VkVertexInputBindingDescription bindingDescription{};
+
+    bindingDescription.binding = 0;
+    bindingDescription.stride = sizeof(Vertex);
+    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
     VkPipelineInputAssemblyStateCreateInfo input_assembly_create_info{};
     input_assembly_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

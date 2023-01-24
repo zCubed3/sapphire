@@ -704,7 +704,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     if (vkCreateFence(vk_device, &fence_create_info, nullptr, &vk_flight_fence) != VK_SUCCESS) {
         return false;
     }
-    
+
     singleton = this;
 
     return true;
@@ -804,6 +804,8 @@ bool VulkanRenderServer::end_target(RenderTarget *p_target) {
     vkCmdEndRenderPass(vk_active_command_buffer);
 
     vkEndCommandBuffer(vk_active_command_buffer);
+
+    // TODO: Submit render targets immediately, defer the main window
 
     return true;
 }

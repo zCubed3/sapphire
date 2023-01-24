@@ -9,14 +9,6 @@
 #include <glad/glad.h>
 #include <rs_opengl4/assets/glsl_shader_asset.h>
 
-// TODO: Make creating meshes faster by allowing meshes to generate their own interleaved data
-struct InterleavedVertexData {
-    glm::vec3 position = {};
-    glm::vec3 normal = {};
-    glm::vec2 uv0 = {};
-    glm::vec4 tangent = {};
-};
-
 OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
     // TODO: Allow creating mesh buffers without mesh assets?
     // TODO: Other types of mesh buffer for instancing, skinning, etc?
