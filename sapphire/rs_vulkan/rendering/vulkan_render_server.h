@@ -8,6 +8,8 @@
 
 #include <vector>
 
+class ValInstance;
+
 class VulkanRenderServer : public RenderServer {
 public:
     struct QueueFamilies {
@@ -20,9 +22,7 @@ public:
 
     SDL_Window* window;
 
-    VkInstance vk_instance = nullptr;
-    VkPhysicalDevice vk_physical_device = nullptr;
-    VkDevice vk_device = nullptr;
+    ValInstance* val_instance = nullptr;
 
     // TODO: Organize family indices and their queues
     // TODO: Other queue families?
@@ -30,13 +30,6 @@ public:
     VkQueue vk_graphics_queue = nullptr;
     VkQueue vk_present_queue = nullptr;
     VkQueue vk_transfer_queue = nullptr;
-
-    VkSurfaceKHR vk_surface = nullptr;
-    VkSwapchainKHR vk_swapchain = nullptr;
-
-    std::vector<VkImage> vk_swapchain_images;
-    std::vector<VkImageView> vk_swapchain_image_views;
-    std::vector<VkFramebuffer> vk_swapchain_framebuffers;
 
     VkSurfaceCapabilitiesKHR vk_capabilities;
     VkSurfaceFormatKHR vk_chosen_format;

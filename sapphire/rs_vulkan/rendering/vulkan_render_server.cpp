@@ -17,6 +17,8 @@
 
 #include <rs_vulkan/rendering/vulkan_mesh_buffer.h>
 
+#include <rs_vulkan/val/val_instance.h>
+
 #define RS_VULKAN_DEBUG
 
 // Rather than making the glove fit the hand; The hand will fit the glove
@@ -266,157 +268,32 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     // Vulkan bootstrapping is so fun!
 
-    //
-    // VkInstance creation
-    //
-    VkApplicationInfo app_info{};
-    app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    app_info.pApplicationName = "Sapphire";// TODO: Separate application name?
-    app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    app_info.pEngineName = "Sapphire";
-    app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    app_info.apiVersion = VK_API_VERSION_1_0;// TODO: Changing API versions?
+    ValInstanceCreateInfo val_create_info {};
 
-    VkInstanceCreateInfo create_info{};
-    create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    create_info.pApplicationInfo = &app_info;
+    val_create_info.engine_name = "Sapphire Engine";
+    val_create_info.application_name = "Sapphire Application";
 
-    // TODO: Move extension code somewhere else
-    // TODO: Allow loading other extensions?
-    std::vector<const char *> enabled_instance_extensions;
-    std::vector<const char *> enabled_layers;
-
-    uint32_t enumeration_count;
-
-    std::vector<VkExtensionProperties> user_instance_extensions;
-    std::vector<VkLayerProperties> user_layers;
-
-    vkEnumerateInstanceExtensionProperties(nullptr, &enumeration_count, nullptr);
-    user_instance_extensions.resize(enumeration_count);
-    vkEnumerateInstanceExtensionProperties(nullptr, &enumeration_count, user_instance_extensions.data());
-
-    enumeration_count = 0;
-
-    vkEnumerateInstanceLayerProperties(&enumeration_count, nullptr);
-    user_layers.resize(enumeration_count);
-    vkEnumerateInstanceLayerProperties(&enumeration_count, user_layers.data());
-
-    enumeration_count = 0;
-
-    SDL_Vulkan_GetInstanceExtensions(p_window, &enumeration_count, nullptr);
-    enabled_instance_extensions.resize(enumeration_count);
-    SDL_Vulkan_GetInstanceExtensions(p_window, &enumeration_count, enabled_instance_extensions.data());
-
-    enumeration_count = 0;
-
-    // We need to ensure the extensions and layers we require do exist
-    std::vector<const char *> missing_extensions;
-    for (const char *extension: enabled_instance_extensions) {
-        bool has_extension = false;
-        for (VkExtensionProperties properties: user_instance_extensions) {
-            if (strcmp(extension, properties.extensionName) == 0) {
-                has_extension = true;
-                break;
-            }
-        }
-
-        if (!has_extension) {
-            missing_extensions.push_back(extension);
-        }
-    }
-
-    std::vector<const char *> missing_layers;
-    for (const char *layer: enabled_layers) {
-        bool has_layer = false;
-        for (VkLayerProperties properties: user_layers) {
-            if (strcmp(layer, properties.layerName) == 0) {
-                has_layer = true;
-                break;
-            }
-        }
-
-        if (!has_layer) {
-            missing_extensions.push_back(layer);
-        }
-    }
-
-    // TODO: Present this better than logging it to cout
-    // TODO: Optional extensions and layers?
-    if (!missing_extensions.empty()) {
-        std::cout << "Missing Instance Extension(s):" << std::endl;
-        for (const char *missing: missing_extensions) {
-            std::cout << '\t' << missing << std::endl;
-        }
-
-        return false;
-    }
-
-    if (!missing_layers.empty()) {
-        std::cout << "Missing Layer(s):" << std::endl;
-        for (const char *missing: missing_layers) {
-            std::cout << '\t' << missing << std::endl;
-        }
-
-        return false;
-    }
-
+    // TODO: Optional SDL
+    val_create_info.sdl_window = p_window;
+    val_create_info.instance_extensions = ValExtension::get_sdl_instance_extensions(p_window);
 
 #ifdef RS_VULKAN_DEBUG
-    std::cout << "Found Instance Extensions:" << std::endl;
-    for (VkExtensionProperties properties: user_instance_extensions) {
-        std::cout << '\t' << properties.extensionName << std::endl;
-    }
-
-    std::cout << "Found Layers:" << std::endl;
-    for (VkLayerProperties properties: user_layers) {
-        std::cout << '\t' << properties.layerName << std::endl;
-    }
-
-    std::cout << std::endl;
-
-    // If we're debugging we need validation layers :P
-    enabled_layers.emplace_back("VK_LAYER_KHRONOS_validation");
+    val_create_info.validation_layers = {
+        {"VK_LAYER_KHRONOS_validation", 0}
+    };
 #endif
 
-    create_info.enabledExtensionCount = enabled_instance_extensions.size();
-    create_info.ppEnabledExtensionNames = enabled_instance_extensions.data();
+    val_create_info.requested_queues = {
+            ValQueue::QueueType::QUEUE_TYPE_GRAPHICS,
+            ValQueue::QueueType::QUEUE_TYPE_PRESENT,
+            ValQueue::QueueType::QUEUE_TYPE_TRANSFER,
+    };
 
-    create_info.enabledLayerCount = enabled_layers.size();
-    create_info.ppEnabledLayerNames = enabled_layers.data();
-
-#ifdef RS_VULKAN_DEBUG
-    std::cout << "Enabled Instance Extensions:" << std::endl;
-    for (const char *extension: enabled_instance_extensions) {
-        std::cout << '\t' << extension << std::endl;
-    }
-
-    std::cout << "Enabled Layers:" << std::endl;
-    for (const char *layer: enabled_layers) {
-        std::cout << '\t' << layer << std::endl;
-    }
-
-    std::cout << std::endl;
-#endif
-
-    if (vkCreateInstance(&create_info, nullptr, &vk_instance) != VK_SUCCESS) {
-        return false;
-    }
-
-    //
-    // Surface
-    //
-    if (!SDL_Vulkan_CreateSurface(p_window, vk_instance, &vk_surface)) {
-        return false;
-    }
+    val_instance = ValInstance::create_val_instance(&val_create_info);
 
     //
     // Physical devices
     //
-    std::vector<VkPhysicalDevice> user_physical_devices;
-
-    vkEnumeratePhysicalDevices(vk_instance, &enumeration_count, nullptr);
-    user_physical_devices.resize(enumeration_count);
-    vkEnumeratePhysicalDevices(vk_instance, &enumeration_count, user_physical_devices.data());
 
     if (enumeration_count == 0) {
         // TODO: Error there are no vulkan supported GPUs!
@@ -429,71 +306,6 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     std::cout << "Found GPUs:" << std::endl;
     uint32_t gpu_index = 0;
 #endif
-
-    for (VkPhysicalDevice device: user_physical_devices) {
-        VkPhysicalDeviceProperties properties;
-        VkPhysicalDeviceFeatures features;
-        std::vector<VkQueueFamilyProperties> queue_families;
-
-        vkGetPhysicalDeviceProperties(device, &properties);
-        vkGetPhysicalDeviceFeatures(device, &features);
-
-        vkGetPhysicalDeviceQueueFamilyProperties(device, &enumeration_count, nullptr);
-        queue_families.resize(enumeration_count);
-        vkGetPhysicalDeviceQueueFamilyProperties(device, &enumeration_count, queue_families.data());
-
-        enumeration_count = 0;
-
-        uint32_t graphics_family_index = -1;
-        uint32_t present_family_index = -1;
-        uint32_t transfer_family_index = -1;
-
-        uint32_t index = 0;
-        for (VkQueueFamilyProperties queue_family: queue_families) {
-            if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT && graphics_family_index == -1) {
-                graphics_family_index = index;
-            }
-
-            VkBool32 surface_support = false;
-            vkGetPhysicalDeviceSurfaceSupportKHR(device, index, vk_surface, &surface_support);
-            if (surface_support && present_family_index == -1) {
-                present_family_index = index;
-            }
-
-            if (queue_family.queueFlags & VK_QUEUE_TRANSFER_BIT && transfer_family_index == -1) {
-                transfer_family_index = index;
-            }
-
-            index++;
-        }
-
-        if (graphics_family_index == -1 && present_family_index == -1 && transfer_family_index == -1) {
-            // TODO: Log this GPU as incompatible
-            continue;
-        }
-
-        // TODO: Optional required features
-        // TODO: GPU ranking / picking
-        // TODO: Config option to manually decide GPU?
-
-#ifdef RS_VULKAN_DEBUG
-        std::cout << "\t"
-                  << "GPU" << gpu_index << ": " << properties.deviceName << std::endl;
-        std::cout << "\t\t"
-                  << "Graphics Queue = " << graphics_family_index << std::endl;
-        std::cout << "\t\t"
-                  << "Present Queue = " << present_family_index << std::endl;
-#endif
-
-        // TODO: Go through ALL GPUs and don't pick GPU0 as the first always!
-        vk_physical_device = device;
-        vk_families.graphics = graphics_family_index;
-        vk_families.present = present_family_index;
-        vk_families.transfer = transfer_family_index;
-
-        gpu_index++;
-        break;
-    }
 
 #ifdef RS_VULKAN_DEBUG
     std::cout << std::endl;

@@ -21,6 +21,8 @@ set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 option(RS_OPENGL4_SUPPORT "Compiles and links OpenGL4 Render Server support into the engine" ON)
 option(RS_VULKAN_SUPPORT "Compiles and links Vulkan Render Server support into the engine" ON)
 
+# TODO: Allow disabling SDL
+
 option(DISABLE_RTTI "Disables RTTI support (in favor of the engine type system)" ON)
 
 # TODO: TEMP
@@ -45,12 +47,13 @@ endif()
 
 # TODO: Null driver to remove SDL dependency?
 add_subdirectory(${THIRD_PARTY_DIR}/SDL)
+list(APPEND SAPPHIRE_DEFINITIONS "SDL_SUPPORT")
 
 if (DISABLE_RTTI)
     string(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 endif()
 
-if (${RS_OPENGL4_SUPPORT})
+if (RS_OPENGL4_SUPPORT)
     message("Compiling Sapphire with OpenGL4 Render Server support!")
 
     list(APPEND ENGINE_LINK_LIBRARIES SAPPHIRE_RS_OPENGL4)
