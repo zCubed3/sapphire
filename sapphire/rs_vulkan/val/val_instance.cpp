@@ -404,10 +404,89 @@ VkDevice ValInstance::create_vk_device(ValInstanceCreateInfo* p_create_info, VkP
     }
 
     for (ValQueue& queue : val_queues) {
-        vkGetDeviceQueue(vk_device, queue.family, 0, &queue.queue);
+        vkGetDeviceQueue(vk_device, queue.family, 0, &queue.vk_queue);
     }
 
     return vk_device;
+}
+
+VkRenderPass ValInstance::create_vk_render_pass(VkDevice vk_device, ValWindow::PresentInfo* present_info) {
+    VkAttachmentDescription color_attachment{};
+    color_attachment.format = present_info->vk_format.format;
+    color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+
+    color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+    color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
+    color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+    VkAttachmentReference color_attachment_ref{};
+    color_attachment_ref.attachment = 0;
+    color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkSubpassDescription subpass{};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &color_attachment_ref;
+
+    VkRenderPassCreateInfo render_pass_create_info{};
+    render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    render_pass_create_info.attachmentCount = 1;
+    render_pass_create_info.pAttachments = &color_attachment;
+    render_pass_create_info.subpassCount = 1;
+    render_pass_create_info.pSubpasses = &subpass;
+
+    VkRenderPass vk_render_pass;
+    if (vkCreateRenderPass(vk_device, &render_pass_create_info, nullptr, &vk_render_pass) != VK_SUCCESS) {
+        // TODO: Error failed to create render pass
+        return nullptr;
+    }
+
+    return vk_render_pass;
+}
+
+VmaAllocator ValInstance::create_vma_allocator(VkInstance vk_instance, VkDevice vk_device, VkPhysicalDevice vk_gpu) {
+    VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.physicalDevice = vk_gpu;
+    allocatorInfo.device = vk_device;
+    allocatorInfo.instance = vk_instance;
+
+    VmaAllocator vma_allocator = nullptr;
+
+    if (vmaCreateAllocator(&allocatorInfo, &vma_allocator) != VK_SUCCESS) {
+        return nullptr;
+    }
+
+    return vma_allocator;
+}
+
+VkSemaphore ValInstance::create_vk_semaphore(VkDevice vk_device) {
+    VkSemaphoreCreateInfo semaphore_create_info{};
+    semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    VkSemaphore vk_semaphore;
+    if (vkCreateSemaphore(vk_device, &semaphore_create_info, nullptr, &vk_semaphore) != VK_SUCCESS) {
+        return nullptr;
+    }
+
+    return vk_semaphore;
+}
+
+VkFence ValInstance::create_vk_fence(VkDevice vk_device) {
+    VkFenceCreateInfo fence_create_info{};
+    fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+    VkFence vk_fence;
+    if (vkCreateFence(vk_device, &fence_create_info, nullptr, &vk_fence) != VK_SUCCESS) {
+        return nullptr;
+    }
+
+    return vk_fence;
 }
 
 ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_info) {
@@ -424,12 +503,12 @@ ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_in
         return nullptr;
     }
 
-#if SDL_SUPPORT
-    ValWindow* window = new ValWindow(p_create_info->sdl_window, vk_instance);
+#ifdef SDL_SUPPORT
+    ValWindow* main_window = new ValWindow(p_create_info->sdl_window, vk_instance);
 #endif
 
     // TODO: Proper multiple window support (thanks windows for making presenting harder :| )
-    ChosenGPU gpu = pick_gpu(vk_instance, window->vk_surface, p_create_info);
+    ChosenGPU gpu = pick_gpu(vk_instance, main_window->vk_surface, p_create_info);
     VkDevice vk_device = create_vk_device(p_create_info, gpu.vk_device, gpu.queues);
 
     ValInstance* instance = new ValInstance();
@@ -439,9 +518,42 @@ ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_in
     instance->val_queues = gpu.queues;
     instance->vk_device = vk_device;
 
-#if SDL_SUPPORT
-    instance->val_window = window;
+    for (ValQueue& queue: instance->val_queues) {
+        queue.create_pool(instance);
+    }
+
+    instance->vma_allocator = create_vma_allocator(vk_instance, vk_device, gpu.vk_device);
+
+    instance->vk_image_available_semaphore = create_vk_semaphore(vk_device);
+    instance->vk_render_finished_semaphore = create_vk_semaphore(vk_device);
+    instance->vk_flight_fence = create_vk_fence(vk_device);
+
+#ifdef SDL_SUPPORT
+    // We ask the main window for the format and present mode it prefers
+    ValWindow::PresentInfo* present_info = main_window->get_present_info(gpu.vk_device);
+    instance->present_info = present_info;
+
+    VkRenderPass vk_render_pass = create_vk_render_pass(vk_device, present_info);
+    instance->vk_render_pass = vk_render_pass;
+
+    main_window->recreate_swapchain(instance);
+    instance->val_main_window = main_window;
 #endif
 
     return instance;
+}
+ValQueue ValInstance::get_queue(ValQueue::QueueType type) {
+    for (ValQueue& queue: val_queues) {
+        if (queue.type == type) {
+            return queue;
+        }
+    }
+
+    return {};
+}
+
+void ValInstance::await_frame() {
+    if (vk_device != nullptr && vk_flight_fence != nullptr) {
+        vkWaitForFences(vk_device, 1, &vk_flight_fence, VK_TRUE, UINT64_MAX);
+    }
 }

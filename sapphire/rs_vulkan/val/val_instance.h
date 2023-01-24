@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include <rs_vulkan/val/val_extension.h>
@@ -78,18 +79,39 @@ protected:
     static VkInstance create_vk_instance(ValInstanceCreateInfo* p_create_info);
     static ChosenGPU pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_surface, ValInstanceCreateInfo* p_create_info);
     static VkDevice create_vk_device(ValInstanceCreateInfo* p_create_info, VkPhysicalDevice vk_gpu, std::vector<ValQueue>& val_queues);
+    static VkRenderPass create_vk_render_pass(VkDevice vk_device, ValWindow::PresentInfo* present_info);
+    static VmaAllocator create_vma_allocator(VkInstance vk_instance, VkDevice vk_device, VkPhysicalDevice vk_gpu);
+
+    static VkSemaphore create_vk_semaphore(VkDevice vk_device);
+    static VkFence create_vk_fence(VkDevice vk_device);
 
 public:
     static const char* get_error();
 
     static ValInstance* create_val_instance(ValInstanceCreateInfo* p_create_info);
 
+    ValQueue get_queue(ValQueue::QueueType type);
+
+    // Waits until the next frame is done rendering
+    void await_frame();
+
     VkInstance vk_instance = nullptr;
     VkDevice vk_device = nullptr;
     VkPhysicalDevice vk_physical_device = nullptr;
+    ValWindow::PresentInfo* present_info = nullptr;
+
+    // TODO: Abstract render passes
+    VkRenderPass vk_render_pass;
+
+    VmaAllocator vma_allocator;
+
+    // TODO: Abstract sync objects?
+    VkSemaphore vk_image_available_semaphore;
+    VkSemaphore vk_render_finished_semaphore;
+    VkFence vk_flight_fence;
 
 #ifdef SDL_SUPPORT
-    ValWindow* val_window;
+    ValWindow*val_main_window;
 #endif
 
     std::vector<ValQueue> val_queues;

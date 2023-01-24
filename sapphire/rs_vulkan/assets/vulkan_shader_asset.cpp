@@ -2,6 +2,7 @@
 
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #include <rs_vulkan/rendering/vulkan_mesh_buffer.h>
+#include <rs_vulkan/val/val_instance.h>
 
 bool VulkanShaderAsset::create_module(const std::vector<char> &code, VkShaderModule *p_module) {
     VkShaderModuleCreateInfo create_info {};
@@ -9,9 +10,10 @@ bool VulkanShaderAsset::create_module(const std::vector<char> &code, VkShaderMod
     create_info.codeSize = code.size();
     create_info.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-    const VulkanRenderServer* server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+    ValInstance* val_instance = render_server->val_instance;
 
-    return vkCreateShaderModule(server->vk_device, &create_info, nullptr, p_module) == VK_SUCCESS;
+    return vkCreateShaderModule(val_instance->vk_device, &create_info, nullptr, p_module) == VK_SUCCESS;
 }
 
 VkPipelineShaderStageCreateInfo VulkanShaderAsset::create_stage(Stage stage, VkShaderModule p_module) {
@@ -90,7 +92,9 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     VkPipelineShaderStageCreateInfo vert_stage = create_stage(Stage::Vertex, vert_module);
     VkPipelineShaderStageCreateInfo frag_stage = create_stage(Stage::Fragment, frag_module);
 
-    const VulkanRenderServer* server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+    ValInstance* val_instance = render_server->val_instance;
+
     const std::vector<VkDynamicState> dynamic_states = get_dynamic_states(dynamic_flags);
 
     VkPipelineDynamicStateCreateInfo dynamic_state_create_info{};
@@ -177,7 +181,7 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     pipeline_layout_create_info.pPushConstantRanges = nullptr; // Optional
 
     VkPipelineLayout layout;
-    vkCreatePipelineLayout(server->vk_device, &pipeline_layout_create_info, nullptr, &layout);
+    vkCreatePipelineLayout(val_instance->vk_device, &pipeline_layout_create_info, nullptr, &layout);
 
     VkPipelineShaderStageCreateInfo stages[] = {
             vert_stage,
@@ -197,22 +201,22 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     pipeline_create_info.pColorBlendState = &color_blend_state;
     pipeline_create_info.pDynamicState = &dynamic_state_create_info;
     pipeline_create_info.layout = layout;
-    pipeline_create_info.renderPass = server->vk_render_pass;
+    pipeline_create_info.renderPass = val_instance->vk_render_pass;
     pipeline_create_info.subpass = 0;
     pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipeline_create_info.basePipelineIndex = -1; // Optional
 
     // TODO: Error handling
     // TODO: Pipeline caching
-    vkCreateGraphicsPipelines(server->vk_device,
+    vkCreateGraphicsPipelines(val_instance->vk_device,
                               nullptr,
                               1,
                               &pipeline_create_info,
                               nullptr,
                               &pipeline);
 
-    vkDestroyShaderModule(server->vk_device, vert_module, nullptr);
-    vkDestroyShaderModule(server->vk_device, frag_module, nullptr);
+    vkDestroyShaderModule(val_instance->vk_device, vert_module, nullptr);
+    vkDestroyShaderModule(val_instance->vk_device, frag_module, nullptr);
 
-    vkDestroyPipelineLayout(server->vk_device, layout, nullptr);
+    vkDestroyPipelineLayout(val_instance->vk_device, layout, nullptr);
 }
