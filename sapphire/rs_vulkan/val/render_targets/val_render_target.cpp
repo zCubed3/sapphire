@@ -37,12 +37,11 @@ bool ValRenderTarget::begin_render(ValInstance *p_val_instance) {
 
     clear_values.push_back(clear_value);
 
-    if (depth_buffered) {
-        VkClearValue depth_clear_value {};
-        depth_clear_value.depthStencil = clear_depth_stencil;
+    // TODO: Optional depth buffering?
+    VkClearValue depth_clear_value {};
+    depth_clear_value.depthStencil = clear_depth_stencil;
 
-        clear_values.push_back(depth_clear_value);
-    }
+    clear_values.push_back(depth_clear_value);
 
     render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
     render_pass_info.pClearValues = clear_values.data();

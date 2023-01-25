@@ -22,8 +22,7 @@ struct ValRenderTargetCreateInfo {
     // If using a window this value is ignored
     VkExtent2D extent;
 
-    // Is this depth buffered?
-    bool depth_buffered = true;
+    // TODO: Optional depth buffering?
 
 #ifdef SDL_SUPPORT
     // Do we initialize the swapchain on creation?
@@ -40,7 +39,6 @@ protected:
     virtual VkExtent2D get_extent(ValInstance *p_val_instance);
 
     VkExtent2D creation_extent {};
-    bool depth_buffered = true;
 
 public:
     // Each render target has a command buffer

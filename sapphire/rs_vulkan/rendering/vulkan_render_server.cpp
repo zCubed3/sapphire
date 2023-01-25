@@ -1,22 +1,24 @@
 #include "vulkan_render_server.h"
 
-#include <iostream>
-#include <fstream>
-#include <vector>
 #include <algorithm>
+#include <fstream>
+#include <iostream>
 #include <limits>
+#include <vector>
 
 #include <SDL.h>
 #include <SDL_vulkan.h>
 
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_target.h>
+#include <engine/rendering/rt_sdl_window.h>
 #include <engine/rendering/camera_data.h>
 
 #include <rs_vulkan/assets/vulkan_shader_asset.h>
 #include <rs_vulkan/assets/vulkan_shader_asset_loader.h>
 
 #include <rs_vulkan/rendering/vulkan_mesh_buffer.h>
+#include <rs_vulkan/rendering/vulkan_render_target_data.h>
 
 #include <rs_vulkan/val/val_instance.h>
 
@@ -129,7 +131,6 @@ bool VulkanRenderServer::present(SDL_Window *p_window) {
 }
 
 void VulkanRenderServer::on_window_resized() {
-    // TODO: Main window recreate swapchain
     val_instance->val_main_window->recreate_swapchain(val_instance);
 }
 
@@ -147,7 +148,6 @@ bool VulkanRenderServer::end_frame() {
 bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     p_target->begin_attach();
 
-    // TODO: Actually use render targets and not ValWindow instances
     VkDescriptorBufferInfo buffer_info{};
     buffer_info.buffer = val_camera_ubo->vk_buffer;
     buffer_info.offset = 0;
@@ -174,13 +174,28 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
 
     vkUpdateDescriptorSets(val_instance->vk_device, 1, &descriptor_write, 0, nullptr);
 
-    val_instance->val_main_window->begin_render(val_instance);
+    VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData*>(p_target->data);
+
+    if (target_data != nullptr) {
+        if (target_data->val_render_target != nullptr) {
+            val_active_render_target = target_data->val_render_target;
+            target_data->val_render_target->begin_render(val_instance);
+        }
+    }
 
     return true;
 }
 
 bool VulkanRenderServer::end_target(RenderTarget *p_target) {
-    val_instance->val_main_window->end_render(val_instance);
+    VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData*>(p_target->data);
+
+    if (target_data != nullptr) {
+        if (target_data->val_render_target != nullptr) {
+            target_data->val_render_target->end_render(val_instance);
+        }
+    }
+
+    val_active_render_target = nullptr;
 
     return true;
 }
@@ -188,6 +203,41 @@ bool VulkanRenderServer::end_target(RenderTarget *p_target) {
 void VulkanRenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
     if (p_mesh_asset != nullptr) {
         p_mesh_asset->buffer = new VulkanMeshBuffer(p_mesh_asset);
+    }
+}
+
+void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_target) const {
+    if (p_render_target != nullptr) {
+        ValRenderTargetCreateInfo::RenderTargetType type;
+        switch (p_render_target->get_type()) {
+            default:
+                type = ValRenderTargetCreateInfo::RENDER_TARGET_TYPE_IMAGE;
+                break;
+
+            case RenderTarget::TARGET_TYPE_WINDOW:
+                type = ValRenderTargetCreateInfo::RENDER_TARGET_TYPE_WINDOW;
+                break;
+        }
+
+        ValRenderTargetCreateInfo create_info {};
+
+        create_info.initialize_swapchain = true;
+        create_info.type = type;
+
+        // TODO: Not always assume RENDER_TARGET_TYPE_WINDOW means we can get an SDL window?
+        if (type == ValRenderTargetCreateInfo::RENDER_TARGET_TYPE_WINDOW) {
+            SDLWindowRenderTarget *sdl_target = static_cast<SDLWindowRenderTarget*>(p_render_target);
+            create_info.p_window = sdl_target->window;
+
+            if (sdl_target->window == val_instance->val_main_window->sdl_window) {
+                // The main window for bootstrapping is already populated
+                p_render_target->data = new VulkanRenderTargetData(val_instance->val_main_window);
+                return;
+            }
+        }
+
+        ValRenderTarget* val_target = ValRenderTarget::create_render_target(&create_info, val_instance);
+        p_render_target->data = new VulkanRenderTargetData(val_target);
     }
 }
 

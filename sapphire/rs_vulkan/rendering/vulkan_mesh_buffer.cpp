@@ -87,20 +87,21 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
     scissor.offset = {0, 0};
     scissor.extent = window->vk_extent;
 
-    // TODO: Not assume we're always rendering to the main window
     // We assume a command buffer is currently recording
-    vkCmdBindPipeline(window->vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_shader->vk_pipeline);
+    VkCommandBuffer active_command_buffer = render_server->val_active_render_target->vk_command_buffer;
 
-    vkCmdSetViewport(window->vk_command_buffer, 0, 1, &viewport);
-    vkCmdSetScissor(window->vk_command_buffer, 0, 1, &scissor);
+    vkCmdBindPipeline(active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_shader->vk_pipeline);
+
+    vkCmdSetViewport(active_command_buffer, 0, 1, &viewport);
+    vkCmdSetScissor(active_command_buffer, 0, 1, &scissor);
 
     VkDeviceSize offset = 0;
-    vkCmdBindVertexBuffers(window->vk_command_buffer, 0, 1, &val_vbo->vk_buffer, &offset);
+    vkCmdBindVertexBuffers(active_command_buffer, 0, 1, &val_vbo->vk_buffer, &offset);
 
-    vkCmdBindIndexBuffer(window->vk_command_buffer, val_ibo->vk_buffer, offset, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(active_command_buffer, val_ibo->vk_buffer, offset, VK_INDEX_TYPE_UINT32);
 
     vkCmdBindDescriptorSets(
-            window->vk_command_buffer,
+            active_command_buffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             vk_shader->vk_pipeline_layout,
             0,
@@ -109,7 +110,7 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
             0,
             nullptr);
 
-    vkCmdDrawIndexed(window->vk_command_buffer, tri_count, 1, 0, 0, 0);
+    vkCmdDrawIndexed(active_command_buffer, tri_count, 1, 0, 0, 0);
 }
 
 VulkanMeshBuffer::~VulkanMeshBuffer() {

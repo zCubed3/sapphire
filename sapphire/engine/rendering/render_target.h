@@ -7,17 +7,23 @@
 #include <glm.hpp>
 
 class World;
+class RenderTargetData;
 
 // Abstraction over windows and various other type of 2D attachments
 // TODO: 1D / 3D render targets?
 class RenderTarget {
 public:
-    enum ClearFlags {
-        CLEAR_DEPTH = 1,
-        CLEAR_COLOR = 2
+    enum TargetType {
+        TARGET_TYPE_TEXTURE,
+        TARGET_TYPE_WINDOW
     };
 
-    int clear_flags = ClearFlags::CLEAR_COLOR | ClearFlags::CLEAR_DEPTH;
+    enum ClearFlags {
+        CLEAR_FLAG_DEPTH = 1,
+        CLEAR_FLAG_COLOR = 2
+    };
+
+    int clear_flags = ClearFlags::CLEAR_FLAG_COLOR | ClearFlags::CLEAR_FLAG_DEPTH;
     Color clear_color = Color(0.1F, 0.1F, 0.1F, 1.0F);
 
     // Render targets may have their own view and projection matrices
@@ -29,11 +35,15 @@ public:
     // The world we render
     World *world = nullptr;
 
+    RenderTargetData *data = nullptr;
+
     virtual Rect get_rect() = 0;
 
     // Called when this attachment is first rendered to.
     // Useful for setting up matrices!
     virtual void begin_attach() = 0;
+
+    virtual TargetType get_type() = 0;
 };
 
 #endif

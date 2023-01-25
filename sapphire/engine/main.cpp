@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
     SDLWindowRenderTarget rt_window(main_window);
 
     // Each render target has clear operations associated with it
-    rt_window.clear_flags = RenderTarget::CLEAR_DEPTH | RenderTarget::CLEAR_COLOR;
+    rt_window.clear_flags = RenderTarget::CLEAR_FLAG_DEPTH | RenderTarget::CLEAR_FLAG_DEPTH;
 
     if (!render_server->initialize(main_window)) {
         std::cout << render_server->get_error() << std::endl;
@@ -59,6 +59,8 @@ int main(int argc, char **argv) {
     MeshAsset *mesh = static_cast<MeshAsset *>(AssetLoader::load_asset("test.obj"));
     ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.mspv"));
     //ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.glsl"));
+
+    render_server->populate_render_target_data(&rt_window);
 
     World *world = new World();
 

@@ -38,3 +38,7 @@ void SDLWindowRenderTarget::begin_attach() {
 
     eye = projection * view;
 }
+
+RenderTarget::TargetType SDLWindowRenderTarget::get_type() {
+    return TargetType::TARGET_TYPE_WINDOW;
+}

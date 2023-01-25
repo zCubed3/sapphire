@@ -2,6 +2,7 @@
 #define SAPPHIRE_VULKAN_RENDER_SERVER_H
 
 #include <engine/rendering/render_server.h>
+#include <rs_vulkan/val/render_targets/val_render_target.h>
 
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
@@ -21,6 +22,8 @@ public:
     VkDescriptorSetLayout vk_descriptor_set_layout;
 
 public:
+    ValRenderTarget *val_active_render_target = nullptr;
+
     ~VulkanRenderServer() override;
 
     void register_rs_asset_loaders() override;
@@ -42,6 +45,7 @@ public:
     bool end_target(RenderTarget *p_target) override;
 
     void populate_mesh_buffer(MeshAsset *p_mesh_asset) const override;
+    void populate_render_target_data(RenderTarget *p_render_target) const override;
 
     // TODO: Make this more abstract?
     VkCommandBuffer begin_upload() const;

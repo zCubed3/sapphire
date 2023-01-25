@@ -6,10 +6,9 @@
 typedef struct SDL_Window SDL_Window;
 
 class SDLWindowRenderTarget : public RenderTarget {
-protected:
+public:
     SDL_Window *window;
 
-public:
     SDLWindowRenderTarget() = delete;
     SDLWindowRenderTarget(const SDLWindowRenderTarget &) = delete;
 
@@ -18,6 +17,8 @@ public:
     Rect get_rect() override;
 
     void begin_attach() override;
+
+    TargetType get_type() override;
 };
 
 #endif
