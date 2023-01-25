@@ -92,6 +92,14 @@ bool OpenGL4RenderServer::present(SDL_Window *p_window) {
     return true;
 }
 
+bool OpenGL4RenderServer::begin_frame() {
+    return true;
+}
+
+bool OpenGL4RenderServer::end_frame() {
+    return true;
+}
+
 bool OpenGL4RenderServer::begin_target(RenderTarget *p_target) {
     if (p_target == nullptr) {
         error = ERR_TARGET_NULLPTR;
@@ -106,11 +114,11 @@ bool OpenGL4RenderServer::begin_target(RenderTarget *p_target) {
     if (p_target->clear_flags != 0) {
         uint32_t clear_flags = 0;
 
-        if (p_target->clear_flags & RenderTarget::ClearFlags::CLEAR_DEPTH) {
+        if (p_target->clear_flags & RenderTarget::ClearFlags::CLEAR_FLAG_DEPTH) {
             clear_flags |= GL_DEPTH_BUFFER_BIT;
         }
 
-        if (p_target->clear_flags & RenderTarget::ClearFlags::CLEAR_COLOR) {
+        if (p_target->clear_flags & RenderTarget::ClearFlags::CLEAR_FLAG_COLOR) {
             clear_flags |= GL_COLOR_BUFFER_BIT;
             glClearColor(p_target->clear_color[0], p_target->clear_color[1], p_target->clear_color[2], p_target->clear_color[3]);
         }
@@ -141,4 +149,8 @@ void OpenGL4RenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
     if (p_mesh_asset != nullptr) {
         p_mesh_asset->buffer = new OpenGL4MeshBuffer(p_mesh_asset);
     }
+}
+
+void OpenGL4RenderServer::populate_render_target_data(RenderTarget *p_render_target) const {
+    // TODO
 }

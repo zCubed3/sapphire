@@ -27,10 +27,14 @@ public:
 
     bool present(SDL_Window *p_window) override;
 
+    bool begin_frame() override;
+    bool end_frame() override;
+
     bool begin_target(RenderTarget *p_target) override;
     bool end_target(RenderTarget *p_target) override;
 
     void populate_mesh_buffer(MeshAsset *p_mesh_asset) const override;
+    void populate_render_target_data(RenderTarget *p_render_target) const override;
 };
 
 #endif

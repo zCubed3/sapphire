@@ -121,6 +121,7 @@ void GLSLShaderAsset::compile_source(const std::string &source) {
     shader_handle = program;
 }
 
+/*
 void GLSLShaderAsset::set_float(const std::string &var, float val) {
 }
 
@@ -145,6 +146,7 @@ void GLSLShaderAsset::set_mat4(const std::string &var, const glm::mat4 &val) {
         glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(val));
     }
 }
+ */
 
 GLSLShaderAsset *GLSLShaderAsset::get_placeholder() {
     if (placeholder == nullptr) {

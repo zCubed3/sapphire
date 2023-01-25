@@ -3,6 +3,9 @@
 
 #include <glm.hpp>
 
+// TODO: Move rendering data somewhere more proper
+// TODO: Come up with a better naming scheme for rendering data
+// TODO: Generate shader code for data structures?
 struct CameraData {
     glm::mat4 projection;
     glm::mat4 view;

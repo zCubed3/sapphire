@@ -18,13 +18,13 @@ OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
 
     // TODO: Updating buffers post-construction
     // TODO: Optional channels?
-    InterleavedVertexData *vertices = new InterleavedVertexData[p_mesh_asset->get_vertex_count()];
+    Vertex *vertices = new Vertex[p_mesh_asset->get_vertex_count()];
 
     uint32_t *triangles = p_mesh_asset->get_triangle_data(nullptr);
     glm::vec3 *positions = p_mesh_asset->get_position_data(nullptr);
     glm::vec3 *normals = p_mesh_asset->get_normal_data(nullptr);
     glm::vec2 *tex_coords = p_mesh_asset->get_uv0_data(nullptr);
-    glm::vec4 *tangents = p_mesh_asset->get_tangent_data(nullptr);
+    //glm::vec4 *tangents = p_mesh_asset->get_tangent_data(nullptr);
 
     tri_count = p_mesh_asset->get_triangle_count();
 
@@ -41,15 +41,17 @@ OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
             vertices[v].uv0 = tex_coords[v];
         }
 
+        /*
         if (tangents != nullptr) {
             vertices[v].tangent = tangents[v];
         }
+         */
     }
 
     glBindVertexArray(vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(InterleavedVertexData) * p_mesh_asset->get_vertex_count(), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * p_mesh_asset->get_vertex_count(), vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * p_mesh_asset->get_triangle_count(), triangles, GL_STATIC_DRAW);
@@ -80,14 +82,14 @@ void OpenGL4MeshBuffer::render(const Transform &transform, ShaderAsset *p_shader
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
-    glEnableVertexAttribArray(3);
+    //glEnableVertexAttribArray(3);
 
-    const size_t vertex_size = sizeof(InterleavedVertexData);
+    const size_t vertex_size = sizeof(Vertex);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertex_size, nullptr);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertex_size, (void *) (sizeof(float) * 3));
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertex_size, (void *) (sizeof(float) * 6));
-    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, vertex_size, (void *) (sizeof(float) * 8));
+    //glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, vertex_size, (void *) (sizeof(float) * 8));
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glDrawElements(GL_TRIANGLES, tri_count, GL_UNSIGNED_INT, nullptr);
@@ -95,7 +97,7 @@ void OpenGL4MeshBuffer::render(const Transform &transform, ShaderAsset *p_shader
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(2);
-    glDisableVertexAttribArray(3);
+    //glDisableVertexAttribArray(3);
 
     glBindVertexArray(0);
 }

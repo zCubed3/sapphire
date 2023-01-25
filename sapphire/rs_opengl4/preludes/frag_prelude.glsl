@@ -7,6 +7,12 @@
 #define FRAGMENT
 #define FRAGMENT_STAGE
 
+struct SapphireCameraData {
+    mat4 projection;
+    mat4 view;
+    mat4 view_projection;
+};
+
 uniform vec3 SAPPHIRE_CAMERA_POS;
 
 uniform mat4 SAPPHIRE_M;

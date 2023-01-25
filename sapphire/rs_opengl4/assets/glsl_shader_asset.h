@@ -30,12 +30,6 @@ public:
     void compile_from_disk();
     void compile_source(const std::string &source);
 
-    void set_float(const std::string &var, float val) override;
-    void set_vec2(const std::string &var, const glm::vec2 &val) override;
-    void set_vec3(const std::string &var, const glm::vec3 &val) override;
-    void set_vec4(const std::string &var, const glm::vec4 &val) override;
-    void set_mat4(const std::string &var, const glm::mat4 &val) override;
-
     static GLSLShaderAsset *get_placeholder();
 };
 

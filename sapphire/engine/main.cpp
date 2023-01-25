@@ -8,8 +8,13 @@
 #include <engine/rendering/rt_sdl_window.h>
 #include <engine/scene/world.h>
 
+#ifdef RS_OPENGL4_SUPPORT
 #include <rs_opengl4/rendering/opengl4_render_server.h>
+#endif
+
+#ifdef RS_VULKAN_SUPPORT
 #include <rs_vulkan/rendering/vulkan_render_server.h>
+#endif
 
 #include <glm.hpp>
 
@@ -23,8 +28,9 @@ int main(int argc, char **argv) {
 
     // The render server requires a main window to get things started
     // TODO: Splash screen?
-    //RenderServer *render_server = new OpenGL4RenderServer();
-    RenderServer *render_server = new VulkanRenderServer();
+    // TODO: Allow changing the server based on a cvar
+    RenderServer *render_server = new OpenGL4RenderServer();
+    //RenderServer *render_server = new VulkanRenderServer();
     render_server->register_rs_asset_loaders();
 
     uint32_t window_flags = render_server->get_sdl_window_flags();
