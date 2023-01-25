@@ -4,10 +4,12 @@ set(SAPPHIRE_RS_VULKAN_SOURCES
         "val/val_extension.cpp"
         "val/val_layer.cpp"
         "val/val_queue.cpp"
-        "val/val_window.cpp"
         "val/data/val_buffer.cpp"
         "val/data/val_stagingbuffer.cpp"
         "val/images/val_image.cpp"
+        "val/render_targets/val_render_target.cpp"
+        "val/render_targets/val_image_render_target.cpp"
+        "val/render_targets/val_window_render_target.cpp"
 
         "assets/vulkan_shader_asset.cpp"
         "assets/vulkan_shader_asset_loader.cpp"

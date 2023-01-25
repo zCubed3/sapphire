@@ -6,7 +6,7 @@
 
 class MeshAsset;
 
-struct ValBuffer;
+class ValBuffer;
 
 class VulkanMeshBuffer : public MeshBuffer {
 protected:

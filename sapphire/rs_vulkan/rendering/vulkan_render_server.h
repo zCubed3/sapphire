@@ -9,7 +9,7 @@
 #include <vector>
 
 class ValInstance;
-struct ValBuffer;
+class ValBuffer;
 
 class VulkanRenderServer : public RenderServer {
 public:

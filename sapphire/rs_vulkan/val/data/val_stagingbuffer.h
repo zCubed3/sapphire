@@ -8,9 +8,10 @@
 
 // Wrapper around data transfers
 class ValInstance;
-struct ValBuffer;
+class ValBuffer;
 
-struct ValStagingBuffer : public ValReleasable {
+class ValStagingBuffer : public ValReleasable {
+public:
     ValBuffer *val_staging_buffer;
     ValBuffer *val_final_buffer;
 

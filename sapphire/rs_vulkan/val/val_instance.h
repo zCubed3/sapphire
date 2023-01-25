@@ -6,12 +6,12 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
+#include <rs_vulkan/val/data/val_buffer.h>
+#include <rs_vulkan/val/data/val_stagingbuffer.h>
+#include <rs_vulkan/val/render_targets/val_window_render_target.h>
 #include <rs_vulkan/val/val_extension.h>
 #include <rs_vulkan/val/val_layer.h>
 #include <rs_vulkan/val/val_queue.h>
-#include <rs_vulkan/val/val_window.h>
-#include <rs_vulkan/val/data/val_buffer.h>
-#include <rs_vulkan/val/data/val_stagingbuffer.h>
 
 // TODO: Frames in flight?
 
@@ -83,7 +83,7 @@ protected:
     static VkInstance create_vk_instance(ValInstanceCreateInfo* p_create_info);
     static ChosenGPU pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_surface, ValInstanceCreateInfo* p_create_info);
     static VkDevice create_vk_device(VkPhysicalDevice vk_gpu, std::vector<ValQueue>& val_queues, ValInstanceCreateInfo* p_create_info);
-    static VkRenderPass create_vk_render_pass(VkDevice vk_device, ValWindow::PresentInfo* present_info);
+    static VkRenderPass create_vk_render_pass(VkDevice vk_device, ValWindowRenderTarget::PresentInfo* present_info);
     static VmaAllocator create_vma_allocator(VkInstance vk_instance, VkDevice vk_device, VkPhysicalDevice vk_gpu);
     static VkDescriptorPool create_vk_descriptor_pool(VkDevice vk_device);
 
@@ -104,7 +104,7 @@ public:
     VkInstance vk_instance = nullptr;
     VkDevice vk_device = nullptr;
     VkPhysicalDevice vk_physical_device = nullptr;
-    ValWindow::PresentInfo* present_info = nullptr;
+    ValWindowRenderTarget::PresentInfo* present_info = nullptr;
 
     // TODO: Abstract render passes
     VkRenderPass vk_render_pass;
@@ -120,7 +120,7 @@ public:
     VkDescriptorPool vk_descriptor_pool;
 
 #ifdef SDL_SUPPORT
-    ValWindow* val_main_window;
+    ValWindowRenderTarget * val_main_window;
 #endif
 
     std::vector<ValQueue> val_queues;

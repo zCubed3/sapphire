@@ -22,7 +22,7 @@ struct ValImageCreateInfo {
 };
 
 // Wrapper around a texture
-struct ValImage : public ValReleasable {
+class ValImage : public ValReleasable {
 protected:
     ValImage() = default;
 

@@ -1,19 +1,25 @@
-#ifndef SAPPHIRE_VAL_WINDOW_H
-#define SAPPHIRE_VAL_WINDOW_H
+#ifndef SAPPHIRE_VAL_WINDOW_RENDER_TARGET_H
+#define SAPPHIRE_VAL_WINDOW_RENDER_TARGET_H
 
 #include <vector>
 #include <vulkan/vulkan.h>
-#include <rs_vulkan/val/val_releasable.h>
+
+#include <rs_vulkan/val/render_targets/val_render_target.h>
 
 typedef struct SDL_Window SDL_Window;
 
-struct ValImage;
 class ValInstance;
+class ValImage;
 
 // TODO: Properly support multiple windows
-// TODO: Separate this into a framebuffer type
+// TODO: Separate this into a framebuffer type?
 // TODO: Align this and various other types with Val*CreateInfo structure
-struct ValWindow : public ValReleasable {
+class ValWindowRenderTarget : public ValRenderTarget {
+protected:
+    VkExtent2D get_extent(ValInstance *p_val_instance) override;
+    VkFramebuffer get_framebuffer(ValInstance *p_val_instance) override;
+
+public:
     struct PresentInfo {
         VkSurfaceFormatKHR vk_color_format;
         VkSurfaceFormatKHR vk_depth_format;
@@ -26,25 +32,18 @@ struct ValWindow : public ValReleasable {
     VkExtent2D vk_extent;
     uint32_t vk_frame_index = 0;
 
-    VkCommandBuffer vk_command_buffer = nullptr;
-
     SDL_Window* sdl_window;
 
     std::vector<VkImage> vk_swapchain_images;
     std::vector<VkImageView> vk_swapchain_image_views;
     std::vector<VkFramebuffer> vk_swapchain_framebuffers;
 
-    // TODO: Wrap this into ValImage
     ValImage* val_depth_image = nullptr;
 
-    ValWindow(SDL_Window *p_window, VkInstance vk_instance);
+    ValWindowRenderTarget(ValRenderTargetCreateInfo *p_create_info, ValInstance *p_val_instance);
 
     PresentInfo *get_present_info(VkPhysicalDevice vk_gpu) const;
-    //bool create_render_pass(ValInstance* p_val_instance);
     bool recreate_swapchain(ValInstance* p_val_instance);
-
-    bool begin_rendering(ValInstance* p_val_instance);
-    bool end_rendering(ValInstance* p_val_instance);
 
     bool present_queue(ValInstance* p_val_instance);
 

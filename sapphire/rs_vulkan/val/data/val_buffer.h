@@ -8,7 +8,8 @@
 
 class ValInstance;
 
-struct ValBuffer : public ValReleasable {
+class ValBuffer : public ValReleasable {
+public:
     VmaAllocation vma_allocation;
     VkBuffer vk_buffer;
     size_t size;

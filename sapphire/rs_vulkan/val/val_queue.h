@@ -7,7 +7,8 @@
 
 class ValInstance;
 
-struct ValQueue : public ValReleasable {
+class ValQueue : public ValReleasable {
+public:
     enum QueueType {
         QUEUE_TYPE_GRAPHICS,
         QUEUE_TYPE_TRANSFER,

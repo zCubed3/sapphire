@@ -174,13 +174,13 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
 
     vkUpdateDescriptorSets(val_instance->vk_device, 1, &descriptor_write, 0, nullptr);
 
-    val_instance->val_main_window->begin_rendering(val_instance);
+    val_instance->val_main_window->begin_render(val_instance);
 
     return true;
 }
 
 bool VulkanRenderServer::end_target(RenderTarget *p_target) {
-    val_instance->val_main_window->end_rendering(val_instance);
+    val_instance->val_main_window->end_render(val_instance);
 
     return true;
 }

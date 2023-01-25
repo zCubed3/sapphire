@@ -1,4 +1,4 @@
-#include "val_window.h"
+#include "val_window_render_target.h"
 
 #include <SDL.h>
 #include <SDL_vulkan.h>
@@ -6,13 +6,29 @@
 #include <rs_vulkan/val/val_instance.h>
 #include <rs_vulkan/val/images/val_image.h>
 
-ValWindow::ValWindow(SDL_Window *p_window, VkInstance vk_instance) {
-    SDL_Vulkan_CreateSurface(p_window, vk_instance, &vk_surface);
-    sdl_window = p_window;
+VkExtent2D ValWindowRenderTarget::get_extent(ValInstance *p_val_instance) {
+    return vk_extent;
 }
 
-ValWindow::PresentInfo* ValWindow::get_present_info(VkPhysicalDevice vk_gpu) const {
-    ValWindow::PresentInfo* present_info = new ValWindow::PresentInfo();
+VkFramebuffer ValWindowRenderTarget::get_framebuffer(ValInstance* p_val_instance) {
+    vkAcquireNextImageKHR(
+            p_val_instance->vk_device,
+            vk_swapchain,
+            UINT64_MAX,
+            p_val_instance->vk_image_available_semaphore,
+            VK_NULL_HANDLE,
+            &vk_frame_index);
+
+    return vk_swapchain_framebuffers[vk_frame_index];
+}
+
+ValWindowRenderTarget::ValWindowRenderTarget(ValRenderTargetCreateInfo *p_create_info, ValInstance *p_val_instance) {
+    SDL_Vulkan_CreateSurface(p_create_info->p_window, p_val_instance->vk_instance, &vk_surface);
+    sdl_window = p_create_info->p_window;
+}
+
+ValWindowRenderTarget::PresentInfo*ValWindowRenderTarget::get_present_info(VkPhysicalDevice vk_gpu) const {
+    ValWindowRenderTarget::PresentInfo* present_info = new ValWindowRenderTarget::PresentInfo();
 
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> present_modes;
@@ -77,7 +93,7 @@ ValWindow::PresentInfo* ValWindow::get_present_info(VkPhysicalDevice vk_gpu) con
     return present_info;
 }
 
-bool ValWindow::recreate_swapchain(ValInstance* p_val_instance) {
+bool ValWindowRenderTarget::recreate_swapchain(ValInstance* p_val_instance) {
     p_val_instance->await_frame();
 
     // TODO: Re-using val images?
@@ -238,82 +254,7 @@ bool ValWindow::recreate_swapchain(ValInstance* p_val_instance) {
     return true;
 }
 
-bool ValWindow::begin_rendering(ValInstance* p_val_instance) {
-    if (vk_command_buffer == nullptr) {
-        vk_command_buffer = p_val_instance->get_queue(ValQueue::QUEUE_TYPE_GRAPHICS).allocate_buffer(p_val_instance);
-    }
-
-    vkAcquireNextImageKHR(
-            p_val_instance->vk_device,
-            vk_swapchain,
-            UINT64_MAX,
-            p_val_instance->vk_image_available_semaphore,
-            VK_NULL_HANDLE,
-            &vk_frame_index);
-
-    VkCommandBufferBeginInfo buffer_begin_info{};
-    buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    buffer_begin_info.flags = 0;
-    buffer_begin_info.pInheritanceInfo = nullptr;
-
-    if (vkBeginCommandBuffer(vk_command_buffer, &buffer_begin_info) != VK_SUCCESS) {
-        // TODO: Failed to record buffer
-        return false;
-    }
-
-    VkRenderPassBeginInfo render_pass_info{};
-    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    render_pass_info.renderPass = p_val_instance->vk_render_pass;
-    render_pass_info.framebuffer = vk_swapchain_framebuffers[vk_frame_index];
-
-    render_pass_info.renderArea.offset = {0, 0};
-    render_pass_info.renderArea.extent = vk_extent;
-
-    std::vector<VkClearValue> clear_values;
-
-    VkClearValue clear_color = {};
-    clear_color.color = { 0, 0, 0, 1 };
-
-    VkClearValue depth_stencil = {};
-    depth_stencil.depthStencil = {1.0F, 0};
-
-    clear_values.push_back(clear_color);
-    clear_values.push_back(depth_stencil);
-
-    render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
-    render_pass_info.pClearValues = clear_values.data();
-
-    vkCmdBeginRenderPass(vk_command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
-
-    return true;
-}
-
-bool ValWindow::end_rendering(ValInstance* p_val_instance) {
-    vkCmdEndRenderPass(vk_command_buffer);
-    vkEndCommandBuffer(vk_command_buffer);
-
-    return true;
-}
-
-bool ValWindow::present_queue(ValInstance *p_val_instance) {
-    VkSubmitInfo submit_info{};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-    VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submit_info.waitSemaphoreCount = 1;
-    submit_info.pWaitSemaphores = &p_val_instance->vk_image_available_semaphore;
-    submit_info.pWaitDstStageMask = wait_stages;
-
-    submit_info.signalSemaphoreCount = 1;
-    submit_info.pSignalSemaphores = &p_val_instance->vk_render_finished_semaphore;
-
-    submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &vk_command_buffer;
-
-    if (vkQueueSubmit(p_val_instance->get_queue(ValQueue::QUEUE_TYPE_GRAPHICS).vk_queue, 1, &submit_info, p_val_instance->vk_render_fence) != VK_SUCCESS) {
-        return false;
-    }
-
+bool ValWindowRenderTarget::present_queue(ValInstance *p_val_instance) {
     VkPresentInfoKHR present_info{};
     present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
@@ -329,7 +270,7 @@ bool ValWindow::present_queue(ValInstance *p_val_instance) {
     return true;
 }
 
-void ValWindow::release(ValInstance *p_val_instance) {
+void ValWindowRenderTarget::release(ValInstance *p_val_instance) {
     for (VkImageView view : vk_swapchain_image_views) {
         vkDestroyImageView(p_val_instance->vk_device, view, nullptr);
     }

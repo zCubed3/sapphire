@@ -411,7 +411,7 @@ VkDevice ValInstance::create_vk_device(VkPhysicalDevice vk_gpu, std::vector<ValQ
 }
 
 // TODO: Provide the user with an interface for making custom render passes
-VkRenderPass ValInstance::create_vk_render_pass(VkDevice vk_device, ValWindow::PresentInfo* present_info) {
+VkRenderPass ValInstance::create_vk_render_pass(VkDevice vk_device, ValWindowRenderTarget::PresentInfo* present_info) {
     VkAttachmentDescription color_attachment{};
     color_attachment.format = present_info->vk_color_format.format;
     color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -548,17 +548,23 @@ ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_in
         return nullptr;
     }
 
+    ValInstance* instance = new ValInstance();
+
+    instance->vk_instance = vk_instance;
+
 #ifdef SDL_SUPPORT
-    ValWindow* main_window = new ValWindow(p_create_info->sdl_window, vk_instance);
+    ValRenderTargetCreateInfo window_create_info {};
+    window_create_info.p_window = p_create_info->sdl_window;
+    window_create_info.initialize_swapchain = false;
+    window_create_info.type = ValRenderTargetCreateInfo::RENDER_TARGET_TYPE_WINDOW;
+
+    ValWindowRenderTarget *main_window = static_cast<ValWindowRenderTarget*>(ValRenderTarget::create_render_target(&window_create_info, instance));
 #endif
 
     // TODO: Proper multiple window support (thanks windows for making presenting harder :| )
     ChosenGPU gpu = pick_gpu(vk_instance, main_window->vk_surface, p_create_info);
     VkDevice vk_device = create_vk_device(gpu.vk_device, gpu.queues, p_create_info);
 
-    ValInstance* instance = new ValInstance();
-
-    instance->vk_instance = vk_instance;
     instance->vk_physical_device = gpu.vk_device;
     instance->val_queues = gpu.queues;
     instance->vk_device = vk_device;
@@ -577,7 +583,7 @@ ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_in
 
 #ifdef SDL_SUPPORT
     // We ask the main window for the format and present mode it prefers
-    ValWindow::PresentInfo* present_info = main_window->get_present_info(gpu.vk_device);
+    ValWindowRenderTarget::PresentInfo* present_info = main_window->get_present_info(gpu.vk_device);
     instance->present_info = present_info;
 
     VkRenderPass vk_render_pass = create_vk_render_pass(vk_device, present_info);

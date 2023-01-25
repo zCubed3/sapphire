@@ -73,7 +73,7 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
 
     const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
     ValInstance* val_instance = render_server->val_instance;
-    ValWindow* window = val_instance->val_main_window;
+    ValWindowRenderTarget * window = val_instance->val_main_window;
 
     VkViewport viewport{};
     viewport.x = 0.0f;
