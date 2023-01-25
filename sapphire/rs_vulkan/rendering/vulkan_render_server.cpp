@@ -120,6 +120,12 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
         return false;
     }
 
+    // TODO: Allow the user to create their own vertex types
+    val_default_vertex_input = {};
+    val_default_vertex_input.push_attribute(ValVertexInputBuilder::ATTRIBUTE_DATA_TYPE_VEC3);
+    val_default_vertex_input.push_attribute(ValVertexInputBuilder::ATTRIBUTE_DATA_TYPE_VEC3);
+    val_default_vertex_input.push_attribute(ValVertexInputBuilder::ATTRIBUTE_DATA_TYPE_VEC2);
+
     singleton = this;
 
     return true;

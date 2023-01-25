@@ -38,36 +38,6 @@ VkPipelineShaderStageCreateInfo VulkanShaderAsset::create_stage(Stage stage, VkS
     return create_info;
 }
 
-VkVertexInputBindingDescription VulkanShaderAsset::get_input_binding() {
-    VkVertexInputBindingDescription binding_description{};
-    binding_description.binding = 0;
-    binding_description.stride = sizeof(MeshBuffer::Vertex);
-    binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-    return binding_description;
-}
-
-std::vector<VkVertexInputAttributeDescription> VulkanShaderAsset::get_input_attributes() {
-    std::vector<VkVertexInputAttributeDescription> input_attributes(3);
-
-    input_attributes[0].binding = 0;
-    input_attributes[0].location = 0;
-    input_attributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-    input_attributes[0].offset = 0;
-
-    input_attributes[1].binding = 0;
-    input_attributes[1].location = 1;
-    input_attributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    input_attributes[1].offset = sizeof(glm::vec3);
-
-    input_attributes[2].binding = 0;
-    input_attributes[2].location = 2;
-    input_attributes[2].format = VK_FORMAT_R32G32_SFLOAT;
-    input_attributes[2].offset = sizeof(glm::vec3) * 2;
-
-    return input_attributes;
-}
-
 std::vector<VkDynamicState> VulkanShaderAsset::get_dynamic_states(uint32_t flags) {
     std::vector<VkDynamicState> states {};
 
@@ -102,8 +72,9 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     dynamic_state_create_info.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
     dynamic_state_create_info.pDynamicStates = dynamic_states.data();
 
-    VkVertexInputBindingDescription input_description = get_input_binding();
-    std::vector<VkVertexInputAttributeDescription> input_attributes = get_input_attributes();
+    // TODO: Replace this with ValPipelineBuilder
+    std::vector<VkVertexInputAttributeDescription> input_attributes = render_server->val_default_vertex_input.get_input_attributes();
+    VkVertexInputBindingDescription input_description = render_server->val_default_vertex_input.get_binding_description();
 
     VkPipelineVertexInputStateCreateInfo vertex_input_create_info{};
     vertex_input_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

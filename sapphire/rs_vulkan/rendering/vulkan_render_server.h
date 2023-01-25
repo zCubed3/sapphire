@@ -2,7 +2,9 @@
 #define SAPPHIRE_VULKAN_RENDER_SERVER_H
 
 #include <engine/rendering/render_server.h>
+
 #include <rs_vulkan/val/render_targets/val_render_target.h>
+#include <rs_vulkan/val/pipelines/val_vertex_input_builder.h>
 
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
@@ -21,7 +23,7 @@ public:
     VkDescriptorSet vk_descriptor_set;
     VkDescriptorSetLayout vk_descriptor_set_layout;
 
-public:
+    ValVertexInputBuilder val_default_vertex_input;
     ValRenderTarget *val_active_render_target = nullptr;
 
     ~VulkanRenderServer() override;

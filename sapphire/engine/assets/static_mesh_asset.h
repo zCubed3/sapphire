@@ -10,6 +10,8 @@
 // Changing data is destructive and unsafe!
 class StaticMeshAsset : public MeshAsset {
 protected:
+    static StaticMeshAsset* primitive_quad;
+
     glm::vec3 *position_data = nullptr;
     glm::vec3 *normal_data = nullptr;
     glm::vec2 *uv0_data = nullptr;
@@ -20,6 +22,10 @@ protected:
     size_t triangle_count = 0;
 
 public:
+    enum Primitive {
+        PRIMITIVE_QUAD
+    };
+
     void set_vertex_count(size_t length);
     void set_triangle_count(size_t length);
 
@@ -39,6 +45,9 @@ public:
     uint32_t get_triangle_count() override;
 
     void render(const Transform &transform) override;
+
+    // TODO: ProceduralMeshAsset for procedural primitives?
+    static StaticMeshAsset *get_primitive(Primitive primitive);
 };
 
 #endif

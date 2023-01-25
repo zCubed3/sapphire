@@ -26,7 +26,7 @@ option(RS_VULKAN_SUPPORT "Compiles and links Vulkan Render Server support into t
 option(DISABLE_RTTI "Disables RTTI support (in favor of the engine type system)" ON)
 
 # TODO: TEMP
-set(RS_VULKAN_SUPPORT OFF)
+set(RS_OPENGL4_SUPPORT OFF)
 
 #
 # Compiler things

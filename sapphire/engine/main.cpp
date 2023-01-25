@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
     // The render server requires a main window to get things started
     // TODO: Splash screen?
     // TODO: Allow changing the server based on a cvar
-    RenderServer *render_server = new OpenGL4RenderServer();
-    //RenderServer *render_server = new VulkanRenderServer();
+    //RenderServer *render_server = new OpenGL4RenderServer();
+    RenderServer *render_server = new VulkanRenderServer();
     render_server->register_rs_asset_loaders();
 
     uint32_t window_flags = render_server->get_sdl_window_flags();
@@ -63,6 +63,8 @@ int main(int argc, char **argv) {
 
     // We need to load our model and our shader
     MeshAsset *mesh = static_cast<MeshAsset *>(AssetLoader::load_asset("test.obj"));
+    //MeshAsset *mesh = StaticMeshAsset::get_primitive(StaticMeshAsset::PRIMITIVE_QUAD);
+
     ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.mspv"));
     //ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.glsl"));
 

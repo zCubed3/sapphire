@@ -48,8 +48,6 @@ protected:
     static bool create_module(const std::vector<char>& code, VkShaderModule* p_module);
     static VkPipelineShaderStageCreateInfo create_stage(Stage stage, VkShaderModule p_module);
 
-    static VkVertexInputBindingDescription get_input_binding();
-    static std::vector<VkVertexInputAttributeDescription> get_input_attributes();
     static std::vector<VkDynamicState> get_dynamic_states(uint32_t flags);
 
 public:

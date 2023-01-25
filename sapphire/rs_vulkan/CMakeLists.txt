@@ -7,6 +7,7 @@ set(SAPPHIRE_RS_VULKAN_SOURCES
         "val/data/val_buffer.cpp"
         "val/data/val_stagingbuffer.cpp"
         "val/images/val_image.cpp"
+        "val/pipelines/val_vertex_input_builder.cpp"
         "val/render_targets/val_render_target.cpp"
         "val/render_targets/val_image_render_target.cpp"
         "val/render_targets/val_window_render_target.cpp"

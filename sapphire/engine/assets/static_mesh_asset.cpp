@@ -1,6 +1,9 @@
 #include "static_mesh_asset.h"
 
 #include <engine/rendering/mesh_buffer.h>
+#include <engine/rendering/render_server.h>
+
+StaticMeshAsset *StaticMeshAsset::primitive_quad = nullptr;
 
 void StaticMeshAsset::set_position_data(glm::vec3 *data, size_t length) {
     delete[] position_data;
@@ -103,5 +106,51 @@ uint32_t StaticMeshAsset::get_triangle_count() {
 void StaticMeshAsset::render(const Transform &transform) {
     if (buffer != nullptr) {
         buffer->render(transform, shader);
+    }
+}
+
+StaticMeshAsset *StaticMeshAsset::get_primitive(Primitive primitive) {
+    if (primitive_quad == nullptr) {
+        primitive_quad = new StaticMeshAsset();
+
+        uint32_t quad_triangles[] = {
+            0, 1, 2, 3, 2, 1
+        };
+
+        glm::vec3 quad_positions[] = {
+                {-1, -1, 0},
+                {-1, 1, 0},
+                {1, -1, 0},
+                {1, 1, 0},
+        };
+
+        glm::vec3 quad_normals[] = {
+                {0, 0, 1},
+                {0, 0, 1},
+                {0, 0, 1},
+                {0, 0, 1},
+        };
+
+        glm::vec2 quad_uvs[] = {
+                {0, 0},
+                {0, 1},
+                {1, 0},
+                {1, 1},
+        };
+
+        primitive_quad->set_triangle_data(quad_triangles, 6);
+        primitive_quad->set_position_data(quad_positions, 4);
+        primitive_quad->set_normal_data(quad_normals, 4);
+        primitive_quad->set_uv0_data(quad_uvs, 4);
+
+        RenderServer::get_singleton()->populate_mesh_buffer(primitive_quad);
+    }
+
+    switch (primitive) {
+        default:
+            return nullptr;
+
+        case Primitive::PRIMITIVE_QUAD:
+            return primitive_quad;
     }
 }
