@@ -330,7 +330,7 @@ ValInstance::ChosenGPU ValInstance::pick_gpu(VkInstance vk_instance, VkSurfaceKH
     return ValInstance::ChosenGPU {};
 }
 
-VkDevice ValInstance::create_vk_device(ValInstanceCreateInfo* p_create_info, VkPhysicalDevice vk_gpu, std::vector<ValQueue>& val_queues) {
+VkDevice ValInstance::create_vk_device(VkPhysicalDevice vk_gpu, std::vector<ValQueue>& val_queues, ValInstanceCreateInfo* p_create_info) {
     VkDevice vk_device = nullptr;
 
     std::vector<uint32_t> device_queues;
@@ -429,15 +429,38 @@ VkRenderPass ValInstance::create_vk_render_pass(VkDevice vk_device, ValWindow::P
     color_attachment_ref.attachment = 0;
     color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+    VkAttachmentDescription depth_attachment{};
+    depth_attachment.format = VK_FORMAT_D32_SFLOAT;
+    depth_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+
+    depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+    depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
+    depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference depth_attachment_ref{};
+    depth_attachment_ref.attachment = 1;
+    depth_attachment_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
     VkSubpassDescription subpass{};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &color_attachment_ref;
+    subpass.pDepthStencilAttachment = &depth_attachment_ref;
+
+    std::vector<VkAttachmentDescription> attachments = {
+            color_attachment,
+            depth_attachment
+    };
 
     VkRenderPassCreateInfo render_pass_create_info{};
     render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    render_pass_create_info.attachmentCount = 1;
-    render_pass_create_info.pAttachments = &color_attachment;
+    render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+    render_pass_create_info.pAttachments = attachments.data();
     render_pass_create_info.subpassCount = 1;
     render_pass_create_info.pSubpasses = &subpass;
 
@@ -463,6 +486,27 @@ VmaAllocator ValInstance::create_vma_allocator(VkInstance vk_instance, VkDevice 
     }
 
     return vma_allocator;
+}
+
+// TODO: User sizeable pools (in create info)
+// TODO: Abstract descriptor pools
+VkDescriptorPool ValInstance::create_vk_descriptor_pool(VkDevice vk_device) {
+    VkDescriptorPoolSize pool_size{};
+    pool_size.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    pool_size.descriptorCount = 1;
+
+    VkDescriptorPoolCreateInfo create_info {};
+    create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    create_info.poolSizeCount = 1;
+    create_info.pPoolSizes = &pool_size;
+    create_info.maxSets = 1;
+
+    VkDescriptorPool vk_pool = nullptr;
+    if (vkCreateDescriptorPool(vk_device, &create_info, nullptr, &vk_pool) != VK_SUCCESS) {
+        return nullptr;
+    }
+
+    return vk_pool;
 }
 
 VkSemaphore ValInstance::create_vk_semaphore(VkDevice vk_device) {
@@ -510,7 +554,7 @@ ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_in
 
     // TODO: Proper multiple window support (thanks windows for making presenting harder :| )
     ChosenGPU gpu = pick_gpu(vk_instance, main_window->vk_surface, p_create_info);
-    VkDevice vk_device = create_vk_device(p_create_info, gpu.vk_device, gpu.queues);
+    VkDevice vk_device = create_vk_device(gpu.vk_device, gpu.queues, p_create_info);
 
     ValInstance* instance = new ValInstance();
 
@@ -527,7 +571,9 @@ ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_in
 
     instance->vk_image_available_semaphore = create_vk_semaphore(vk_device);
     instance->vk_render_finished_semaphore = create_vk_semaphore(vk_device);
-    instance->vk_flight_fence = create_vk_fence(vk_device);
+    instance->vk_render_fence = create_vk_fence(vk_device);
+
+    instance->vk_descriptor_pool = create_vk_descriptor_pool(vk_device);
 
 #ifdef SDL_SUPPORT
     // We ask the main window for the format and present mode it prefers
@@ -554,8 +600,8 @@ ValQueue ValInstance::get_queue(ValQueue::QueueType type) {
 }
 
 void ValInstance::await_frame() {
-    if (vk_device != nullptr && vk_flight_fence != nullptr) {
-        vkWaitForFences(vk_device, 1, &vk_flight_fence, VK_TRUE, UINT64_MAX);
+    if (vk_device != nullptr && vk_render_fence != nullptr) {
+        vkWaitForFences(vk_device, 1, &vk_render_fence, VK_TRUE, UINT64_MAX);
     }
 }
 
@@ -569,7 +615,7 @@ ValInstance::~ValInstance() {
 
         vkDestroyRenderPass(vk_device, vk_render_pass, nullptr);
 
-        vkDestroyFence(vk_device, vk_flight_fence, nullptr);
+        vkDestroyFence(vk_device, vk_render_fence, nullptr);
         vkDestroySemaphore(vk_device, vk_image_available_semaphore, nullptr);
         vkDestroySemaphore(vk_device, vk_render_finished_semaphore, nullptr);
 

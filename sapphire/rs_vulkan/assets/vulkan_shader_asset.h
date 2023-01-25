@@ -37,7 +37,7 @@ public:
 
     VkPipeline vk_pipeline = nullptr;
     VkPipelineLayout vk_pipeline_layout = nullptr;
-    VkDescriptorSetLayout vk_descriptor_set_layout = nullptr;
+    //VkDescriptorSetLayout vk_descriptor_set_layout = nullptr;
 
 protected:
     enum Stage {

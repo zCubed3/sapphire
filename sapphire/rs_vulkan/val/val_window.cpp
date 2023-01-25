@@ -79,10 +79,21 @@ ValWindow::PresentInfo* ValWindow::get_present_info(VkPhysicalDevice vk_gpu) con
 bool ValWindow::recreate_swapchain(ValInstance* p_val_instance) {
     p_val_instance->await_frame();
 
+    if (vk_depth_image != nullptr) {
+        vkDestroyImage(p_val_instance->vk_device, vk_depth_image, nullptr);
+    }
+
+    if (vk_depth_image_view != nullptr) {
+        vkDestroyImageView(p_val_instance->vk_device, vk_depth_image_view, nullptr);
+    }
+
     // TODO: Move extent calculation elsewhere
     // TODO: SDL optional dependency
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(p_val_instance->vk_physical_device, vk_surface, &vk_capabilities);
 
+    //
+    // Hi-dpi aware extent
+    //
     if (vk_capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         vk_extent = vk_capabilities.currentExtent;
     } else {
@@ -100,6 +111,9 @@ bool ValWindow::recreate_swapchain(ValInstance* p_val_instance) {
         vk_extent = actual_extent;
     }
 
+    //
+    // Swapchain
+    //
     uint32_t image_count = vk_capabilities.minImageCount + 1;
 
     ValQueue graphics_queue = p_val_instance->get_queue(ValQueue::QueueType::QUEUE_TYPE_GRAPHICS);
@@ -189,17 +203,81 @@ bool ValWindow::recreate_swapchain(ValInstance* p_val_instance) {
         }
     }
 
+    // TODO: TEMP
+    // Depth buffer
+    // TODO: TEMP
+    VkImageCreateInfo depth_create_info {};
+    depth_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    depth_create_info.imageType = VK_IMAGE_TYPE_2D;
+    depth_create_info.extent.width = vk_extent.width;
+    depth_create_info.extent.height = vk_extent.height;
+    depth_create_info.extent.depth = 1;
+    depth_create_info.mipLevels = 1;
+    depth_create_info.arrayLayers = 1;
+    depth_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    depth_create_info.format = VK_FORMAT_D32_SFLOAT;
+    depth_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    depth_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depth_create_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    depth_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if (vkCreateImage(p_val_instance->vk_device, &depth_create_info, nullptr, &vk_depth_image) != VK_SUCCESS) {
+        return false;
+    }
+
+    VkMemoryRequirements mem_requirements {};
+    vkGetImageMemoryRequirements(p_val_instance->vk_device, vk_depth_image, &mem_requirements);
+
+    VmaAllocationCreateInfo depth_info {};
+    uint32_t memory_type;
+    vmaFindMemoryTypeIndex(p_val_instance->vma_allocator, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &depth_info, &memory_type);
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = mem_requirements.size;
+    allocInfo.memoryTypeIndex = memory_type;
+
+    if (vkAllocateMemory(p_val_instance->vk_device, &allocInfo, nullptr, &vk_depth_image_memory) != VK_SUCCESS) {
+        return false;
+    }
+
+    vkBindImageMemory(p_val_instance->vk_device, vk_depth_image, vk_depth_image_memory, 0);
+
+    VkImageViewCreateInfo depth_view_create_info{};
+    depth_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+
+    depth_view_create_info.image = vk_depth_image;
+    depth_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    depth_view_create_info.format = VK_FORMAT_D32_SFLOAT;
+
+    depth_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    depth_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    depth_view_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    depth_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+    depth_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    depth_view_create_info.subresourceRange.baseMipLevel = 0;
+    depth_view_create_info.subresourceRange.levelCount = 1;
+    depth_view_create_info.subresourceRange.baseArrayLayer = 0;
+    depth_view_create_info.subresourceRange.layerCount = 1;
+
+    if (vkCreateImageView(p_val_instance->vk_device, &depth_view_create_info, nullptr, &vk_depth_image_view) != VK_SUCCESS) {
+        // TODO: Error failed to create image view!
+        return false;
+    }
+
     vk_swapchain_framebuffers.resize(image_count);
     for (uint32_t i = 0; i < image_count; i++) {
-        VkImageView attachments[] = {
-                vk_swapchain_image_views[i]
+        std::vector<VkImageView> attachments = {
+                vk_swapchain_image_views[i],
+                vk_depth_image_view
         };
 
         VkFramebufferCreateInfo framebuffer_create_info{};
         framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebuffer_create_info.renderPass = p_val_instance->vk_render_pass;
-        framebuffer_create_info.attachmentCount = 1;
-        framebuffer_create_info.pAttachments = attachments;
+        framebuffer_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+        framebuffer_create_info.pAttachments = attachments.data();
         framebuffer_create_info.width = vk_extent.width;
         framebuffer_create_info.height = vk_extent.height;
         framebuffer_create_info.layers = 1;
@@ -244,11 +322,19 @@ bool ValWindow::begin_rendering(ValInstance* p_val_instance) {
     render_pass_info.renderArea.offset = {0, 0};
     render_pass_info.renderArea.extent = vk_extent;
 
+    std::vector<VkClearValue> clear_values;
+
     VkClearValue clear_color = {};
     clear_color.color = { 0, 0, 0, 1 };
 
-    render_pass_info.clearValueCount = 1;
-    render_pass_info.pClearValues = &clear_color;
+    VkClearValue depth_stencil = {};
+    depth_stencil.depthStencil = {1.0F, 0};
+
+    clear_values.push_back(clear_color);
+    clear_values.push_back(depth_stencil);
+
+    render_pass_info.clearValueCount = clear_values.size();
+    render_pass_info.pClearValues = clear_values.data();
 
     vkCmdBeginRenderPass(vk_command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -277,7 +363,7 @@ bool ValWindow::present_queue(ValInstance *p_val_instance) {
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &vk_command_buffer;
 
-    if (vkQueueSubmit(p_val_instance->get_queue(ValQueue::QUEUE_TYPE_GRAPHICS).vk_queue, 1, &submit_info, p_val_instance->vk_flight_fence) != VK_SUCCESS) {
+    if (vkQueueSubmit(p_val_instance->get_queue(ValQueue::QUEUE_TYPE_GRAPHICS).vk_queue, 1, &submit_info, p_val_instance->vk_render_fence) != VK_SUCCESS) {
         return false;
     }
 

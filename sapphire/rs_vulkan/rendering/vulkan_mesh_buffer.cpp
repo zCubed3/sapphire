@@ -93,7 +93,15 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
 
     vkCmdBindIndexBuffer(window->vk_command_buffer, val_ibo->vk_buffer, offset, VK_INDEX_TYPE_UINT32);
 
-    //vkCmdBindDescriptorSets(window->vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_shader->vk_pipeline_layout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
+    vkCmdBindDescriptorSets(
+            window->vk_command_buffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            vk_shader->vk_pipeline_layout,
+            0,
+            1,
+            &render_server->vk_descriptor_set,
+            0,
+            nullptr);
 
     vkCmdDrawIndexed(window->vk_command_buffer, tri_count, 1, 0, 0, 0);
 }

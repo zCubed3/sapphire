@@ -9,6 +9,7 @@ typedef struct SDL_Window SDL_Window;
 class ValInstance;
 
 // TODO: Properly support multiple windows
+// TODO: Separate this into a framebuffer type
 struct ValWindow {
     struct PresentInfo {
         VkSurfaceFormatKHR vk_color_format;
@@ -42,6 +43,11 @@ struct ValWindow {
     std::vector<VkImage> vk_swapchain_images;
     std::vector<VkImageView> vk_swapchain_image_views;
     std::vector<VkFramebuffer> vk_swapchain_framebuffers;
+
+    // TODO: Wrap this into ValImage
+    VkImage vk_depth_image = nullptr;
+    VkDeviceMemory vk_depth_image_memory = nullptr;
+    VkImageView vk_depth_image_view = nullptr;
 };
 
 #endif

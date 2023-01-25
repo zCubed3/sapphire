@@ -13,6 +13,8 @@
 #include <rs_vulkan/val/val_buffer.h>
 #include <rs_vulkan/val/val_stagingbuffer.h>
 
+// TODO: Frames in flight?
+
 struct ValInstanceCreateInfo {
     enum VulkanAPIVersion {
         API_VERSION_1_0,
@@ -80,9 +82,10 @@ protected:
 
     static VkInstance create_vk_instance(ValInstanceCreateInfo* p_create_info);
     static ChosenGPU pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_surface, ValInstanceCreateInfo* p_create_info);
-    static VkDevice create_vk_device(ValInstanceCreateInfo* p_create_info, VkPhysicalDevice vk_gpu, std::vector<ValQueue>& val_queues);
+    static VkDevice create_vk_device(VkPhysicalDevice vk_gpu, std::vector<ValQueue>& val_queues, ValInstanceCreateInfo* p_create_info);
     static VkRenderPass create_vk_render_pass(VkDevice vk_device, ValWindow::PresentInfo* present_info);
     static VmaAllocator create_vma_allocator(VkInstance vk_instance, VkDevice vk_device, VkPhysicalDevice vk_gpu);
+    static VkDescriptorPool create_vk_descriptor_pool(VkDevice vk_device);
 
     static VkSemaphore create_vk_semaphore(VkDevice vk_device);
     static VkFence create_vk_fence(VkDevice vk_device);
@@ -111,10 +114,13 @@ public:
     // TODO: Abstract sync objects?
     VkSemaphore vk_image_available_semaphore;
     VkSemaphore vk_render_finished_semaphore;
-    VkFence vk_flight_fence;
+    VkFence vk_render_fence;
+
+    // TODO: Abstract descriptors and pools
+    VkDescriptorPool vk_descriptor_pool;
 
 #ifdef SDL_SUPPORT
-    ValWindow*val_main_window;
+    ValWindow* val_main_window;
 #endif
 
     std::vector<ValQueue> val_queues;

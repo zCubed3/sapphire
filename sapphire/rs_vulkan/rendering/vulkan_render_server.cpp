@@ -25,10 +25,8 @@
 
 // TODO: Wait for rendering to finish
 VulkanRenderServer::~VulkanRenderServer() {
-    for (ValBuffer* camera_ubo : val_camera_ubos) {
-        camera_ubo->release(val_instance);
-        delete camera_ubo;
-    }
+    val_camera_ubo->release(val_instance);
+    delete val_camera_ubo;
 
     delete val_instance;
 }
@@ -89,12 +87,35 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     val_instance = ValInstance::create_val_instance(&val_create_info);
 
-    size_t image_count = val_instance->val_main_window->vk_swapchain_images.size();
-    val_camera_ubos.resize(image_count);
+    val_camera_ubo = new ValBuffer(
+            sizeof(CameraData),
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
+            val_instance);
 
-    for (size_t i = 0; i < image_count; i++) {
-        ValBuffer* camera_ubo = new ValBuffer(sizeof(CameraData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 0, val_instance);
-        val_camera_ubos[i] = camera_ubo;
+    // TODO: User defined layouts
+    VkDescriptorSetLayoutBinding layout_binding{};
+    layout_binding.binding = 0;
+    layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    layout_binding.descriptorCount = 1;
+    layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    layout_binding.pImmutableSamplers = nullptr; // Optional
+
+    VkDescriptorSetLayoutCreateInfo layout_info{};
+    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layout_info.bindingCount = 1;
+    layout_info.pBindings = &layout_binding;
+
+    vkCreateDescriptorSetLayout(val_instance->vk_device, &layout_info, nullptr, &vk_descriptor_set_layout);
+
+    VkDescriptorSetAllocateInfo alloc_info{};
+    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    alloc_info.descriptorPool = val_instance->vk_descriptor_pool;
+    alloc_info.descriptorSetCount = 1;
+    alloc_info.pSetLayouts = &vk_descriptor_set_layout;
+
+    if (vkAllocateDescriptorSets(val_instance->vk_device, &alloc_info, &vk_descriptor_set) != VK_SUCCESS) {
+        return false;
     }
 
     singleton = this;
@@ -114,7 +135,7 @@ void VulkanRenderServer::on_window_resized() {
 
 bool VulkanRenderServer::begin_frame() {
     val_instance->await_frame();
-    vkResetFences(val_instance->vk_device, 1, &val_instance->vk_flight_fence);
+    vkResetFences(val_instance->vk_device, 1, &val_instance->vk_render_fence);
 
     return true;
 }
@@ -124,7 +145,35 @@ bool VulkanRenderServer::end_frame() {
 }
 
 bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
+    p_target->begin_attach();
+
     // TODO: Actually use render targets and not ValWindow instances
+    VkDescriptorBufferInfo buffer_info{};
+    buffer_info.buffer = val_camera_ubo->vk_buffer;
+    buffer_info.offset = 0;
+    buffer_info.range = sizeof(CameraData);
+
+    VkWriteDescriptorSet descriptor_write{};
+    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_write.dstSet = vk_descriptor_set;
+    descriptor_write.dstBinding = 0;
+    descriptor_write.dstArrayElement = 0;
+    descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_write.descriptorCount = 1;
+    descriptor_write.pBufferInfo = &buffer_info;
+    descriptor_write.pImageInfo = nullptr; // Optional
+    descriptor_write.pTexelBufferView = nullptr; // Optional
+
+    CameraData data = {
+            p_target->projection,
+            p_target->view,
+            p_target->eye
+    };
+
+    val_camera_ubo->write(&data, val_instance);
+
+    vkUpdateDescriptorSets(val_instance->vk_device, 1, &descriptor_write, 0, nullptr);
+
     val_instance->val_main_window->begin_rendering(val_instance);
 
     return true;

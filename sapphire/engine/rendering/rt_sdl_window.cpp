@@ -2,6 +2,7 @@
 
 #include <SDL.h>
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <gtc/matrix_transform.hpp>
 
 #include <scene/world.h>
@@ -27,7 +28,12 @@ void SDLWindowRenderTarget::begin_attach() {
     // TODO: Cameras should set this!
     float aspect = (float) width / (float) height;
 
-    view = glm::lookAt(glm::vec3(0, 0, 3), glm::vec3(0, 0, 0), glm::vec3(0, -1, 0));
+    //float x = 0;
+    float x = sin(world->elapsed_time);
+
+    // TODO: Allow the renderer to note if the Y axis is flipped
+    view = glm::lookAt(glm::vec3(x, 0, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
     projection = glm::perspective(30.0F, aspect, 0.01F, 100.0F);
+
     eye = projection * view;
 }

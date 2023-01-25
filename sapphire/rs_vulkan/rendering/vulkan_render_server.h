@@ -16,7 +16,9 @@ public:
     SDL_Window* window;
 
     ValInstance* val_instance = nullptr;
-    std::vector<ValBuffer*> val_camera_ubos;
+    ValBuffer* val_camera_ubo;
+    VkDescriptorSet vk_descriptor_set;
+    VkDescriptorSetLayout vk_descriptor_set_layout;
 
 public:
     ~VulkanRenderServer() override;
