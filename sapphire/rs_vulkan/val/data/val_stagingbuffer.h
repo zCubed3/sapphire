@@ -2,9 +2,8 @@
 #define SAPPHIRE_VAL_STAGINGBUFFER_H
 
 #include <cstdint>
-#include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
-
+#include <vulkan/vulkan.h>
 #include <rs_vulkan/val/val_releasable.h>
 
 // Wrapper around data transfers
@@ -19,8 +18,7 @@ struct ValStagingBuffer : public ValReleasable {
 
     void write(void *data, ValInstance *p_val_instance) const;
     void copy_buffer(VkCommandBuffer vk_command_buffer) const;
-
-    static ValBuffer *finalize(ValStagingBuffer *p_buffer, ValInstance *p_val_instance);
+    ValBuffer* finalize(ValInstance *p_val_instance);
 
     void release(ValInstance *p_val_instance) override;
 };

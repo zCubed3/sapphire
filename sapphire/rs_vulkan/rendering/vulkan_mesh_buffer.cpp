@@ -53,9 +53,15 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
 
     render_server->end_upload(command_buffer);
 
-    val_vbo = ValStagingBuffer::finalize(vbo_staging, val_instance);
-    val_ibo = ValStagingBuffer::finalize(ibo_staging, val_instance);
+    val_vbo = vbo_staging->finalize(val_instance);
+    val_ibo = ibo_staging->finalize(val_instance);
 
+    vbo_staging->release(val_instance);
+    delete vbo_staging;
+
+    ibo_staging->release(val_instance);
+    delete ibo_staging;
+    
     delete[] vertices;
 }
 

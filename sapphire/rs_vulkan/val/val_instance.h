@@ -10,8 +10,8 @@
 #include <rs_vulkan/val/val_layer.h>
 #include <rs_vulkan/val/val_queue.h>
 #include <rs_vulkan/val/val_window.h>
-#include <rs_vulkan/val/val_buffer.h>
-#include <rs_vulkan/val/val_stagingbuffer.h>
+#include <rs_vulkan/val/data/val_buffer.h>
+#include <rs_vulkan/val/data/val_stagingbuffer.h>
 
 // TODO: Frames in flight?
 

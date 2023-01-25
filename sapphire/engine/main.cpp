@@ -29,9 +29,15 @@ int main(int argc, char **argv) {
 
     uint32_t window_flags = render_server->get_sdl_window_flags();
 
+    std::string window_name = "Sapphire";
+
+    window_name += " (";
+    window_name += render_server->get_name();
+    window_name += ")";
+
     // TODO: Abstract window class?
     SDL_Window *main_window = SDL_CreateWindow(
-            "Sapphire",
+            window_name.c_str(),
             SDL_WINDOWPOS_UNDEFINED,
             SDL_WINDOWPOS_UNDEFINED,
             1280,

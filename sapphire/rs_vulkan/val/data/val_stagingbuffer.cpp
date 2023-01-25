@@ -1,7 +1,7 @@
 #include "val_stagingbuffer.h"
 
 #include <rs_vulkan/val/val_instance.h>
-#include <rs_vulkan/val/val_buffer.h>
+#include <rs_vulkan/val/data/val_buffer.h>
 
 ValStagingBuffer::ValStagingBuffer(size_t size, uint32_t usage_flags, ValInstance *p_val_instance) {
     val_staging_buffer = new ValBuffer(
@@ -30,15 +30,12 @@ void ValStagingBuffer::copy_buffer(VkCommandBuffer vk_command_buffer) const {
     vkCmdCopyBuffer(vk_command_buffer, val_staging_buffer->vk_buffer, val_final_buffer->vk_buffer, 1, &copy_region);
 }
 
-ValBuffer* ValStagingBuffer::finalize(ValStagingBuffer *p_buffer, ValInstance *p_val_instance) {
-    p_buffer->val_staging_buffer->release(p_val_instance);
-    p_buffer->val_staging_buffer = nullptr;
+ValBuffer* ValStagingBuffer::finalize(ValInstance *p_val_instance) {
+    val_staging_buffer->release(p_val_instance);
+    val_staging_buffer = nullptr;
 
-    ValBuffer* buffer = p_buffer->val_final_buffer;
-    p_buffer->val_final_buffer = nullptr;
-
-    p_buffer->release(p_val_instance);
-    delete p_buffer;
+    ValBuffer* buffer = val_final_buffer;
+    val_final_buffer = nullptr;
 
     return buffer;
 }

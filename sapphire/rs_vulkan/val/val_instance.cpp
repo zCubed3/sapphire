@@ -621,7 +621,7 @@ ValInstance::~ValInstance() {
 
         vmaDestroyAllocator(vma_allocator);
 
-        ValWindow::release(val_main_window, this);
+        val_main_window->release(this);
         delete val_main_window;
 
         vkDestroyDevice(vk_device, nullptr);

@@ -7,11 +7,11 @@
 #define VERTEX
 #define VERTEX_STAGE
 
-uniform vec3 AGE_CAMERA_POS;
+uniform vec3 SAPPHIRE_CAMERA_POS;
 
-uniform mat4 AGE_M;
-uniform mat4 AGE_M_I;
-uniform mat4 AGE_M_IT;
-uniform mat4 AGE_V;
-uniform mat4 AGE_P;
-uniform mat4 AGE_MVP;
+uniform mat4 SAPPHIRE_M;
+uniform mat4 SAPPHIRE_M_I;
+uniform mat4 SAPPHIRE_M_IT;
+uniform mat4 SAPPHIRE_V;
+uniform mat4 SAPPHIRE_P;
+uniform mat4 SAPPHIRE_MVP;

@@ -5,6 +5,7 @@ class ValInstance;
 
 class ValReleasable {
 public:
+    // Allows this object to release Vulkan resources associated with it
     virtual void release(ValInstance *p_val_instance);
 };
 
