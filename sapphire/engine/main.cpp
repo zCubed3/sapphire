@@ -51,7 +51,6 @@ int main(int argc, char **argv) {
 
     // We need to load our model and our shader
     MeshAsset *mesh = static_cast<MeshAsset *>(AssetLoader::load_asset("test.obj"));
-
     ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.mspv"));
     //ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.glsl"));
 
@@ -117,6 +116,9 @@ int main(int argc, char **argv) {
 
         render_server->present(main_window);
     }
+
+    delete mesh;
+    delete shader;
 
     delete render_server;
 

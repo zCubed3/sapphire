@@ -35,7 +35,9 @@ public:
     CullMode cull_mode = CullMode::Back;
     uint32_t dynamic_flags = DynamicStateFlags::Scissor | DynamicStateFlags::Viewport;
 
-    VkPipeline pipeline = nullptr;
+    VkPipeline vk_pipeline = nullptr;
+    VkPipelineLayout vk_pipeline_layout = nullptr;
+    VkDescriptorSetLayout vk_descriptor_set_layout = nullptr;
 
 protected:
     enum Stage {
@@ -53,6 +55,8 @@ protected:
 public:
     // TODO: Transparency
     void create_vert_frag(const std::vector<char>& vert_code, const std::vector<char>& frag_code);
+
+    ~VulkanShaderAsset() override;
 };
 
 #endif

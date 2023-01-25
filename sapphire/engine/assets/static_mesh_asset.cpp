@@ -93,11 +93,11 @@ uint32_t *StaticMeshAsset::get_triangle_data(size_t *p_length) {
 }
 
 uint32_t StaticMeshAsset::get_vertex_count() {
-    return vertex_count;
+    return static_cast<uint32_t>(vertex_count);
 }
 
 uint32_t StaticMeshAsset::get_triangle_count() {
-    return triangle_count;
+    return static_cast<uint32_t>(triangle_count);
 }
 
 void StaticMeshAsset::render(const Transform &transform) {

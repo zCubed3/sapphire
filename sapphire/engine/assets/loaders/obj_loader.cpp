@@ -119,7 +119,7 @@ Asset *OBJLoader::load_from_path(const std::string &path) {
                 glm::vec3 test_normal = weld_normals[o];
 
                 if (position == test_position && tex_coord == test_tex_coord && normal == test_normal) {
-                    weld_triangles.emplace_back((uint32_t) o);
+                    weld_triangles.emplace_back(static_cast<uint32_t>(o));
                     matching = true;
                     break;
                 }

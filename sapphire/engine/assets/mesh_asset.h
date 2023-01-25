@@ -25,6 +25,8 @@ public:
     virtual uint32_t get_triangle_count() = 0;
 
     virtual void render(const Transform &transform) = 0;
+
+    ~MeshAsset();
 };
 
 

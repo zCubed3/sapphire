@@ -173,15 +173,29 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     color_blend_state.blendConstants[2] = 0.0f; // Optional
     color_blend_state.blendConstants[3] = 0.0f; // Optional
 
+    // TODO: User defined layouts
+    VkDescriptorSetLayoutBinding layout_binding{};
+    layout_binding.binding = 0;
+    layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    layout_binding.descriptorCount = 1;
+    layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    layout_binding.pImmutableSamplers = nullptr; // Optional
+
+    VkDescriptorSetLayoutCreateInfo layout_info{};
+    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layout_info.bindingCount = 1;
+    layout_info.pBindings = &layout_binding;
+
+    vkCreateDescriptorSetLayout(val_instance->vk_device, &layout_info, nullptr, &vk_descriptor_set_layout);
+
     VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
     pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipeline_layout_create_info.setLayoutCount = 0; // Optional
-    pipeline_layout_create_info.pSetLayouts = nullptr; // Optional
+    pipeline_layout_create_info.pSetLayouts = &vk_descriptor_set_layout; // Optional
     pipeline_layout_create_info.pushConstantRangeCount = 0; // Optional
     pipeline_layout_create_info.pPushConstantRanges = nullptr; // Optional
 
-    VkPipelineLayout layout;
-    vkCreatePipelineLayout(val_instance->vk_device, &pipeline_layout_create_info, nullptr, &layout);
+    vkCreatePipelineLayout(val_instance->vk_device, &pipeline_layout_create_info, nullptr, &vk_pipeline_layout);
 
     VkPipelineShaderStageCreateInfo stages[] = {
             vert_stage,
@@ -200,7 +214,7 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     pipeline_create_info.pDepthStencilState = nullptr; // Optional
     pipeline_create_info.pColorBlendState = &color_blend_state;
     pipeline_create_info.pDynamicState = &dynamic_state_create_info;
-    pipeline_create_info.layout = layout;
+    pipeline_create_info.layout = vk_pipeline_layout;
     pipeline_create_info.renderPass = val_instance->vk_render_pass;
     pipeline_create_info.subpass = 0;
     pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE; // Optional
@@ -213,10 +227,20 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
                               1,
                               &pipeline_create_info,
                               nullptr,
-                              &pipeline);
+                              &vk_pipeline);
 
     vkDestroyShaderModule(val_instance->vk_device, vert_module, nullptr);
     vkDestroyShaderModule(val_instance->vk_device, frag_module, nullptr);
 
-    vkDestroyPipelineLayout(val_instance->vk_device, layout, nullptr);
+    //vkDestroyDescriptorSetLayout(val_instance->vk_device, descriptor_set_layout, nullptr);
+    //vkDestroyPipelineLayout(val_instance->vk_device, layout, nullptr);
+}
+
+VulkanShaderAsset::~VulkanShaderAsset() {
+    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+    ValInstance* val_instance = render_server->val_instance;
+
+    vkDestroyDescriptorSetLayout(val_instance->vk_device, vk_descriptor_set_layout, nullptr);
+    vkDestroyPipelineLayout(val_instance->vk_device, vk_pipeline_layout, nullptr);
+    vkDestroyPipeline(val_instance->vk_device, vk_pipeline, nullptr);
 }

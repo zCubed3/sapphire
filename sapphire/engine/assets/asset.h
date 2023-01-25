@@ -2,6 +2,8 @@
 #define SAPPHIRE_ASSET_H
 
 class Asset {
+public:
+    virtual ~Asset() = default;
 };
 
 #endif

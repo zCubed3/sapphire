@@ -9,11 +9,14 @@
 #include <vector>
 
 class ValInstance;
+struct ValBuffer;
 
 class VulkanRenderServer : public RenderServer {
 public:
     SDL_Window* window;
+
     ValInstance* val_instance = nullptr;
+    std::vector<ValBuffer*> val_camera_ubos;
 
 public:
     ~VulkanRenderServer() override;

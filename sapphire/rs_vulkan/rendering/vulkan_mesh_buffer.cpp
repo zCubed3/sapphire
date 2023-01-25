@@ -66,7 +66,8 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
     VulkanShaderAsset* vk_shader = reinterpret_cast<VulkanShaderAsset*>(p_shader_asset);
 
     const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
-    ValWindow* window = render_server->val_instance->val_main_window;
+    ValInstance* val_instance = render_server->val_instance;
+    ValWindow* window = val_instance->val_main_window;
 
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -82,7 +83,7 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
 
     // TODO: Not assume we're always rendering to the main window
     // We assume a command buffer is currently recording
-    vkCmdBindPipeline(window->vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_shader->pipeline);
+    vkCmdBindPipeline(window->vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_shader->vk_pipeline);
 
     vkCmdSetViewport(window->vk_command_buffer, 0, 1, &viewport);
     vkCmdSetScissor(window->vk_command_buffer, 0, 1, &scissor);
@@ -92,5 +93,18 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
 
     vkCmdBindIndexBuffer(window->vk_command_buffer, val_ibo->vk_buffer, offset, VK_INDEX_TYPE_UINT32);
 
+    //vkCmdBindDescriptorSets(window->vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_shader->vk_pipeline_layout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
+
     vkCmdDrawIndexed(window->vk_command_buffer, tri_count, 1, 0, 0, 0);
+}
+
+VulkanMeshBuffer::~VulkanMeshBuffer() {
+    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+    ValInstance* val_instance = render_server->val_instance;
+
+    val_vbo->release(val_instance);
+    delete val_vbo;
+
+    val_ibo->release(val_instance);
+    delete val_ibo;
 }

@@ -1,4 +1,5 @@
 set(SAPPHIRE_RS_VULKAN_SOURCES
+        "val/val_releasable.cpp"
         "val/val_instance.cpp"
         "val/val_extension.cpp"
         "val/val_layer.cpp"

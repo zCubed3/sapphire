@@ -11,6 +11,7 @@
 
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_target.h>
+#include <engine/rendering/camera_data.h>
 
 #include <rs_vulkan/assets/vulkan_shader_asset.h>
 #include <rs_vulkan/assets/vulkan_shader_asset_loader.h>
@@ -24,6 +25,11 @@
 
 // TODO: Wait for rendering to finish
 VulkanRenderServer::~VulkanRenderServer() {
+    for (ValBuffer* camera_ubo : val_camera_ubos) {
+        camera_ubo->release(val_instance);
+        delete camera_ubo;
+    }
+
     delete val_instance;
 }
 
@@ -57,7 +63,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     window = p_window;
 
-    // Vulkan bootstrapping is so fun!
+    // Vulkan is so fun! :(
 
     ValInstanceCreateInfo val_create_info {};
 
@@ -83,7 +89,13 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     val_instance = ValInstance::create_val_instance(&val_create_info);
 
-    uint32_t enumeration_count = 0;
+    size_t image_count = val_instance->val_main_window->vk_swapchain_images.size();
+    val_camera_ubos.resize(image_count);
+
+    for (size_t i = 0; i < image_count; i++) {
+        ValBuffer* camera_ubo = new ValBuffer(sizeof(CameraData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 0, val_instance);
+        val_camera_ubos[i] = camera_ubo;
+    }
 
     singleton = this;
 

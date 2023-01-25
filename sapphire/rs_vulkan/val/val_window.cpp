@@ -53,8 +53,14 @@ ValWindow::PresentInfo* ValWindow::get_present_info(VkPhysicalDevice vk_gpu) con
         }
          */
 
+        // TODO: User configurable depth format
+        if (format.format == VK_FORMAT_D32_SFLOAT) {
+            present_info->vk_depth_format = format;
+            break;
+        }
+
         if (format.format == VK_FORMAT_B8G8R8A8_UNORM && format.colorSpace == VK_COLORSPACE_SRGB_NONLINEAR_KHR) {
-            present_info->vk_format = format;
+            present_info->vk_color_format = format;
             break;
         }
     }
@@ -110,8 +116,8 @@ bool ValWindow::recreate_swapchain(ValInstance* p_val_instance) {
 
     swapchain_create_info.surface = vk_surface;
     swapchain_create_info.minImageCount = image_count;
-    swapchain_create_info.imageFormat = p_val_instance->present_info->vk_format.format;
-    swapchain_create_info.imageColorSpace = p_val_instance->present_info->vk_format.colorSpace;
+    swapchain_create_info.imageFormat = p_val_instance->present_info->vk_color_format.format;
+    swapchain_create_info.imageColorSpace = p_val_instance->present_info->vk_color_format.colorSpace;
     swapchain_create_info.imageExtent = vk_extent;
     swapchain_create_info.imageArrayLayers = 1;
     swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -164,7 +170,7 @@ bool ValWindow::recreate_swapchain(ValInstance* p_val_instance) {
 
         view_create_info.image = vk_swapchain_images[i];
         view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        view_create_info.format = p_val_instance->present_info->vk_format.format;
+        view_create_info.format = p_val_instance->present_info->vk_color_format.format;
 
         view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
         view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;

@@ -22,6 +22,8 @@ public:
     virtual void render(const Transform &transform, ShaderAsset *p_shader_asset);
     virtual void render(const glm::mat4 &matrix, ShaderAsset *p_shader_asset);
     virtual void render(ShaderAsset *p_shader_asset);
+
+    virtual ~MeshBuffer() = default;
 };
 
 #endif

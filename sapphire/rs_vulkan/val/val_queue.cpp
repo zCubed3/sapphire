@@ -38,3 +38,11 @@ VkCommandBuffer ValQueue::allocate_buffer(ValInstance *p_val_instance) {
 
     return vk_buffer;
 }
+
+void ValQueue::release(ValInstance *p_val_instance) {
+    ValReleasable::release(p_val_instance);
+
+    if (vk_pool != nullptr) {
+        vkDestroyCommandPool(p_val_instance->vk_device, vk_pool, nullptr);
+    }
+}

@@ -3,9 +3,11 @@
 
 #include <vulkan/vulkan.h>
 
+#include <rs_vulkan/val/val_releasable.h>
+
 class ValInstance;
 
-struct ValQueue {
+struct ValQueue : public ValReleasable {
     enum QueueType {
         QUEUE_TYPE_GRAPHICS,
         QUEUE_TYPE_TRANSFER,
@@ -19,6 +21,8 @@ struct ValQueue {
 
     bool create_pool(ValInstance* p_val_instance);
     VkCommandBuffer allocate_buffer(ValInstance *p_val_instance);
+
+    void release(ValInstance *p_val_instance) override;
 
     QueueType type;
     uint32_t family;

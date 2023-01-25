@@ -19,6 +19,8 @@ public:
     VulkanMeshBuffer(MeshAsset* p_mesh_asset);
 
     void render(const Transform &transform, ShaderAsset *p_shader_asset) override;
+
+    ~VulkanMeshBuffer() override;
 };
 
 

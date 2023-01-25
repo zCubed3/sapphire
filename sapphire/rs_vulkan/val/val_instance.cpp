@@ -410,9 +410,10 @@ VkDevice ValInstance::create_vk_device(ValInstanceCreateInfo* p_create_info, VkP
     return vk_device;
 }
 
+// TODO: Provide the user with an interface for making custom render passes
 VkRenderPass ValInstance::create_vk_render_pass(VkDevice vk_device, ValWindow::PresentInfo* present_info) {
     VkAttachmentDescription color_attachment{};
-    color_attachment.format = present_info->vk_format.format;
+    color_attachment.format = present_info->vk_color_format.format;
     color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
     color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -562,9 +563,17 @@ ValInstance::~ValInstance() {
     await_frame();
 
     if (vk_instance != nullptr) {
+        for (ValQueue& queue: val_queues) {
+            queue.release(this);
+        }
+
+        vkDestroyRenderPass(vk_device, vk_render_pass, nullptr);
+
         vkDestroyFence(vk_device, vk_flight_fence, nullptr);
         vkDestroySemaphore(vk_device, vk_image_available_semaphore, nullptr);
         vkDestroySemaphore(vk_device, vk_render_finished_semaphore, nullptr);
+
+        vmaDestroyAllocator(vma_allocator);
 
         ValWindow::release(val_main_window, this);
         delete val_main_window;

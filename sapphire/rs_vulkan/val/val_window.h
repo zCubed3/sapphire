@@ -11,7 +11,8 @@ class ValInstance;
 // TODO: Properly support multiple windows
 struct ValWindow {
     struct PresentInfo {
-        VkSurfaceFormatKHR vk_format;
+        VkSurfaceFormatKHR vk_color_format;
+        VkSurfaceFormatKHR vk_depth_format;
         VkPresentModeKHR vk_mode;
     };
 

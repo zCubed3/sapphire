@@ -5,20 +5,15 @@
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 
+#include <rs_vulkan/val/val_releasable.h>
+
 // Wrapper around data transfers
 class ValInstance;
 struct ValBuffer;
 
-struct ValStagingBuffer {
-    VmaAllocationInfo staging_allocation_info;
-    VmaAllocation staging_allocation;
-    VkBuffer staging_buffer;
-
-    VmaAllocationInfo final_allocation_info;
-    VmaAllocation final_allocation;
-    VkBuffer final_buffer;
-
-    size_t size;
+struct ValStagingBuffer : public ValReleasable {
+    ValBuffer *val_staging_buffer;
+    ValBuffer *val_final_buffer;
 
     ValStagingBuffer(size_t size, uint32_t usage_flags, ValInstance *p_val_instance);
 
@@ -26,6 +21,8 @@ struct ValStagingBuffer {
     void copy_buffer(VkCommandBuffer vk_command_buffer) const;
 
     static ValBuffer *finalize(ValStagingBuffer *p_buffer, ValInstance *p_val_instance);
+
+    void release(ValInstance *p_val_instance) override;
 };
 
 #endif
