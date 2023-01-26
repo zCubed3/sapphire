@@ -4,11 +4,12 @@
 #include <cstdint>
 #include <vulkan/vulkan.h>
 
+#include <rs_vulkan/val/pipelines/val_pipeline.h>
 #include <rs_vulkan/val/pipelines/val_vertex_input_builder.h>
 
 class ValInstance;
-class ValPipeline;
 class ValShaderModule;
+class ValDescriptorSet;
 
 class ValPipelineBuilder {
 protected:
@@ -74,7 +75,7 @@ public:
         DEPTH_COMPARE_ALWAYS
     };
 
-    WindingOrder winding_order = WindingOrder::WINDING_ORDER_COUNTER_CLOCKWISE;
+    WindingOrder winding_order = WindingOrder::WINDING_ORDER_CLOCKWISE;
     CullMode cull_mode = CullMode::CULL_MODE_BACK;
     FillMode fill_mode = FillMode::FILL_MODE_FACE;
     bool allow_discard = false;
@@ -94,7 +95,7 @@ public:
     AlphaBlendOp alpha_blend_op = AlphaBlendOp::ALPHA_BLEND_OP_NONE;
 
     void push_module(ValShaderModule *p_val_shader_module);
-    ValPipeline *build(ValVertexInputBuilder& vertex_builder, VkRenderPass vk_render_pass, ValInstance *p_val_instance);
+    ValPipeline *build(const ValVertexInputBuilder& vertex_builder, ValDescriptorSet* p_val_descriptor_set, VkRenderPass vk_render_pass, ValInstance *p_val_instance);
 
     // TODO: Dynamic state configuration
     // TODO: Alpha to coverage?

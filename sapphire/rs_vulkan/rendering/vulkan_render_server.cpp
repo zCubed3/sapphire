@@ -170,7 +170,9 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     if (target_data != nullptr) {
         if (target_data->val_render_target != nullptr) {
             val_active_render_target = target_data->val_render_target;
-            target_data->val_render_target->begin_render(val_instance);
+
+            val_active_render_target->clear_color = { p_target->clear_color[0], p_target->clear_color[1], p_target->clear_color[2], p_target->clear_color[3] };
+            val_active_render_target->begin_render(val_instance);
         }
     }
 

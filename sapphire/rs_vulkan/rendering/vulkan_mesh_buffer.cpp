@@ -6,6 +6,7 @@
 #include <rs_vulkan/assets/vulkan_shader_asset.h>
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #include <rs_vulkan/val/val_instance.h>
+#include <rs_vulkan/val/pipelines/val_pipeline.h>
 
 #include <vk_mem_alloc.h>
 
@@ -90,7 +91,7 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
     // We assume a command buffer is currently recording
     VkCommandBuffer active_command_buffer = render_server->val_active_render_target->vk_command_buffer;
 
-    vkCmdBindPipeline(active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_shader->vk_pipeline);
+    vkCmdBindPipeline(active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_shader->val_pipeline->vk_pipeline);
 
     vkCmdSetViewport(active_command_buffer, 0, 1, &viewport);
     vkCmdSetScissor(active_command_buffer, 0, 1, &scissor);
@@ -103,7 +104,7 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
     vkCmdBindDescriptorSets(
             active_command_buffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
-            vk_shader->vk_pipeline_layout,
+            vk_shader->val_pipeline->vk_pipeline_layout,
             0,
             1,
             render_server->val_descriptor_set->vk_descriptor_sets.data(),

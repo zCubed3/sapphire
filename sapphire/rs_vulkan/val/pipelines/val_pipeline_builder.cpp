@@ -3,6 +3,7 @@
 #include <rs_vulkan/val/val_instance.h>
 #include <rs_vulkan/val/pipelines/val_shader_module.h>
 #include <rs_vulkan/val/pipelines/val_pipeline.h>
+#include <rs_vulkan/val/pipelines/val_descriptor_set.h>
 
 void ValPipelineBuilder::push_module(ValShaderModule *p_val_shader_module) {
     // Make sure we don't have a duplicate
@@ -19,11 +20,17 @@ void ValPipelineBuilder::push_module(ValShaderModule *p_val_shader_module) {
     }
 }
 
-ValPipeline* ValPipelineBuilder::build(ValVertexInputBuilder& vertex_builder, VkRenderPass vk_render_pass, ValInstance *p_val_instance) {
+// TODO: Errors
+ValPipeline* ValPipelineBuilder::build(const ValVertexInputBuilder& vertex_builder, ValDescriptorSet* p_val_descriptor_set, VkRenderPass vk_render_pass, ValInstance *p_val_instance) {
+    if (p_val_descriptor_set == nullptr) {
+        return nullptr;
+    }
+
     std::vector<VkVertexInputAttributeDescription> input_attributes = vertex_builder.get_input_attributes();
     VkVertexInputBindingDescription input_description = vertex_builder.get_binding_description();
 
     // Convert our builder inputs to vulkan equivalents
+
     VkCullModeFlagBits cull_flags;
 
     switch (cull_mode) {
@@ -111,6 +118,7 @@ ValPipeline* ValPipelineBuilder::build(ValVertexInputBuilder& vertex_builder, Vk
     dynamic_state_create_info.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
     dynamic_state_create_info.pDynamicStates = dynamic_states.data();
 
+    // TODO: Multiple binding descriptions?
     VkPipelineVertexInputStateCreateInfo vertex_input_create_info{};
     vertex_input_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertex_input_create_info.vertexBindingDescriptionCount = 1;
@@ -187,8 +195,8 @@ ValPipeline* ValPipelineBuilder::build(ValVertexInputBuilder& vertex_builder, Vk
 
     VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
     pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipeline_layout_create_info.setLayoutCount = 0;
-    pipeline_layout_create_info.pSetLayouts = nullptr; // TODO: Layouts!
+    pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(p_val_descriptor_set->vk_descriptor_set_layouts.size());
+    pipeline_layout_create_info.pSetLayouts = p_val_descriptor_set->vk_descriptor_set_layouts.data();
     pipeline_layout_create_info.pushConstantRangeCount = 0; // Optional
     pipeline_layout_create_info.pPushConstantRanges = nullptr; // Optional
 

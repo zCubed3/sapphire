@@ -2,6 +2,15 @@
 
 #include <rs_vulkan/val/val_instance.h>
 
+void ValShaderModule::release(ValInstance *p_val_instance) {
+    ValReleasable::release(p_val_instance);
+
+    if (vk_shader_module != nullptr) {
+        vkDestroyShaderModule(p_val_instance->vk_device, vk_shader_module, nullptr);
+        vk_shader_module = nullptr;
+    }
+}
+
 ValShaderModule* ValShaderModule::create_shader_module(ValShaderModuleCreateInfo *p_create_info, ValInstance *p_val_instance) {
     if (p_create_info == nullptr) {
         return nullptr;
@@ -45,5 +54,5 @@ ValShaderModule* ValShaderModule::create_shader_module(ValShaderModuleCreateInfo
     val_module->vk_stage_info = stage_create_info;
     val_module->stage = p_create_info->stage;
 
-    return nullptr;
+    return val_module;
 }

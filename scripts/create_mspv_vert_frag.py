@@ -22,9 +22,12 @@ with open(out_path, "wb") as merge_file:
 
     merge_file.write("MSPV".encode('ascii'))
 
+    # The MSPV format expects descriptor for the stage type before reading it
+    merge_file.write("VERT".encode('ascii'))
     merge_file.write(vert_len.to_bytes(4, byteorder="little"))
     merge_file.write(vert_source)
 
+    merge_file.write("FRAG".encode('ascii'))
     merge_file.write(frag_len.to_bytes(4, byteorder="little"))
     merge_file.write(frag_source)
 
