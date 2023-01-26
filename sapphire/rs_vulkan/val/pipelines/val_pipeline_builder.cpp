@@ -1,80 +1,115 @@
-#include "vulkan_shader_asset.h"
+#include "val_pipeline_builder.h"
 
-#include <rs_vulkan/rendering/vulkan_render_server.h>
-#include <rs_vulkan/rendering/vulkan_mesh_buffer.h>
 #include <rs_vulkan/val/val_instance.h>
+#include <rs_vulkan/val/pipelines/val_shader_module.h>
+#include <rs_vulkan/val/pipelines/val_pipeline.h>
 
-bool VulkanShaderAsset::create_module(const std::vector<char> &code, VkShaderModule *p_module) {
-    VkShaderModuleCreateInfo create_info {};
-    create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    create_info.codeSize = code.size();
-    create_info.pCode = reinterpret_cast<const uint32_t*>(code.data());
+void ValPipelineBuilder::push_module(ValShaderModule *p_val_shader_module) {
+    // Make sure we don't have a duplicate
+    bool replaced = false;
+    for (VkPipelineShaderStageCreateInfo &vk_stage_info: vk_stage_infos) {
+        if (vk_stage_info.stage == p_val_shader_module->vk_stage_info.stage) {
+            vk_stage_info = p_val_shader_module->vk_stage_info;
+            replaced = true;
+        }
+    }
 
-    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
-    ValInstance* val_instance = render_server->val_instance;
-
-    return vkCreateShaderModule(val_instance->vk_device, &create_info, nullptr, p_module) == VK_SUCCESS;
+    if (!replaced) {
+        vk_stage_infos.push_back(p_val_shader_module->vk_stage_info);
+    }
 }
 
-VkPipelineShaderStageCreateInfo VulkanShaderAsset::create_stage(Stage stage, VkShaderModule p_module) {
-    VkShaderStageFlagBits stage_flags;
+ValPipeline* ValPipelineBuilder::build(ValVertexInputBuilder& vertex_builder, VkRenderPass vk_render_pass, ValInstance *p_val_instance) {
+    std::vector<VkVertexInputAttributeDescription> input_attributes = vertex_builder.get_input_attributes();
+    VkVertexInputBindingDescription input_description = vertex_builder.get_binding_description();
 
-    switch (stage) {
-        case Stage::Vertex:
-            stage_flags = VK_SHADER_STAGE_VERTEX_BIT;
+    // Convert our builder inputs to vulkan equivalents
+    VkCullModeFlagBits cull_flags;
+
+    switch (cull_mode) {
+        case CULL_MODE_OFF:
+            cull_flags = VK_CULL_MODE_NONE;
             break;
 
-        case Stage::Fragment:
-            stage_flags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        case CullMode::CULL_MODE_BACK:
+            cull_flags = VK_CULL_MODE_BACK_BIT;
+            break;
+
+        case CullMode::CULL_MODE_FRONT:
+            cull_flags = VK_CULL_MODE_FRONT_BIT;
             break;
     }
 
-    VkPipelineShaderStageCreateInfo create_info{};
-    create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    create_info.stage = stage_flags;
-    create_info.module = p_module;
-    create_info.pName = "main"; // TODO: Custom entry points?
+    VkPolygonMode polygon_mode;
 
-    return create_info;
-}
+    // TODO: Check if the device allows non-solid fill modes!
+    switch (fill_mode) {
+        case FillMode::FILL_MODE_FACE:
+            polygon_mode = VK_POLYGON_MODE_FILL;
+            break;
 
-std::vector<VkDynamicState> VulkanShaderAsset::get_dynamic_states(uint32_t flags) {
-    std::vector<VkDynamicState> states {};
+        case FillMode::FILL_MODE_LINE:
+            polygon_mode = VK_POLYGON_MODE_LINE;
+            break;
 
-    if (flags & DynamicStateFlags::Viewport) {
-        states.push_back(VK_DYNAMIC_STATE_VIEWPORT);
+        case FillMode::FILL_MODE_POINT:
+            polygon_mode = VK_POLYGON_MODE_POINT;
+            break;
     }
 
-    if (flags & DynamicStateFlags::Scissor) {
-        states.push_back(VK_DYNAMIC_STATE_SCISSOR);
+    VkFrontFace front_face;
+
+    // TODO: Check if the device allows non-solid fill modes!
+    switch (winding_order) {
+        case WindingOrder::WINDING_ORDER_COUNTER_CLOCKWISE:
+            front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+            break;
+
+        case WindingOrder::WINDING_ORDER_CLOCKWISE:
+            front_face = VK_FRONT_FACE_CLOCKWISE;
+            break;
     }
 
-    return states;
-}
+    VkCompareOp compare_op;
 
-void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, const std::vector<char> &frag_code)  {
-    VkShaderModule vert_module;
-    VkShaderModule frag_module;
+    switch (depth_compare_op) {
+        case DEPTH_COMPARE_LESS:
+            compare_op = VK_COMPARE_OP_LESS;
+            break;
 
-    create_module(vert_code, &vert_module);
-    create_module(frag_code, &frag_module);
+        case DEPTH_COMPARE_LESS_OR_EQUAL:
+            compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
+            break;
 
-    VkPipelineShaderStageCreateInfo vert_stage = create_stage(Stage::Vertex, vert_module);
-    VkPipelineShaderStageCreateInfo frag_stage = create_stage(Stage::Fragment, frag_module);
+        case DEPTH_COMPARE_GREATER:
+            compare_op = VK_COMPARE_OP_GREATER;
+            break;
 
-    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
-    ValInstance* val_instance = render_server->val_instance;
+        case DEPTH_COMPARE_GREATER_OR_EQUAL:
+            compare_op = VK_COMPARE_OP_GREATER_OR_EQUAL;
+            break;
 
-    const std::vector<VkDynamicState> dynamic_states = get_dynamic_states(dynamic_flags);
+        case DEPTH_COMPARE_EQUAL:
+            compare_op = VK_COMPARE_OP_EQUAL;
+            break;
+
+        case DEPTH_COMPARE_ALWAYS:
+            compare_op = VK_COMPARE_OP_ALWAYS;
+            break;
+    }
+
+    // We expect the user to have pushed the modules they wish to build!
+
+    // TODO: Dynamic state builder
+    const std::vector<VkDynamicState> dynamic_states = {
+            VK_DYNAMIC_STATE_VIEWPORT,
+            VK_DYNAMIC_STATE_SCISSOR
+    };
 
     VkPipelineDynamicStateCreateInfo dynamic_state_create_info{};
     dynamic_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamic_state_create_info.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
     dynamic_state_create_info.pDynamicStates = dynamic_states.data();
-
-    // TODO: Replace this with ValPipelineBuilder
-    std::vector<VkVertexInputAttributeDescription> input_attributes = render_server->val_default_vertex_input.get_input_attributes();
-    VkVertexInputBindingDescription input_description = render_server->val_default_vertex_input.get_binding_description();
 
     VkPipelineVertexInputStateCreateInfo vertex_input_create_info{};
     vertex_input_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -96,12 +131,12 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     // TODO: Culling mode
     VkPipelineRasterizationStateCreateInfo rasterizer_create_info{};
     rasterizer_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterizer_create_info.depthClampEnable = VK_FALSE;
-    rasterizer_create_info.rasterizerDiscardEnable = VK_FALSE;
-    rasterizer_create_info.polygonMode = VK_POLYGON_MODE_POINT;
+    rasterizer_create_info.depthClampEnable = clamp_depth;
+    rasterizer_create_info.rasterizerDiscardEnable = allow_discard;
+    rasterizer_create_info.polygonMode = polygon_mode;
     rasterizer_create_info.lineWidth = 1.0f;
-    rasterizer_create_info.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer_create_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizer_create_info.cullMode = cull_flags;
+    rasterizer_create_info.frontFace = front_face;
     rasterizer_create_info.depthBiasEnable = VK_FALSE;
     rasterizer_create_info.depthBiasConstantFactor = 0.0f; // Optional
     rasterizer_create_info.depthBiasClamp = 0.0f; // Optional
@@ -140,9 +175,9 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
 
     VkPipelineDepthStencilStateCreateInfo depth_stencil_state{};
     depth_stencil_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depth_stencil_state.depthTestEnable = VK_TRUE;
-    depth_stencil_state.depthWriteEnable = VK_TRUE;
-    depth_stencil_state.depthCompareOp = VK_COMPARE_OP_LESS;
+    depth_stencil_state.depthTestEnable = depth_test;
+    depth_stencil_state.depthWriteEnable = depth_write;
+    depth_stencil_state.depthCompareOp = compare_op;
     depth_stencil_state.depthBoundsTestEnable = VK_FALSE;
     depth_stencil_state.minDepthBounds = 0.0f; // Optional
     depth_stencil_state.maxDepthBounds = 1.0f; // Optional
@@ -152,22 +187,18 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
 
     VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
     pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipeline_layout_create_info.setLayoutCount = 1; // Optional
-    pipeline_layout_create_info.pSetLayouts = &render_server->vk_descriptor_set_layout; // Optional
+    pipeline_layout_create_info.setLayoutCount = 0;
+    pipeline_layout_create_info.pSetLayouts = nullptr; // TODO: Layouts!
     pipeline_layout_create_info.pushConstantRangeCount = 0; // Optional
     pipeline_layout_create_info.pPushConstantRanges = nullptr; // Optional
 
-    vkCreatePipelineLayout(val_instance->vk_device, &pipeline_layout_create_info, nullptr, &vk_pipeline_layout);
-
-    VkPipelineShaderStageCreateInfo stages[] = {
-            vert_stage,
-            frag_stage
-    };
+    VkPipelineLayout vk_pipeline_layout = nullptr;
+    vkCreatePipelineLayout(p_val_instance->vk_device, &pipeline_layout_create_info, nullptr, &vk_pipeline_layout);
 
     VkGraphicsPipelineCreateInfo pipeline_create_info{};
     pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipeline_create_info.stageCount = 2;
-    pipeline_create_info.pStages = stages;
+    pipeline_create_info.stageCount = static_cast<uint32_t>(vk_stage_infos.size());
+    pipeline_create_info.pStages = vk_stage_infos.data();
     pipeline_create_info.pVertexInputState = &vertex_input_create_info;
     pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
     pipeline_create_info.pViewportState = &viewport_state_create_info;
@@ -177,32 +208,28 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     pipeline_create_info.pColorBlendState = &color_blend_state;
     pipeline_create_info.pDynamicState = &dynamic_state_create_info;
     pipeline_create_info.layout = vk_pipeline_layout;
-    pipeline_create_info.renderPass = val_instance->vk_render_pass;
+    pipeline_create_info.renderPass = vk_render_pass;
     pipeline_create_info.subpass = 0;
     pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipeline_create_info.basePipelineIndex = -1; // Optional
 
-    // TODO: Error handling
-    // TODO: Pipeline caching
-    vkCreateGraphicsPipelines(val_instance->vk_device,
+    VkPipeline vk_pipeline;
+    VkResult result = vkCreateGraphicsPipelines(p_val_instance->vk_device,
                               nullptr,
                               1,
                               &pipeline_create_info,
                               nullptr,
                               &vk_pipeline);
 
-    vkDestroyShaderModule(val_instance->vk_device, vert_module, nullptr);
-    vkDestroyShaderModule(val_instance->vk_device, frag_module, nullptr);
+    if (result != VK_SUCCESS) {
+        vkDestroyPipelineLayout(p_val_instance->vk_device, vk_pipeline_layout, nullptr);
+        return nullptr;
+    }
 
-    //vkDestroyDescriptorSetLayout(val_instance->vk_device, descriptor_set_layout, nullptr);
-    //vkDestroyPipelineLayout(val_instance->vk_device, layout, nullptr);
-}
+    ValPipeline *val_pipeline = new ValPipeline();
 
-VulkanShaderAsset::~VulkanShaderAsset() {
-    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
-    ValInstance* val_instance = render_server->val_instance;
+    val_pipeline->vk_pipeline = vk_pipeline;
+    val_pipeline->vk_pipeline_layout = vk_pipeline_layout;
 
-    //vkDestroyDescriptorSetLayout(val_instance->vk_device, vk_descriptor_set_layout, nullptr);
-    vkDestroyPipelineLayout(val_instance->vk_device, vk_pipeline_layout, nullptr);
-    vkDestroyPipeline(val_instance->vk_device, vk_pipeline, nullptr);
+    return val_pipeline;
 }

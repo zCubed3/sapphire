@@ -1,5 +1,5 @@
-#ifndef SAPPHIRE_VAL_VERTEX_INPUT_H
-#define SAPPHIRE_VAL_VERTEX_INPUT_H
+#ifndef SAPPHIRE_VAL_VERTEX_INPUT_BUILDER_H
+#define SAPPHIRE_VAL_VERTEX_INPUT_BUILDER_H
 
 #include <vector>
 #include <vulkan/vulkan.h>
