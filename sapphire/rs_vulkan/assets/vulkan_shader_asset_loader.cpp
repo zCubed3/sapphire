@@ -25,9 +25,15 @@ Asset *VulkanShaderAssetLoader::load_from_path(const std::string &path) {
 
             uint32_t length;
 
+            // TODO: Actually identify stages
+            file.seekg(4, std::ios_base::cur);
+
             file.read(reinterpret_cast<char*>(&length), sizeof(length));
             vert_code.resize(length);
             file.read(vert_code.data(), length);
+
+            // TODO: Actually identify stages
+            file.seekg(4, std::ios_base::cur);
 
             file.read(reinterpret_cast<char*>(&length), sizeof(length));
             frag_code.resize(length);
