@@ -16,6 +16,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "data/transform.cpp"
 
         "rendering/render_target.cpp"
+        "rendering/render_target_data.cpp"
         "rendering/rt_sdl_window.cpp"
         "rendering/render_server.cpp"
         "rendering/mesh_buffer.cpp"

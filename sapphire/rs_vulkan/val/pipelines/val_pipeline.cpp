@@ -3,6 +3,8 @@
 #include <rs_vulkan/val/val_instance.h>
 
 void ValPipeline::release(ValInstance *p_val_instance) {
+    ValReleasable::release(p_val_instance);
+
     if (vk_pipeline_layout != nullptr) {
         vkDestroyPipelineLayout(p_val_instance->vk_device, vk_pipeline_layout, nullptr);
     }

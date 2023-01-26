@@ -112,6 +112,8 @@ ValImage *ValImage::create(ValImageCreateInfo *p_create_info, ValInstance *p_val
 }
 
 void ValImage::release(ValInstance *p_val_instance) {
+    ValReleasable::release(p_val_instance);
+
     if (vk_image != nullptr) {
         vkDestroyImage(p_val_instance->vk_device, vk_image, nullptr);
         vk_image = nullptr;

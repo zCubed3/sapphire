@@ -271,6 +271,8 @@ bool ValWindowRenderTarget::present_queue(ValInstance *p_val_instance) {
 }
 
 void ValWindowRenderTarget::release(ValInstance *p_val_instance) {
+    ValReleasable::release(p_val_instance);
+
     for (VkImageView view : vk_swapchain_image_views) {
         vkDestroyImageView(p_val_instance->vk_device, view, nullptr);
     }

@@ -106,7 +106,7 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
             vk_shader->vk_pipeline_layout,
             0,
             1,
-            &render_server->vk_descriptor_set,
+            render_server->val_descriptor_set->vk_descriptor_sets.data(),
             0,
             nullptr);
 

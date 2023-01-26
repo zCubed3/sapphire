@@ -30,6 +30,9 @@ VulkanRenderServer::~VulkanRenderServer() {
     val_camera_ubo->release(val_instance);
     delete val_camera_ubo;
 
+    val_descriptor_set->release(val_instance);
+    delete val_descriptor_set;
+
     delete val_instance;
 }
 
@@ -96,29 +99,11 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
             val_instance);
 
     // TODO: User defined layouts
-    VkDescriptorSetLayoutBinding layout_binding{};
-    layout_binding.binding = 0;
-    layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    layout_binding.descriptorCount = 1;
-    layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    layout_binding.pImmutableSamplers = nullptr; // Optional
+    ValDescriptorSetBuilder val_set_builder;
 
-    VkDescriptorSetLayoutCreateInfo layout_info{};
-    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layout_info.bindingCount = 1;
-    layout_info.pBindings = &layout_binding;
+    val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    vkCreateDescriptorSetLayout(val_instance->vk_device, &layout_info, nullptr, &vk_descriptor_set_layout);
-
-    VkDescriptorSetAllocateInfo alloc_info{};
-    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    alloc_info.descriptorPool = val_instance->vk_descriptor_pool;
-    alloc_info.descriptorSetCount = 1;
-    alloc_info.pSetLayouts = &vk_descriptor_set_layout;
-
-    if (vkAllocateDescriptorSets(val_instance->vk_device, &alloc_info, &vk_descriptor_set) != VK_SUCCESS) {
-        return false;
-    }
+    val_descriptor_set = val_set_builder.build(val_instance);
 
     // TODO: Allow the user to create their own vertex types
     val_default_vertex_input = {};
@@ -161,7 +146,7 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
 
     VkWriteDescriptorSet descriptor_write{};
     descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_write.dstSet = vk_descriptor_set;
+    descriptor_write.dstSet = val_descriptor_set->vk_descriptor_sets[0];
     descriptor_write.dstBinding = 0;
     descriptor_write.dstArrayElement = 0;
     descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;

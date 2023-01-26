@@ -51,10 +51,10 @@ int main(int argc, char **argv) {
             window_flags | SDL_WINDOW_RESIZABLE
     );
 
-    SDLWindowRenderTarget rt_window(main_window);
+    SDLWindowRenderTarget* rt_window = new SDLWindowRenderTarget(main_window);
 
     // Each render target has clear operations associated with it
-    rt_window.clear_flags = RenderTarget::CLEAR_FLAG_DEPTH | RenderTarget::CLEAR_FLAG_DEPTH;
+    rt_window->clear_flags = RenderTarget::CLEAR_FLAG_DEPTH | RenderTarget::CLEAR_FLAG_DEPTH;
 
     if (!render_server->initialize(main_window)) {
         std::cout << render_server->get_error() << std::endl;
@@ -68,11 +68,11 @@ int main(int argc, char **argv) {
     ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.mspv"));
     //ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.glsl"));
 
-    render_server->populate_render_target_data(&rt_window);
+    render_server->populate_render_target_data(rt_window);
 
     World *world = new World();
 
-    rt_window.world = world;
+    rt_window->world = world;
 
     SDL_Event event{};
     bool keep_running = true;
@@ -120,13 +120,13 @@ int main(int argc, char **argv) {
 
         render_server->begin_frame();
 
-        render_server->begin_target(&rt_window);
+        render_server->begin_target(rt_window);
 
         // TODO: MeshRenderer
         mesh->shader = shader;
         mesh->render(model);
 
-        render_server->end_target(&rt_window);
+        render_server->end_target(rt_window);
 
         render_server->end_frame();
 
@@ -135,6 +135,8 @@ int main(int argc, char **argv) {
 
     delete mesh;
     delete shader;
+
+    delete rt_window;
 
     delete render_server;
 

@@ -5,6 +5,7 @@
 
 #include <rs_vulkan/val/render_targets/val_render_target.h>
 #include <rs_vulkan/val/pipelines/val_vertex_input_builder.h>
+#include <rs_vulkan/val/pipelines/val_descriptor_set_builder.h>
 
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
@@ -19,9 +20,8 @@ public:
     SDL_Window* window;
 
     ValInstance* val_instance = nullptr;
-    ValBuffer* val_camera_ubo;
-    VkDescriptorSet vk_descriptor_set;
-    VkDescriptorSetLayout vk_descriptor_set_layout;
+    ValBuffer* val_camera_ubo = nullptr;
+    ValDescriptorSet* val_descriptor_set = nullptr;
 
     ValVertexInputBuilder val_default_vertex_input;
     ValRenderTarget *val_active_render_target = nullptr;

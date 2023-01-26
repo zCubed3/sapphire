@@ -37,6 +37,8 @@ public:
 
     RenderTargetData *data = nullptr;
 
+    virtual ~RenderTarget();
+
     virtual Rect get_rect() = 0;
 
     // Called when this attachment is first rendered to.

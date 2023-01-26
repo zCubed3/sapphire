@@ -98,7 +98,7 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     rasterizer_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizer_create_info.depthClampEnable = VK_FALSE;
     rasterizer_create_info.rasterizerDiscardEnable = VK_FALSE;
-    rasterizer_create_info.polygonMode = VK_POLYGON_MODE_POINT;
+    rasterizer_create_info.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer_create_info.lineWidth = 1.0f;
     rasterizer_create_info.cullMode = VK_CULL_MODE_BACK_BIT;
     rasterizer_create_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
@@ -153,7 +153,7 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
     pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipeline_layout_create_info.setLayoutCount = 1; // Optional
-    pipeline_layout_create_info.pSetLayouts = &render_server->vk_descriptor_set_layout; // Optional
+    pipeline_layout_create_info.pSetLayouts = render_server->val_descriptor_set->vk_descriptor_set_layouts.data(); // Optional
     pipeline_layout_create_info.pushConstantRangeCount = 0; // Optional
     pipeline_layout_create_info.pPushConstantRanges = nullptr; // Optional
 

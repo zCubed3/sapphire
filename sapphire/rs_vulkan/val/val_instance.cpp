@@ -493,13 +493,14 @@ VmaAllocator ValInstance::create_vma_allocator(VkInstance vk_instance, VkDevice 
 VkDescriptorPool ValInstance::create_vk_descriptor_pool(VkDevice vk_device) {
     VkDescriptorPoolSize pool_size{};
     pool_size.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    pool_size.descriptorCount = 1;
+    pool_size.descriptorCount = 100;
 
     VkDescriptorPoolCreateInfo create_info {};
     create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     create_info.poolSizeCount = 1;
     create_info.pPoolSizes = &pool_size;
     create_info.maxSets = 1;
+    create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
     VkDescriptorPool vk_pool = nullptr;
     if (vkCreateDescriptorPool(vk_device, &create_info, nullptr, &vk_pool) != VK_SUCCESS) {
@@ -627,8 +628,11 @@ ValInstance::~ValInstance() {
 
         vmaDestroyAllocator(vma_allocator);
 
-        val_main_window->release(this);
-        delete val_main_window;
+        vkDestroyDescriptorPool(vk_device, vk_descriptor_pool, nullptr);
+
+        // The main window is usually released on its own!
+        //val_main_window->release(this);
+        //delete val_main_window;
 
         vkDestroyDevice(vk_device, nullptr);
         vkDestroyInstance(vk_instance, nullptr);

@@ -13,6 +13,7 @@ public:
     ValRenderTarget *val_render_target = nullptr;
 
     VulkanRenderTargetData(ValRenderTarget *p_val_render_target);
+    ~VulkanRenderTargetData() override;
 };
 
 #endif
