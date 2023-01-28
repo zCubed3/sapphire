@@ -81,6 +81,9 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
     MeshBuffer::render(transform, p_shader_asset);
 
     VulkanShaderAsset* vk_shader = reinterpret_cast<VulkanShaderAsset*>(p_shader_asset);
+    if (vk_shader == nullptr) {
+        vk_shader = VulkanShaderAsset::error_shader;
+    }
 
     const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
     ValInstance* val_instance = render_server->val_instance;

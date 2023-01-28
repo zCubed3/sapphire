@@ -102,6 +102,9 @@ Asset *OBJLoader::load_from_path(const std::string &path) {
         std::vector<uint32_t> weld_triangles;
         uint32_t welded = 0;
 
+//#define NO_WELD
+
+#ifndef NO_WELD
         for (size_t t = 0; t < unweld_triangles.size(); t++) {
             OBJTriangle triangle = unweld_triangles[t];
 
@@ -135,9 +138,7 @@ Asset *OBJLoader::load_from_path(const std::string &path) {
                 weld_normals.emplace_back(normal);
             }
         }
-
-        // TODO: TEMPORARY FOR NON-INDEXED THINGS
-        /*
+#else
         for (size_t t = 0; t < unweld_triangles.size(); t++) {
             OBJTriangle triangle = unweld_triangles[t];
 
@@ -153,7 +154,7 @@ Asset *OBJLoader::load_from_path(const std::string &path) {
             weld_tex_coords.emplace_back(tex_coord);
             weld_normals.emplace_back(normal);
         }
-         */
+#endif
 
         auto mesh = new StaticMeshAsset();
 

@@ -13,6 +13,7 @@
 #include <engine/rendering/render_target.h>
 #include <engine/rendering/rt_sdl_window.h>
 #include <engine/rendering/camera_data.h>
+#include <engine/scene/world.h>
 
 #include <rs_vulkan/assets/vulkan_shader_asset.h>
 #include <rs_vulkan/assets/vulkan_shader_asset_loader.h>
@@ -123,6 +124,12 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
             VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
             val_instance);
 
+    val_world_ubo = new ValBuffer(
+            sizeof(glm::vec4),
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
+            val_instance);
+
     // TODO: User defined layouts
     ValDescriptorSetBuilder val_set_builder;
 
@@ -166,32 +173,28 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     p_target->begin_attach();
     current_target = p_target;
 
-    VkDescriptorBufferInfo buffer_info{};
-    buffer_info.buffer = val_camera_ubo->vk_buffer;
-    buffer_info.offset = 0;
-    buffer_info.range = sizeof(CameraData);
-
-    VkWriteDescriptorSet descriptor_write{};
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_write.dstSet = val_descriptor_info->val_descriptor_set->vk_descriptor_set;
-    descriptor_write.dstBinding = 0;
-    descriptor_write.dstArrayElement = 0;
-    descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_write.descriptorCount = 1;
-    descriptor_write.pBufferInfo = &buffer_info;
-    descriptor_write.pImageInfo = nullptr; // Optional
-    descriptor_write.pTexelBufferView = nullptr; // Optional
-
-    CameraData data = {
+    CameraData camera_data = {
             p_target->projection,
             p_target->view,
             p_target->view_inverse,
             p_target->eye
     };
 
-    val_camera_ubo->write(&data, val_instance);
+    glm::vec4 world_data = {
+            p_target->world->elapsed_time, 0, 0, 0
+    };
 
-    vkUpdateDescriptorSets(val_instance->vk_device, 1, &descriptor_write, 0, nullptr);
+    ValDescriptorSetWriteInfo camera_write_info{};
+    camera_write_info.val_buffer = val_camera_ubo;
+
+    ValDescriptorSetWriteInfo world_write_info{};
+    world_write_info.binding_index = 1;
+    world_write_info.val_buffer = val_world_ubo;
+
+    val_descriptor_info->write_binding_and_buffer(val_instance, &camera_write_info, &camera_data);
+    val_descriptor_info->write_binding_and_buffer(val_instance, &world_write_info, &world_data);
+
+    val_descriptor_info->update_set(val_instance);
 
     VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData*>(p_target->data);
 

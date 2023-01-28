@@ -2,6 +2,46 @@
 
 #include <rs_vulkan/val/val_instance.h>
 
+void ValDescriptorSet::write_binding(ValDescriptorSetWriteInfo *p_write_info) {
+    VkDescriptorBufferInfo* buffer_info = new VkDescriptorBufferInfo();
+    buffer_info->buffer = p_write_info->val_buffer->vk_buffer;
+    buffer_info->offset = 0;
+    buffer_info->range = static_cast<uint32_t>(p_write_info->val_buffer->size);
+
+    vk_buffer_infos.push_back(buffer_info);
+
+    VkWriteDescriptorSet descriptor_write{};
+    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_write.dstSet = vk_descriptor_set;
+    descriptor_write.dstBinding = p_write_info->binding_index;
+    descriptor_write.dstArrayElement = 0;
+    descriptor_write.descriptorType = p_write_info->type;
+    descriptor_write.descriptorCount = p_write_info->count;
+    descriptor_write.pBufferInfo = buffer_info;
+    descriptor_write.pImageInfo = nullptr; // Optional
+    descriptor_write.pTexelBufferView = nullptr; // Optional
+
+    vk_write_sets.push_back(descriptor_write);
+}
+
+void ValDescriptorSet::write_binding_and_buffer(ValInstance *p_val_instance, ValDescriptorSetWriteInfo *p_write_info, void *data) {
+    write_binding(p_write_info);
+
+    p_write_info->val_buffer->write(data, p_val_instance);
+}
+
+void ValDescriptorSet::update_set(ValInstance *p_val_instance) {
+    vkUpdateDescriptorSets(p_val_instance->vk_device, static_cast<uint32_t>(vk_write_sets.size()), vk_write_sets.data(), 0, nullptr);
+
+    // TODO: Not heap allocate as much?
+    for (VkDescriptorBufferInfo* buffer_info: vk_buffer_infos) {
+        delete buffer_info;
+    }
+
+    vk_buffer_infos.clear();
+    vk_write_sets.clear();
+}
+
 void ValDescriptorSet::release(ValInstance *p_val_instance) {
     ValReleasable::release(p_val_instance);
 

@@ -68,6 +68,8 @@ int main(int argc, char **argv) {
     ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.mspv"));
     //ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.glsl"));
 
+    AssetLoader::load_all_placeholders();
+
     render_server->populate_render_target_data(rt_window);
 
     World *world = new World();
@@ -136,10 +138,10 @@ int main(int argc, char **argv) {
         render_server->begin_target(rt_window);
 
         // TODO: MeshRenderer
-        mesh->shader = shader;
+        //mesh->shader = shader;
         mesh->render(model);
 
-        mesh2->shader = shader;
+        //mesh2->shader = shader;
         mesh2->render(model2);
 
         render_server->end_target(rt_window);

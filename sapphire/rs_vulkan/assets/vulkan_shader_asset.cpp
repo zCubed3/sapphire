@@ -7,6 +7,8 @@
 #include <rs_vulkan/val/pipelines/val_shader_module.h>
 #include <rs_vulkan/val/pipelines/val_pipeline_builder.h>
 
+VulkanShaderAsset *VulkanShaderAsset::error_shader = nullptr;
+
 void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, const std::vector<char> &frag_code) {
     const VulkanRenderServer *render_server = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
     ValInstance *val_instance = render_server->val_instance;

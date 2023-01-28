@@ -4,6 +4,9 @@
 
 #include <rs_vulkan/assets/vulkan_shader_asset.h>
 
+#include <rs_vulkan/shaders/error.spv.vert.gen.h>
+#include <rs_vulkan/shaders/error.spv.frag.gen.h>
+
 std::vector<std::string> VulkanShaderAssetLoader::get_extensions() {
     return {"mspv"}; // mspv = Merged SPIR-V
 }
@@ -51,5 +54,17 @@ Asset *VulkanShaderAssetLoader::load_from_path(const std::string &path) {
 }
 
 void VulkanShaderAssetLoader::load_placeholders() {
+    std::vector<char> vert_code;
+    std::vector<char> frag_code;
 
+    vert_code.resize(sizeof(ERROR_VERT_CONTENTS));
+    frag_code.resize(sizeof(ERROR_FRAG_CONTENTS));
+
+    memcpy(vert_code.data(), ERROR_VERT_CONTENTS, sizeof(ERROR_VERT_CONTENTS));
+    memcpy(frag_code.data(), ERROR_FRAG_CONTENTS, sizeof(ERROR_FRAG_CONTENTS));
+
+    VulkanShaderAsset* shader = new VulkanShaderAsset();
+    shader->create_vert_frag(vert_code, frag_code);
+
+    VulkanShaderAsset::error_shader = shader;
 }

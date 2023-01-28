@@ -14,6 +14,8 @@ class ValDescriptorSetInfo;
 // TODO: Move this back into the RenderServer API
 class VulkanShaderAsset : public ShaderAsset {
 public:
+    static VulkanShaderAsset *error_shader;
+
     ValPipeline* val_pipeline = nullptr;
     ValDescriptorSetInfo * val_material_descriptor_set = nullptr;
     ValDescriptorSetInfo * val_object_descriptor_set = nullptr;

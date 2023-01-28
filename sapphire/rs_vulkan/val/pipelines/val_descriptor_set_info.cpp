@@ -2,6 +2,24 @@
 
 #include <rs_vulkan/val/val_instance.h>
 
+void ValDescriptorSetInfo::write_binding(ValDescriptorSetWriteInfo *p_write_info) {
+    if (val_descriptor_set != nullptr) {
+        val_descriptor_set->write_binding(p_write_info);
+    }
+}
+
+void ValDescriptorSetInfo::write_binding_and_buffer(ValInstance *p_val_instance, ValDescriptorSetWriteInfo *p_write_info, void *data) {
+    if (val_descriptor_set != nullptr) {
+        val_descriptor_set->write_binding_and_buffer(p_val_instance, p_write_info, data);
+    }
+}
+
+void ValDescriptorSetInfo::update_set(ValInstance *p_val_instance) {
+    if (val_descriptor_set != nullptr) {
+        val_descriptor_set->update_set(p_val_instance);
+    }
+}
+
 // TODO: Wrap around VkDescriptorSet and allocate differently
 ValDescriptorSet *ValDescriptorSetInfo::allocate_set(ValInstance *p_val_instance) {
     VkDescriptorSetAllocateInfo alloc_info{};
