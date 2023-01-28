@@ -8,6 +8,8 @@
 class ValRenderPass : public ValReleasable {
 public:
     VkRenderPass vk_render_pass = nullptr;
+
+    void release(ValInstance *p_val_instance) override;
 };
 
 

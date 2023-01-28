@@ -28,7 +28,29 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     builder.push_module(frag_module);
 
     builder.val_render_pass = render_server->val_window_render_pass;
-    builder.val_descriptor_set = render_server->val_descriptor_set;
+
+    // Our first set is the engine's "view" descriptor set
+    builder.vk_descriptor_set_layouts.push_back(render_server->val_descriptor_info->vk_descriptor_set_layout);
+
+    // The second set is unique to material instances
+    // The third set is unique to object instances
+    ValDescriptorSetBuilder set_builder {};
+
+    set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    set_builder.push_set();
+
+    set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    std::vector<ValDescriptorSetInfo *> sets = set_builder.build(val_instance);
+    val_material_descriptor_set = sets[0];
+    val_object_descriptor_set = sets[1];
+
+    // Since the object descriptor is unique per-object we can deallocate the set but keep the layout
+    val_object_descriptor_set->release_set(val_instance);
+
+    builder.vk_descriptor_set_layouts.push_back(val_material_descriptor_set->vk_descriptor_set_layout);
+    builder.vk_descriptor_set_layouts.push_back(val_object_descriptor_set->vk_descriptor_set_layout);
 
     val_pipeline = builder.build(render_server->val_default_vertex_input, val_instance);
 
@@ -42,6 +64,16 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
 VulkanShaderAsset::~VulkanShaderAsset() {
     const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
     ValInstance* val_instance = render_server->val_instance;
+
+    if (val_material_descriptor_set != nullptr) {
+        val_material_descriptor_set->release(val_instance);
+        delete val_material_descriptor_set;
+    }
+
+    if (val_object_descriptor_set != nullptr) {
+        val_object_descriptor_set->release(val_instance);
+        delete val_object_descriptor_set;
+    }
 
     if (val_pipeline != nullptr) {
         val_pipeline->release(val_instance);

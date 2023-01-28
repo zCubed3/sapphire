@@ -31,7 +31,12 @@ void ValBuffer::release(ValInstance *p_val_instance) {
 
     if (mapped != nullptr) {
         vmaUnmapMemory(p_val_instance->vma_allocator, vma_allocation);
+        mapped = nullptr;
     }
 
-    vmaDestroyBuffer(p_val_instance->vma_allocator, vk_buffer, vma_allocation);
+    if (vma_allocation != nullptr) {
+        vmaDestroyBuffer(p_val_instance->vma_allocator, vk_buffer, vma_allocation);
+        vk_buffer = nullptr;
+        vma_allocation = nullptr;
+    }
 }

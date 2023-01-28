@@ -35,7 +35,7 @@ void SDLWindowRenderTarget::begin_attach() {
     //float y = cos(world->elapsed_time) * 2;
 
     // TODO: Allow the renderer to note if the Y axis is flipped
-    view = glm::lookAt(glm::vec3(x, y, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+    view = glm::lookAt(glm::vec3(x, y, -2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
     projection = glm::perspective(30.0F, aspect, 0.01F, 100.0F);
 
     eye = projection * view;

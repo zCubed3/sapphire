@@ -8,12 +8,15 @@
 #include <engine/assets/shader_asset.h>
 
 class ValPipeline;
+class ValDescriptorSetInfo;
 
 // TODO: Geometry shader
 // TODO: Move this back into the RenderServer API
 class VulkanShaderAsset : public ShaderAsset {
 public:
     ValPipeline* val_pipeline = nullptr;
+    ValDescriptorSetInfo * val_material_descriptor_set = nullptr;
+    ValDescriptorSetInfo * val_object_descriptor_set = nullptr;
 
     // TODO: Transparency
     void create_vert_frag(const std::vector<char>& vert_code, const std::vector<char>& frag_code);

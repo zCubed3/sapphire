@@ -1,7 +1,7 @@
 #include "val_descriptor_set_builder.h"
 
+#include <rs_vulkan/val/pipelines/val_descriptor_set_info.h>
 #include <rs_vulkan/val/val_instance.h>
-#include <rs_vulkan/val/pipelines/val_descriptor_set.h>
 
 void ValDescriptorSetBuilderSetInfo::push_binding(VkDescriptorSetLayoutBinding vk_binding) {
     bindings.push_back(vk_binding);
@@ -67,46 +67,52 @@ void ValDescriptorSetBuilder::push_binding(VkDescriptorType vk_type, uint32_t co
     sets.back().push_binding(layout_binding);
 }
 
-ValDescriptorSet* ValDescriptorSetBuilder::build(ValInstance *p_val_instance) {
-    std::vector<VkDescriptorSetLayout> vk_descriptor_set_layouts;
+std::vector<ValDescriptorSetInfo *> ValDescriptorSetBuilder::build(ValInstance *p_val_instance) {
+    std::vector<ValDescriptorSetInfo *> val_descriptor_sets;
 
-    for (ValDescriptorSetBuilderSetInfo& set: sets) {
-        VkDescriptorSetLayout layout = set.build(p_val_instance);
-
-        // TODO: Error reporting
-        if (layout == nullptr) {
-            for (VkDescriptorSetLayout& vk_descriptor_set_layout: vk_descriptor_set_layouts) {
-                vkDestroyDescriptorSetLayout(p_val_instance->vk_device, vk_descriptor_set_layout, nullptr);
-            }
-
-            return nullptr;
-        }
-
-
-        vk_descriptor_set_layouts.push_back(layout);
-    }
-
-    // TODO: Abstract descriptor pools
+    // TODO: Abstract descriptor pools?
     VkDescriptorSetAllocateInfo alloc_info{};
     alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     alloc_info.descriptorPool = p_val_instance->vk_descriptor_pool;
-    alloc_info.descriptorSetCount = static_cast<uint32_t>(vk_descriptor_set_layouts.size());
-    alloc_info.pSetLayouts = vk_descriptor_set_layouts.data();
+    alloc_info.descriptorSetCount = 1;
 
-    std::vector<VkDescriptorSet> vk_descriptor_sets;
-    vk_descriptor_sets.resize(alloc_info.descriptorSetCount);
+    for (ValDescriptorSetBuilderSetInfo& set: sets) {
+        VkDescriptorSetLayout vk_descriptor_set_layout = set.build(p_val_instance);
 
-    if (vkAllocateDescriptorSets(p_val_instance->vk_device, &alloc_info, vk_descriptor_sets.data()) != VK_SUCCESS) {
-        for (VkDescriptorSetLayout& vk_descriptor_set_layout: vk_descriptor_set_layouts) {
-            vkDestroyDescriptorSetLayout(p_val_instance->vk_device, vk_descriptor_set_layout, nullptr);
+        // TODO: Error reporting
+        if (vk_descriptor_set_layout == nullptr) {
+            for (ValDescriptorSetInfo* val_descriptor_set: val_descriptor_sets) {
+                val_descriptor_set->release(p_val_instance);
+                delete val_descriptor_set;
+            }
+
+            return {};
         }
 
-        return nullptr;
+        alloc_info.pSetLayouts = &vk_descriptor_set_layout;
+
+        VkDescriptorSet vk_descriptor_set;
+        if (vkAllocateDescriptorSets(p_val_instance->vk_device, &alloc_info, &vk_descriptor_set) != VK_SUCCESS) {
+            for (ValDescriptorSetInfo * val_descriptor_set: val_descriptor_sets) {
+                val_descriptor_set->release(p_val_instance);
+                delete val_descriptor_set;
+            }
+
+            return {};
+        }
+
+        ValDescriptorSet *val_descriptor_set = new ValDescriptorSet();
+        val_descriptor_set->vk_descriptor_set = vk_descriptor_set;
+
+        ValDescriptorSetInfo * val_descriptor_set_info = new ValDescriptorSetInfo();
+        val_descriptor_set_info->val_descriptor_set = val_descriptor_set;
+        val_descriptor_set_info->vk_descriptor_set_layout = vk_descriptor_set_layout;
+
+        val_descriptor_sets.push_back(val_descriptor_set_info);
     }
 
-    ValDescriptorSet* val_descriptor_set = new ValDescriptorSet();
-    val_descriptor_set->vk_descriptor_sets = vk_descriptor_sets;
-    val_descriptor_set->vk_descriptor_set_layouts = vk_descriptor_set_layouts;
-
-    return val_descriptor_set;
+    return val_descriptor_sets;
+}
+void ValDescriptorSetBuilder::push_pre_allocate(bool pre_allocate) {
+    sets.back().pre_allocate = pre_allocate;
 }

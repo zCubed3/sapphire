@@ -1,9 +1,9 @@
 #include "val_pipeline_builder.h"
 
-#include <rs_vulkan/val/pipelines/val_descriptor_set.h>
+#include <rs_vulkan/val/pipelines/val_descriptor_set_info.h>
 #include <rs_vulkan/val/pipelines/val_pipeline.h>
-#include <rs_vulkan/val/pipelines/val_shader_module.h>
 #include <rs_vulkan/val/pipelines/val_render_pass.h>
+#include <rs_vulkan/val/pipelines/val_shader_module.h>
 #include <rs_vulkan/val/val_instance.h>
 
 void ValPipelineBuilder::push_module(ValShaderModule *p_val_shader_module) {
@@ -196,8 +196,8 @@ ValPipeline* ValPipelineBuilder::build(const ValVertexInputBuilder& vertex_build
 
     VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
     pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(val_descriptor_set->vk_descriptor_set_layouts.size());
-    pipeline_layout_create_info.pSetLayouts = val_descriptor_set->vk_descriptor_set_layouts.data();
+    pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(vk_descriptor_set_layouts.size());
+    pipeline_layout_create_info.pSetLayouts = vk_descriptor_set_layouts.data();
     pipeline_layout_create_info.pushConstantRangeCount = 0; // Optional
     pipeline_layout_create_info.pPushConstantRanges = nullptr; // Optional
 

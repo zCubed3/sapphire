@@ -8,6 +8,7 @@
 class MeshAsset;
 
 class ValBuffer;
+class ValDescriptorSet;
 
 class VulkanMeshBuffer : public MeshBuffer {
 protected:
@@ -22,7 +23,7 @@ protected:
     ValBuffer *val_vbo = nullptr;
     ValBuffer *val_ibo = nullptr;
     ValBuffer *transform_ubo = nullptr;
-    std::vector<VkDescriptorSet> vk_descriptor_sets;
+    ValDescriptorSet *val_object_descriptor_info = nullptr;
 
 public:
     VulkanMeshBuffer(MeshAsset* p_mesh_asset);

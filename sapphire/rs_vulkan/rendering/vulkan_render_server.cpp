@@ -28,11 +28,14 @@ VulkanRenderServer::~VulkanRenderServer() {
     val_camera_ubo->release(val_instance);
     delete val_camera_ubo;
 
+    val_window_render_pass->release(val_instance);
+    delete val_window_render_pass;
+
     //VulkanMeshBuffer::transform_ubo->release(val_instance);
     //delete VulkanMeshBuffer::transform_ubo;
 
-    val_descriptor_set->release(val_instance);
-    delete val_descriptor_set;
+    val_descriptor_info->release(val_instance);
+    delete val_descriptor_info;
 
     delete val_instance;
 }
@@ -126,7 +129,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    val_descriptor_set = val_set_builder.build(val_instance);
+    val_descriptor_info = val_set_builder.build(val_instance)[0];
 
     // TODO: Allow the user to create their own vertex types
     val_default_vertex_input = {};
@@ -170,7 +173,7 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
 
     VkWriteDescriptorSet descriptor_write{};
     descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_write.dstSet = val_descriptor_set->vk_descriptor_sets[0];
+    descriptor_write.dstSet = val_descriptor_info->val_descriptor_set->vk_descriptor_set;
     descriptor_write.dstBinding = 0;
     descriptor_write.dstArrayElement = 0;
     descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;

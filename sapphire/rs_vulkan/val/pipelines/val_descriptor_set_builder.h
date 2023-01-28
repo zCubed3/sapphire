@@ -4,7 +4,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-#include <rs_vulkan/val/pipelines/val_descriptor_set.h>
+#include <rs_vulkan/val/pipelines/val_descriptor_set_info.h>
 
 class ValInstance;
 
@@ -14,6 +14,8 @@ protected:
     std::vector<VkDescriptorSetLayoutBinding> bindings;
 
 public:
+    bool pre_allocate = false;
+
     void push_binding(VkDescriptorSetLayoutBinding vk_binding);
     uint32_t get_open_location(uint32_t vk_stage_flags);
 
@@ -28,7 +30,10 @@ public:
     void push_set();
     void push_binding(VkDescriptorType vk_type, uint32_t count, uint32_t vk_stage_flags);
 
-    ValDescriptorSet *build(ValInstance *p_val_instance);
+    // Determines if the current set is pre-allocated or is just a layout
+    void push_pre_allocate(bool pre_allocate);
+
+    std::vector<ValDescriptorSetInfo *> build(ValInstance *p_val_instance);
 };
 
 

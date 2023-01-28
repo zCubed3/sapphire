@@ -9,7 +9,7 @@
 
 class ValInstance;
 class ValShaderModule;
-class ValDescriptorSet;
+class ValDescriptorSetInfo;
 class ValRenderPass;
 
 class ValPipelineBuilder {
@@ -95,7 +95,7 @@ public:
     AlphaBlendOp alpha_blend_op = AlphaBlendOp::ALPHA_BLEND_OP_NONE;
 
     ValRenderPass *val_render_pass = nullptr;
-    ValDescriptorSet *val_descriptor_set = nullptr;
+    std::vector<VkDescriptorSetLayout> vk_descriptor_set_layouts;
 
     void push_module(ValShaderModule *p_val_shader_module);
     ValPipeline *build(const ValVertexInputBuilder& vertex_builder, ValInstance *p_val_instance);

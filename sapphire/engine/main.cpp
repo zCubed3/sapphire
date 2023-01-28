@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 
     // We need to load our model and our shader
     MeshAsset *mesh = static_cast<MeshAsset *>(AssetLoader::load_asset("test.obj"));
-    //MeshAsset *mesh = StaticMeshAsset::get_primitive(StaticMeshAsset::PRIMITIVE_QUAD);
+    MeshAsset *mesh2 = StaticMeshAsset::get_primitive(StaticMeshAsset::PRIMITIVE_QUAD);
 
     ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.mspv"));
     //ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.glsl"));
@@ -79,7 +79,8 @@ int main(int argc, char **argv) {
 
     uint32_t last_tick = SDL_GetTicks();
 
-    glm::mat4 model = glm::identity<glm::mat4>();
+    glm::mat4 model;
+    glm::mat4 model2;
 
     bool resized = false;
 
@@ -122,7 +123,13 @@ int main(int argc, char **argv) {
         //rt_window.clear_color = Color(abs(sin(world->elapsed_time)), 0, 0, 1);
 
         model = glm::identity<glm::mat4>();
+        //model = glm::scale(model, glm::vec3(0.1F, 0.1F, 0.1F));
         model *= glm::toMat4(glm::quat(glm::radians(euler)));
+
+        model2 = glm::identity<glm::mat4>();
+        model2 = glm::translate(model2, glm::vec3(1, 0, 0));
+        //model2 = glm::scale(model2, glm::vec3(0.1F, 0.1F, 0.1F));
+        model2 *= glm::toMat4(glm::quat(glm::radians(euler)));
 
         render_server->begin_frame();
 
@@ -131,7 +138,9 @@ int main(int argc, char **argv) {
         // TODO: MeshRenderer
         mesh->shader = shader;
         mesh->render(model);
-        //mesh->render(glm::translate(model, glm::vec3(1, 0, 0)));
+
+        mesh2->shader = shader;
+        mesh2->render(model2);
 
         render_server->end_target(rt_window);
 
@@ -141,6 +150,7 @@ int main(int argc, char **argv) {
     }
 
     delete mesh;
+    delete mesh2;
     delete shader;
 
     delete rt_window;

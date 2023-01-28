@@ -42,6 +42,12 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
     const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
     ValInstance* val_instance = render_server->val_instance;
 
+    transform_ubo = new ValBuffer(
+            sizeof(VulkanMeshBuffer::ObjectData),
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
+            val_instance);
+
     size_t vbo_size = sizeof(Vertex) * p_mesh_asset->get_vertex_count();
     size_t ibo_size = sizeof(uint32_t) * p_mesh_asset->get_triangle_count();
 
@@ -79,23 +85,20 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
     const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
     ValInstance* val_instance = render_server->val_instance;
 
-    if (transform_ubo == nullptr) {
-        transform_ubo = new ValBuffer(
-                sizeof(VulkanMeshBuffer::ObjectData),
-                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
-                val_instance);
-    }
-
     VkDescriptorBufferInfo buffer_info{};
     buffer_info.buffer = transform_ubo->vk_buffer;
     buffer_info.offset = 0;
     buffer_info.range = sizeof(VulkanMeshBuffer::ObjectData);
 
+    // If we don't have an instance of the per-object data we must allocate one
+    if (val_object_descriptor_info == nullptr) {
+        val_object_descriptor_info = vk_shader->val_object_descriptor_set->allocate_set(val_instance);
+    }
+
     VkWriteDescriptorSet descriptor_write{};
     descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_write.dstSet = render_server->val_descriptor_set->vk_descriptor_sets[0];
-    descriptor_write.dstBinding = 1;
+    descriptor_write.dstSet = val_object_descriptor_info->vk_descriptor_set;
+    descriptor_write.dstBinding = 0;
     descriptor_write.dstArrayElement = 0;
     descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     descriptor_write.descriptorCount = 1;
@@ -145,10 +148,21 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             vk_shader->val_pipeline->vk_pipeline_layout,
             0,
-            static_cast<uint32_t>(render_server->val_descriptor_set->vk_descriptor_sets.size()),
-            render_server->val_descriptor_set->vk_descriptor_sets.data(),
+            1,
+            &render_server->val_descriptor_info->val_descriptor_set->vk_descriptor_set,
             0,
             nullptr);
+
+    vkCmdBindDescriptorSets(
+            active_command_buffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            vk_shader->val_pipeline->vk_pipeline_layout,
+            2,
+            1,
+            &val_object_descriptor_info->vk_descriptor_set,
+            0,
+            nullptr);
+
 
     vkCmdDrawIndexed(active_command_buffer, tri_count, 1, 0, 0, 0);
 }
@@ -156,6 +170,12 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
 VulkanMeshBuffer::~VulkanMeshBuffer() {
     const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
     ValInstance* val_instance = render_server->val_instance;
+
+    val_object_descriptor_info->release(val_instance);
+    delete val_object_descriptor_info;
+
+    transform_ubo->release(val_instance);
+    delete transform_ubo;
 
     val_vbo->release(val_instance);
     delete val_vbo;

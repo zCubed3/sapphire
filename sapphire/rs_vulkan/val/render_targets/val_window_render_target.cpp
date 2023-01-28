@@ -85,7 +85,7 @@ ValWindowRenderTarget::PresentInfo*ValWindowRenderTarget::get_present_info(VkPhy
 
     // TODO: Better presentation mode decision
     for (VkPresentModeKHR present_mode: present_modes) {
-        if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR || present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+        if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR || present_mode == VK_PRESENT_MODE_FIFO_KHR) {
             present_info->vk_mode = present_mode;
             break;
         }
@@ -276,10 +276,12 @@ void ValWindowRenderTarget::release(ValInstance *p_val_instance) {
 
     for (VkImageView view : vk_swapchain_image_views) {
         vkDestroyImageView(p_val_instance->vk_device, view, nullptr);
+        view = nullptr;
     }
 
     for (VkFramebuffer framebuffer : vk_swapchain_framebuffers) {
         vkDestroyFramebuffer(p_val_instance->vk_device, framebuffer, nullptr);
+        framebuffer = nullptr;
     }
 
     if (val_depth_image != nullptr) {

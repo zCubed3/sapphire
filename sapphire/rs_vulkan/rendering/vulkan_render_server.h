@@ -23,7 +23,7 @@ public:
 
     ValInstance* val_instance = nullptr;
     ValBuffer* val_camera_ubo = nullptr;
-    ValDescriptorSet* val_descriptor_set = nullptr;
+    ValDescriptorSetInfo *val_descriptor_info = nullptr;
     ValRenderPass* val_window_render_pass;
 
     ValVertexInputBuilder val_default_vertex_input;

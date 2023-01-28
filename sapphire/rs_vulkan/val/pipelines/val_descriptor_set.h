@@ -8,8 +8,7 @@
 
 class ValDescriptorSet : public ValReleasable {
 public:
-    std::vector<VkDescriptorSetLayout> vk_descriptor_set_layouts;
-    std::vector<VkDescriptorSet> vk_descriptor_sets;
+    VkDescriptorSet vk_descriptor_set = nullptr;
 
     void release(ValInstance *p_val_instance) override;
 };

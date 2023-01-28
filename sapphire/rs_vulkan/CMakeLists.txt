@@ -10,6 +10,7 @@ set(SAPPHIRE_RS_VULKAN_SOURCES
         "val/pipelines/val_render_pass.cpp"
         "val/pipelines/val_render_pass_builder.cpp"
         "val/pipelines/val_descriptor_set.cpp"
+        "val/pipelines/val_descriptor_set_info.cpp"
         "val/pipelines/val_descriptor_set_builder.cpp"
         "val/pipelines/val_pipeline.cpp"
         "val/pipelines/val_pipeline_builder.cpp"

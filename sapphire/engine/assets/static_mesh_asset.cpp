@@ -125,10 +125,10 @@ StaticMeshAsset *StaticMeshAsset::get_primitive(Primitive primitive) {
         };
 
         glm::vec3 quad_normals[] = {
-                {0, 0, 1},
-                {0, 0, 1},
-                {0, 0, 1},
-                {0, 0, 1},
+                {0, 0, -1},
+                {0, 0, -1},
+                {0, 0, -1},
+                {0, 0, -1},
         };
 
         glm::vec2 quad_uvs[] = {
