@@ -138,7 +138,7 @@ public:
     VkSemaphore vk_render_finished_semaphore;
     VkFence vk_render_fence;
 
-    // TODO: Abstract descriptors and pools
+    // TODO: Abstract pools?
     VkDescriptorPool vk_descriptor_pool;
 
     std::vector<VkSurfaceFormatKHR> vk_supported_surface_formats;

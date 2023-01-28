@@ -324,7 +324,7 @@ ValInstance::ChosenGPU ValInstance::pick_gpu(VkInstance vk_instance, VkSurfaceKH
         // TODO: Optional required features
         // TODO: GPU ranking / picking
         // TODO: Config option to manually decide GPU?
-        // TODO: Go through ALL GPUs and don't pick GPU0 as the default always!
+        // TODO: Go through ALL GPUs and don't pick the first supported GPU as the default always!
 
         return ValInstance::ChosenGPU {gpu, queues};
     }
