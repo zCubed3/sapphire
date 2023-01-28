@@ -4,8 +4,10 @@
 #include <engine/rendering/render_server.h>
 
 #include <rs_vulkan/val/render_targets/val_render_target.h>
+#include <rs_vulkan/val/pipelines/val_render_pass_builder.h>
 #include <rs_vulkan/val/pipelines/val_vertex_input_builder.h>
 #include <rs_vulkan/val/pipelines/val_descriptor_set_builder.h>
+#include <rs_vulkan/val/val_instance.h>
 
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
@@ -22,6 +24,7 @@ public:
     ValInstance* val_instance = nullptr;
     ValBuffer* val_camera_ubo = nullptr;
     ValDescriptorSet* val_descriptor_set = nullptr;
+    ValRenderPass* val_window_render_pass;
 
     ValVertexInputBuilder val_default_vertex_input;
     ValRenderTarget *val_active_render_target = nullptr;

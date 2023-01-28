@@ -6,6 +6,8 @@
 
 typedef struct SDL_Window SDL_Window;
 
+class ValRenderPass;
+
 // All types of render target can be created via this info
 //
 // Note: Creating a window
@@ -19,8 +21,10 @@ struct ValRenderTargetCreateInfo {
 
     RenderTargetType type = RenderTargetType::RENDER_TARGET_TYPE_IMAGE;
 
-    // If using a window this value is ignored
+    // If type is RENDER_TARGET_TYPE_IMAGE, extent is ignored!
     VkExtent2D extent;
+
+    ValRenderPass *val_render_pass = nullptr;
 
     // TODO: Optional depth buffering?
 
@@ -48,7 +52,7 @@ public:
     VkClearColorValue clear_color = {0, 0, 0, 1};
     VkClearDepthStencilValue clear_depth_stencil = {1.0F, 0};
 
-    virtual bool begin_render(ValInstance *p_val_instance);
+    virtual bool begin_render(ValRenderPass *p_val_render_pass, ValInstance *p_val_instance);
     virtual bool end_render(ValInstance *p_val_instance);
 
     static ValRenderTarget *create_render_target(ValRenderTargetCreateInfo *p_create_info, ValInstance *p_val_instance);

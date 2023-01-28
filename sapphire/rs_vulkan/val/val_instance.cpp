@@ -1,5 +1,7 @@
 #include "val_instance.h"
 
+#include <rs_vulkan/val/pipelines/val_render_pass_builder.h>
+
 #ifdef SDL_SUPPORT
 #include <SDL.h>
 #include <SDL_vulkan.h>
@@ -350,12 +352,6 @@ VkDevice ValInstance::create_vk_device(VkPhysicalDevice vk_gpu, std::vector<ValQ
         device_queue_infos.push_back(queue_info);
     }
 
-    for (uint32_t queue: device_queues) {
-        VkDeviceQueueCreateInfo queue_create_info{};
-
-
-    }
-
     VkDeviceCreateInfo device_create_info{};
     device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
@@ -410,69 +406,6 @@ VkDevice ValInstance::create_vk_device(VkPhysicalDevice vk_gpu, std::vector<ValQ
     return vk_device;
 }
 
-// TODO: Provide the user with an interface for making custom render passes
-VkRenderPass ValInstance::create_vk_render_pass(VkDevice vk_device, ValWindowRenderTarget::PresentInfo* present_info) {
-    VkAttachmentDescription color_attachment{};
-    color_attachment.format = present_info->vk_color_format.format;
-    color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-
-    color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-
-    color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-    color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-    VkAttachmentReference color_attachment_ref{};
-    color_attachment_ref.attachment = 0;
-    color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    VkAttachmentDescription depth_attachment{};
-    depth_attachment.format = VK_FORMAT_D32_SFLOAT;
-    depth_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-
-    depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-
-    depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-    depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-    VkAttachmentReference depth_attachment_ref{};
-    depth_attachment_ref.attachment = 1;
-    depth_attachment_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-    VkSubpassDescription subpass{};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &color_attachment_ref;
-    subpass.pDepthStencilAttachment = &depth_attachment_ref;
-
-    std::vector<VkAttachmentDescription> attachments = {
-            color_attachment,
-            depth_attachment
-    };
-
-    VkRenderPassCreateInfo render_pass_create_info{};
-    render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-    render_pass_create_info.pAttachments = attachments.data();
-    render_pass_create_info.subpassCount = 1;
-    render_pass_create_info.pSubpasses = &subpass;
-
-    VkRenderPass vk_render_pass;
-    if (vkCreateRenderPass(vk_device, &render_pass_create_info, nullptr, &vk_render_pass) != VK_SUCCESS) {
-        // TODO: Error failed to create render pass
-        return nullptr;
-    }
-
-    return vk_render_pass;
-}
-
 VmaAllocator ValInstance::create_vma_allocator(VkInstance vk_instance, VkDevice vk_device, VkPhysicalDevice vk_gpu) {
     VmaAllocatorCreateInfo allocatorInfo = {};
     allocatorInfo.physicalDevice = vk_gpu;
@@ -499,7 +432,7 @@ VkDescriptorPool ValInstance::create_vk_descriptor_pool(VkDevice vk_device) {
     create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     create_info.poolSizeCount = 1;
     create_info.pPoolSizes = &pool_size;
-    create_info.maxSets = 1;
+    create_info.maxSets = 100;
     create_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
     VkDescriptorPool vk_pool = nullptr;
@@ -587,10 +520,8 @@ ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_in
     ValWindowRenderTarget::PresentInfo* present_info = main_window->get_present_info(gpu.vk_device);
     instance->present_info = present_info;
 
-    VkRenderPass vk_render_pass = create_vk_render_pass(vk_device, present_info);
-    instance->vk_render_pass = vk_render_pass;
-
-    main_window->recreate_swapchain(instance);
+    // We create a default render pass that has 1 color and 1 depth input
+    // The user has access to the main render target we've created, it is up to them to initialize it
     instance->val_main_window = main_window;
 #endif
 
@@ -620,7 +551,7 @@ ValInstance::~ValInstance() {
             queue.release(this);
         }
 
-        vkDestroyRenderPass(vk_device, vk_render_pass, nullptr);
+        //vkDestroyRenderPass(vk_device, vk_render_pass, nullptr);
 
         vkDestroyFence(vk_device, vk_render_fence, nullptr);
         vkDestroySemaphore(vk_device, vk_image_available_semaphore, nullptr);

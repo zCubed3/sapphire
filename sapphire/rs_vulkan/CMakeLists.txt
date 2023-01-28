@@ -7,6 +7,8 @@ set(SAPPHIRE_RS_VULKAN_SOURCES
         "val/data/val_buffer.cpp"
         "val/data/val_stagingbuffer.cpp"
         "val/images/val_image.cpp"
+        "val/pipelines/val_render_pass.cpp"
+        "val/pipelines/val_render_pass_builder.cpp"
         "val/pipelines/val_descriptor_set.cpp"
         "val/pipelines/val_descriptor_set_builder.cpp"
         "val/pipelines/val_pipeline.cpp"

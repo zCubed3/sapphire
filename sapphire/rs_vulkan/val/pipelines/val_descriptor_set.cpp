@@ -5,7 +5,7 @@
 void ValDescriptorSet::release(ValInstance *p_val_instance) {
     ValReleasable::release(p_val_instance);
 
-    for (VkDescriptorSetLayout& vk_descriptor_set_layout: vk_descriptor_set_layouts) {
+    for (VkDescriptorSetLayout &vk_descriptor_set_layout: vk_descriptor_set_layouts) {
         vkDestroyDescriptorSetLayout(p_val_instance->vk_device, vk_descriptor_set_layout, nullptr);
     }
 

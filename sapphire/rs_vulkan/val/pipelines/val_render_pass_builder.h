@@ -1,0 +1,49 @@
+#ifndef SAPPHIRE_VAL_RENDER_PASS_BUILDER_H
+#define SAPPHIRE_VAL_RENDER_PASS_BUILDER_H
+
+#include <rs_vulkan/val/pipelines/val_render_pass.h>
+#include <vector>
+#include <vulkan/vulkan.h>
+
+class ValInstance;
+
+// TODO: Multiple subpasses
+// TODO: Subpass dependencies
+struct ValRenderPassAttachmentInfo {
+    VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
+    VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
+
+    bool load_clear = true;
+    bool store = true;
+
+    bool stencil_load_clear = false;
+    bool stencil_store = false;
+
+    VkImageLayout initial_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkImageLayout final_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkImageLayout ref_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+};
+
+struct ValRenderPassColorAttachmentInfo : ValRenderPassAttachmentInfo {};
+
+struct ValRenderPassDepthStencilAttachmentInfo : ValRenderPassAttachmentInfo {};
+
+class ValRenderPassBuilder {
+    std::vector<VkAttachmentDescription> vk_attachment_descriptions;
+    std::vector<VkAttachmentReference> vk_attachment_refs;
+
+    // We can only have 1 depth stencil!
+    // For implementation purposes it is always last!
+    bool has_depth_stencil;
+
+    void push_attachment(ValRenderPassAttachmentInfo *p_attachment_info);
+
+public:
+    void push_color_attachment(ValRenderPassColorAttachmentInfo *p_attachment_info);
+    bool push_depth_attachment(ValRenderPassDepthStencilAttachmentInfo *p_attachment_info);
+
+    ValRenderPass *build(ValInstance *p_val_instance);
+};
+
+
+#endif

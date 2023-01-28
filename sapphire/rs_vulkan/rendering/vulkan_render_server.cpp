@@ -20,8 +20,6 @@
 #include <rs_vulkan/rendering/vulkan_mesh_buffer.h>
 #include <rs_vulkan/rendering/vulkan_render_target_data.h>
 
-#include <rs_vulkan/val/val_instance.h>
-
 #define RS_VULKAN_DEBUG
 
 
@@ -29,6 +27,9 @@
 VulkanRenderServer::~VulkanRenderServer() {
     val_camera_ubo->release(val_instance);
     delete val_camera_ubo;
+
+    //VulkanMeshBuffer::transform_ubo->release(val_instance);
+    //delete VulkanMeshBuffer::transform_ubo;
 
     val_descriptor_set->release(val_instance);
     delete val_descriptor_set;
@@ -92,6 +93,27 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     val_instance = ValInstance::create_val_instance(&val_create_info);
 
+    // Val creates a render target for our main window
+    // The surface is created but that's it, we need to initialize the rest
+    ValRenderPassBuilder render_pass_builder {};
+
+    ValRenderPassColorAttachmentInfo present_color_info {};
+    present_color_info.format = VK_FORMAT_B8G8R8A8_UNORM; // TODO: Linear / sRGB switching
+    present_color_info.final_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    present_color_info.ref_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    ValRenderPassDepthStencilAttachmentInfo depth_stencil_color_info {};
+    depth_stencil_color_info.format = VK_FORMAT_D32_SFLOAT; // TODO: Depth format validation
+    depth_stencil_color_info.final_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    depth_stencil_color_info.ref_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    render_pass_builder.push_color_attachment(&present_color_info);
+    render_pass_builder.push_depth_attachment(&depth_stencil_color_info);
+
+    val_window_render_pass = render_pass_builder.build(val_instance);
+
+    val_instance->val_main_window->create_swapchain(val_window_render_pass, val_instance);
+
     val_camera_ubo = new ValBuffer(
             sizeof(CameraData),
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -101,6 +123,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     // TODO: User defined layouts
     ValDescriptorSetBuilder val_set_builder;
 
+    val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
     val_descriptor_set = val_set_builder.build(val_instance);
@@ -122,7 +145,7 @@ bool VulkanRenderServer::present(SDL_Window *p_window) {
 }
 
 void VulkanRenderServer::on_window_resized() {
-    val_instance->val_main_window->recreate_swapchain(val_instance);
+    val_instance->val_main_window->create_swapchain(val_window_render_pass, val_instance);
 }
 
 bool VulkanRenderServer::begin_frame() {
@@ -138,6 +161,7 @@ bool VulkanRenderServer::end_frame() {
 
 bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     p_target->begin_attach();
+    current_target = p_target;
 
     VkDescriptorBufferInfo buffer_info{};
     buffer_info.buffer = val_camera_ubo->vk_buffer;
@@ -158,6 +182,7 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     CameraData data = {
             p_target->projection,
             p_target->view,
+            p_target->view_inverse,
             p_target->eye
     };
 
@@ -172,7 +197,7 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
             val_active_render_target = target_data->val_render_target;
 
             val_active_render_target->clear_color = { p_target->clear_color[0], p_target->clear_color[1], p_target->clear_color[2], p_target->clear_color[3] };
-            val_active_render_target->begin_render(val_instance);
+            val_active_render_target->begin_render(val_window_render_pass, val_instance);
         }
     }
 
@@ -188,6 +213,7 @@ bool VulkanRenderServer::end_target(RenderTarget *p_target) {
         }
     }
 
+    current_target = nullptr;
     val_active_render_target = nullptr;
 
     return true;

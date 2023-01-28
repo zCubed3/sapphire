@@ -10,11 +10,11 @@
 class ValInstance;
 class ValShaderModule;
 class ValDescriptorSet;
+class ValRenderPass;
 
 class ValPipelineBuilder {
 protected:
     std::vector<VkPipelineShaderStageCreateInfo> vk_stage_infos;
-
 
 public:
     enum CullMode {
@@ -94,8 +94,11 @@ public:
     AlphaBlendMode alpha_dst_blend_mode = AlphaBlendMode::ALPHA_BLEND_MODE_NONE;
     AlphaBlendOp alpha_blend_op = AlphaBlendOp::ALPHA_BLEND_OP_NONE;
 
+    ValRenderPass *val_render_pass = nullptr;
+    ValDescriptorSet *val_descriptor_set = nullptr;
+
     void push_module(ValShaderModule *p_val_shader_module);
-    ValPipeline *build(const ValVertexInputBuilder& vertex_builder, ValDescriptorSet* p_val_descriptor_set, VkRenderPass vk_render_pass, ValInstance *p_val_instance);
+    ValPipeline *build(const ValVertexInputBuilder& vertex_builder, ValInstance *p_val_instance);
 
     // TODO: Dynamic state configuration
     // TODO: Alpha to coverage?

@@ -5,6 +5,7 @@
 
 #include <rs_vulkan/val/val_instance.h>
 #include <rs_vulkan/val/images/val_image.h>
+#include <rs_vulkan/val/pipelines/val_render_pass.h>
 
 VkExtent2D ValWindowRenderTarget::get_extent(ValInstance *p_val_instance) {
     return vk_extent;
@@ -84,7 +85,7 @@ ValWindowRenderTarget::PresentInfo*ValWindowRenderTarget::get_present_info(VkPhy
 
     // TODO: Better presentation mode decision
     for (VkPresentModeKHR present_mode: present_modes) {
-        if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR || present_mode == VK_PRESENT_MODE_FIFO_KHR) {
+        if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR || present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
             present_info->vk_mode = present_mode;
             break;
         }
@@ -93,7 +94,7 @@ ValWindowRenderTarget::PresentInfo*ValWindowRenderTarget::get_present_info(VkPhy
     return present_info;
 }
 
-bool ValWindowRenderTarget::recreate_swapchain(ValInstance* p_val_instance) {
+bool ValWindowRenderTarget::create_swapchain(ValRenderPass *p_val_render_pass, ValInstance* p_val_instance) {
     p_val_instance->await_frame();
 
     // TODO: Re-using val images?
@@ -238,7 +239,7 @@ bool ValWindowRenderTarget::recreate_swapchain(ValInstance* p_val_instance) {
 
         VkFramebufferCreateInfo framebuffer_create_info{};
         framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebuffer_create_info.renderPass = p_val_instance->vk_render_pass;
+        framebuffer_create_info.renderPass = p_val_render_pass->vk_render_pass;
         framebuffer_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
         framebuffer_create_info.pAttachments = attachments.data();
         framebuffer_create_info.width = vk_extent.width;

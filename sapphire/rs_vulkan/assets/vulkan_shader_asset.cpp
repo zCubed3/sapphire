@@ -27,7 +27,10 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     builder.push_module(vert_module);
     builder.push_module(frag_module);
 
-    val_pipeline = builder.build(render_server->val_default_vertex_input, render_server->val_descriptor_set, val_instance->vk_render_pass, val_instance);
+    builder.val_render_pass = render_server->val_window_render_pass;
+    builder.val_descriptor_set = render_server->val_descriptor_set;
+
+    val_pipeline = builder.build(render_server->val_default_vertex_input, val_instance);
 
     vert_module->release(val_instance);
     delete vert_module;

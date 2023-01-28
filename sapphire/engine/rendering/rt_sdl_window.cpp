@@ -28,15 +28,18 @@ void SDLWindowRenderTarget::begin_attach() {
     // TODO: Cameras should set this!
     float aspect = (float) width / (float) height;
 
-    //float x = 0;
-    float x = sin(world->elapsed_time) * 2;
-    float y = cos(world->elapsed_time) * 2;
+    float x = 0;
+    float y = 0;
+
+    //float x = sin(world->elapsed_time) * 2;
+    //float y = cos(world->elapsed_time) * 2;
 
     // TODO: Allow the renderer to note if the Y axis is flipped
-    view = glm::lookAt(glm::vec3(x, y, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+    view = glm::lookAt(glm::vec3(x, y, 2), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
     projection = glm::perspective(30.0F, aspect, 0.01F, 100.0F);
 
     eye = projection * view;
+    view_inverse = glm::inverse(view);
 }
 
 RenderTarget::TargetType SDLWindowRenderTarget::get_type() {

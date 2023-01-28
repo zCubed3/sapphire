@@ -29,6 +29,7 @@ public:
     // Render targets may have their own view and projection matrices
     // The top most camera will usually set these
     glm::mat4 view = {};
+    glm::mat4 view_inverse = {};
     glm::mat4 projection = {};
     glm::mat4 eye = {};// View * Projection
 

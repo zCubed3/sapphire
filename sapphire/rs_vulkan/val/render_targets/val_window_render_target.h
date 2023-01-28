@@ -10,6 +10,7 @@ typedef struct SDL_Window SDL_Window;
 
 class ValInstance;
 class ValImage;
+class ValRenderPass;
 
 // TODO: Properly support multiple windows
 // TODO: Separate this into a framebuffer type?
@@ -43,7 +44,7 @@ public:
     ValWindowRenderTarget(ValRenderTargetCreateInfo *p_create_info, ValInstance *p_val_instance);
 
     PresentInfo *get_present_info(VkPhysicalDevice vk_gpu) const;
-    bool recreate_swapchain(ValInstance* p_val_instance);
+    bool create_swapchain(ValRenderPass *p_val_render_pass, ValInstance* p_val_instance);
 
     bool present_queue(ValInstance* p_val_instance);
 

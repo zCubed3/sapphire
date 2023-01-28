@@ -9,6 +9,10 @@
 class ValInstance;
 
 class ValBuffer : public ValReleasable {
+protected:
+    // Optimization: Leaving memory mapped in Vulkan isn't bad?
+    void *mapped = nullptr;
+
 public:
     VmaAllocation vma_allocation;
     VkBuffer vk_buffer;

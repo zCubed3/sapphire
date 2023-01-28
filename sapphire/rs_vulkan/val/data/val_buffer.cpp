@@ -19,14 +19,19 @@ ValBuffer::ValBuffer(size_t size, uint32_t usage, uint32_t flags, ValInstance *p
 }
 
 void ValBuffer::write(void *data, ValInstance *p_val_instance) {
-    void* buffer;
-    vmaMapMemory(p_val_instance->vma_allocator, vma_allocation, &buffer);
-    memcpy(buffer, data, size);
-    vmaUnmapMemory(p_val_instance->vma_allocator, vma_allocation);
+    if (mapped == nullptr) {
+        vmaMapMemory(p_val_instance->vma_allocator, vma_allocation, &mapped);
+    }
+
+    memcpy(mapped, data, size);
 }
 
 void ValBuffer::release(ValInstance *p_val_instance) {
     ValReleasable::release(p_val_instance);
+
+    if (mapped != nullptr) {
+        vmaUnmapMemory(p_val_instance->vma_allocator, vma_allocation);
+    }
 
     vmaDestroyBuffer(p_val_instance->vma_allocator, vk_buffer, vma_allocation);
 }

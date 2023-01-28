@@ -113,6 +113,12 @@ int main(int argc, char **argv) {
 
         glm::vec3 euler = glm::vec3(0, world->elapsed_time * 90, 0);
 
+        float x = sin(world->elapsed_time);
+        float y = cos(world->elapsed_time);
+
+        euler.x = x * 30;
+        euler.y = y * 30;
+
         //rt_window.clear_color = Color(abs(sin(world->elapsed_time)), 0, 0, 1);
 
         model = glm::identity<glm::mat4>();
@@ -125,6 +131,7 @@ int main(int argc, char **argv) {
         // TODO: MeshRenderer
         mesh->shader = shader;
         mesh->render(model);
+        //mesh->render(glm::translate(model, glm::vec3(1, 0, 0)));
 
         render_server->end_target(rt_window);
 

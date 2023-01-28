@@ -3,12 +3,13 @@
 #include <rs_vulkan/val/val_instance.h>
 #include <rs_vulkan/val/render_targets/val_image_render_target.h>
 #include <rs_vulkan/val/render_targets/val_window_render_target.h>
+#include <rs_vulkan/val/pipelines/val_render_pass.h>
 
 VkExtent2D ValRenderTarget::get_extent(ValInstance *p_val_instance) {
     return creation_extent;
 }
 
-bool ValRenderTarget::begin_render(ValInstance *p_val_instance) {
+bool ValRenderTarget::begin_render(ValRenderPass *p_val_render_pass, ValInstance *p_val_instance) {
     if (vk_command_buffer == nullptr) {
         vk_command_buffer = p_val_instance->get_queue(ValQueue::QUEUE_TYPE_GRAPHICS).allocate_buffer(p_val_instance);
     }
@@ -24,7 +25,7 @@ bool ValRenderTarget::begin_render(ValInstance *p_val_instance) {
 
     VkRenderPassBeginInfo render_pass_info{};
     render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    render_pass_info.renderPass = p_val_instance->vk_render_pass;
+    render_pass_info.renderPass = p_val_render_pass->vk_render_pass;
     render_pass_info.framebuffer = get_framebuffer(p_val_instance);
 
     render_pass_info.renderArea.offset = {0, 0};
@@ -92,7 +93,7 @@ ValRenderTarget *ValRenderTarget::create_render_target(ValRenderTargetCreateInfo
         ValWindowRenderTarget* window_target = new ValWindowRenderTarget(p_create_info, p_val_instance);
 
         if (p_create_info->initialize_swapchain) {
-            window_target->recreate_swapchain(p_val_instance);
+            window_target->create_swapchain(p_create_info->val_render_pass, p_val_instance);
         }
 
         return window_target;

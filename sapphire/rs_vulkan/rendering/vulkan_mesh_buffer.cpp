@@ -3,12 +3,16 @@
 #include <vulkan/vulkan.h>
 
 #include <engine/assets/mesh_asset.h>
+#include <engine/rendering/render_target.h>
+
 #include <rs_vulkan/assets/vulkan_shader_asset.h>
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #include <rs_vulkan/val/val_instance.h>
 #include <rs_vulkan/val/pipelines/val_pipeline.h>
 
 #include <vk_mem_alloc.h>
+
+//ValBuffer *VulkanMeshBuffer::transform_ubo = nullptr;
 
 VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
     // TODO: Make the staging buffer more async?
@@ -74,19 +78,54 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
 
     const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
     ValInstance* val_instance = render_server->val_instance;
-    ValWindowRenderTarget * window = val_instance->val_main_window;
+
+    if (transform_ubo == nullptr) {
+        transform_ubo = new ValBuffer(
+                sizeof(VulkanMeshBuffer::ObjectData),
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
+                val_instance);
+    }
+
+    VkDescriptorBufferInfo buffer_info{};
+    buffer_info.buffer = transform_ubo->vk_buffer;
+    buffer_info.offset = 0;
+    buffer_info.range = sizeof(VulkanMeshBuffer::ObjectData);
+
+    VkWriteDescriptorSet descriptor_write{};
+    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_write.dstSet = render_server->val_descriptor_set->vk_descriptor_sets[0];
+    descriptor_write.dstBinding = 1;
+    descriptor_write.dstArrayElement = 0;
+    descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptor_write.descriptorCount = 1;
+    descriptor_write.pBufferInfo = &buffer_info;
+    descriptor_write.pImageInfo = nullptr; // Optional
+    descriptor_write.pTexelBufferView = nullptr; // Optional
+
+    VulkanMeshBuffer::ObjectData data = {
+            render_server->get_current_target()->eye * transform.get_model(),
+            transform.get_model(),
+            transform.get_model_inverse(),
+            transform.get_model_inverse_transpose()
+    };
+
+    transform_ubo->write(&data, val_instance);
+    vkUpdateDescriptorSets(val_instance->vk_device, 1, &descriptor_write, 0, nullptr);
+
+    Rect rect = render_server->get_current_target()->get_rect();
 
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float)window->vk_extent.width;
-    viewport.height = (float)window->vk_extent.height;
+    viewport.width = (float)rect.width;
+    viewport.height = (float)rect.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = window->vk_extent;
+    scissor.extent = { static_cast<uint32_t>(rect.width), static_cast<uint32_t>(rect.height) };
 
     // We assume a command buffer is currently recording
     VkCommandBuffer active_command_buffer = render_server->val_active_render_target->vk_command_buffer;
@@ -106,7 +145,7 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             vk_shader->val_pipeline->vk_pipeline_layout,
             0,
-            1,
+            static_cast<uint32_t>(render_server->val_descriptor_set->vk_descriptor_sets.size()),
             render_server->val_descriptor_set->vk_descriptor_sets.data(),
             0,
             nullptr);

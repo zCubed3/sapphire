@@ -1,9 +1,10 @@
 #include "val_pipeline_builder.h"
 
-#include <rs_vulkan/val/val_instance.h>
-#include <rs_vulkan/val/pipelines/val_shader_module.h>
-#include <rs_vulkan/val/pipelines/val_pipeline.h>
 #include <rs_vulkan/val/pipelines/val_descriptor_set.h>
+#include <rs_vulkan/val/pipelines/val_pipeline.h>
+#include <rs_vulkan/val/pipelines/val_shader_module.h>
+#include <rs_vulkan/val/pipelines/val_render_pass.h>
+#include <rs_vulkan/val/val_instance.h>
 
 void ValPipelineBuilder::push_module(ValShaderModule *p_val_shader_module) {
     // Make sure we don't have a duplicate
@@ -21,8 +22,8 @@ void ValPipelineBuilder::push_module(ValShaderModule *p_val_shader_module) {
 }
 
 // TODO: Errors
-ValPipeline* ValPipelineBuilder::build(const ValVertexInputBuilder& vertex_builder, ValDescriptorSet* p_val_descriptor_set, VkRenderPass vk_render_pass, ValInstance *p_val_instance) {
-    if (p_val_descriptor_set == nullptr) {
+ValPipeline* ValPipelineBuilder::build(const ValVertexInputBuilder& vertex_builder, ValInstance *p_val_instance) {
+    if (p_val_instance == nullptr) {
         return nullptr;
     }
 
@@ -195,8 +196,8 @@ ValPipeline* ValPipelineBuilder::build(const ValVertexInputBuilder& vertex_build
 
     VkPipelineLayoutCreateInfo pipeline_layout_create_info{};
     pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(p_val_descriptor_set->vk_descriptor_set_layouts.size());
-    pipeline_layout_create_info.pSetLayouts = p_val_descriptor_set->vk_descriptor_set_layouts.data();
+    pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(val_descriptor_set->vk_descriptor_set_layouts.size());
+    pipeline_layout_create_info.pSetLayouts = val_descriptor_set->vk_descriptor_set_layouts.data();
     pipeline_layout_create_info.pushConstantRangeCount = 0; // Optional
     pipeline_layout_create_info.pPushConstantRanges = nullptr; // Optional
 
@@ -216,7 +217,7 @@ ValPipeline* ValPipelineBuilder::build(const ValVertexInputBuilder& vertex_build
     pipeline_create_info.pColorBlendState = &color_blend_state;
     pipeline_create_info.pDynamicState = &dynamic_state_create_info;
     pipeline_create_info.layout = vk_pipeline_layout;
-    pipeline_create_info.renderPass = vk_render_pass;
+    pipeline_create_info.renderPass = val_render_pass->vk_render_pass;
     pipeline_create_info.subpass = 0;
     pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipeline_create_info.basePipelineIndex = -1; // Optional

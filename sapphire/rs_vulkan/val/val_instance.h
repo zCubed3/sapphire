@@ -106,9 +106,6 @@ public:
     VkPhysicalDevice vk_physical_device = nullptr;
     ValWindowRenderTarget::PresentInfo* present_info = nullptr;
 
-    // TODO: Abstract render passes
-    VkRenderPass vk_render_pass;
-
     VmaAllocator vma_allocator;
 
     // TODO: Abstract sync objects?
@@ -120,7 +117,7 @@ public:
     VkDescriptorPool vk_descriptor_pool;
 
 #ifdef SDL_SUPPORT
-    ValWindowRenderTarget * val_main_window;
+    ValWindowRenderTarget *val_main_window;
 #endif
 
     std::vector<ValQueue> val_queues;
