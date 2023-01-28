@@ -43,7 +43,6 @@ public:
 
     ValWindowRenderTarget(ValRenderTargetCreateInfo *p_create_info, ValInstance *p_val_instance);
 
-    PresentInfo *get_present_info(VkPhysicalDevice vk_gpu) const;
     bool create_swapchain(ValRenderPass *p_val_render_pass, ValInstance* p_val_instance);
 
     bool present_queue(ValInstance* p_val_instance);

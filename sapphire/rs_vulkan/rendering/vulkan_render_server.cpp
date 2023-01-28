@@ -78,8 +78,12 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     val_create_info.engine_name = "Sapphire Engine";
     val_create_info.application_name = "Sapphire Application";
 
-    // TODO: Optional SDL
-    val_create_info.sdl_window = p_window;
+    // TODO: Optional SDL?
+    // TODO: Allow switching between sRGB and Linear
+    ValInstancePresentPreferences present_preferences {};
+    val_create_info.p_present_preferences = &present_preferences;
+
+    val_create_info.p_sdl_window = p_window;
     val_create_info.instance_extensions = ValExtension::get_sdl_instance_extensions(p_window);
     val_create_info.device_extensions = {{VK_KHR_SWAPCHAIN_EXTENSION_NAME, 0}};
 
@@ -102,12 +106,12 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     ValRenderPassBuilder render_pass_builder {};
 
     ValRenderPassColorAttachmentInfo present_color_info {};
-    present_color_info.format = VK_FORMAT_B8G8R8A8_UNORM; // TODO: Linear / sRGB switching
+    present_color_info.format = val_instance->present_info->vk_color_format;
     present_color_info.final_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     present_color_info.ref_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     ValRenderPassDepthStencilAttachmentInfo depth_stencil_color_info {};
-    depth_stencil_color_info.format = VK_FORMAT_D32_SFLOAT; // TODO: Depth format validation
+    depth_stencil_color_info.format = val_instance->present_info->vk_depth_format;
     depth_stencil_color_info.final_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     depth_stencil_color_info.ref_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 

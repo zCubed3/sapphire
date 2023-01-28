@@ -28,72 +28,6 @@ ValWindowRenderTarget::ValWindowRenderTarget(ValRenderTargetCreateInfo *p_create
     sdl_window = p_create_info->p_window;
 }
 
-ValWindowRenderTarget::PresentInfo*ValWindowRenderTarget::get_present_info(VkPhysicalDevice vk_gpu) const {
-    ValWindowRenderTarget::PresentInfo* present_info = new ValWindowRenderTarget::PresentInfo();
-
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR> present_modes;
-
-    uint32_t enumeration_count;
-
-    vkGetPhysicalDeviceSurfaceFormatsKHR(vk_gpu, vk_surface, &enumeration_count, nullptr);
-    formats.resize(enumeration_count);
-    vkGetPhysicalDeviceSurfaceFormatsKHR(vk_gpu, vk_surface, &enumeration_count, formats.data());
-
-    if (enumeration_count == 0) {
-        // TODO: Error no formats available!
-        delete present_info;
-        return nullptr;
-    }
-
-    enumeration_count = 0;
-
-    vkGetPhysicalDeviceSurfacePresentModesKHR(vk_gpu, vk_surface, &enumeration_count, nullptr);
-    present_modes.resize(enumeration_count);
-    vkGetPhysicalDeviceSurfacePresentModesKHR(vk_gpu, vk_surface, &enumeration_count, present_modes.data());
-
-    if (enumeration_count == 0) {
-        // TODO: Error no present modes available!
-        delete present_info;
-        return nullptr;
-    }
-
-    enumeration_count = 0;
-
-    // TODO: Smarter swapchain format picking
-    // TODO: Linear / sRGB switching?
-
-    for (VkSurfaceFormatKHR format: formats) {
-        /*
-        if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLORSPACE_SRGB_NONLINEAR_KHR) {
-            vk_chosen_format = format;
-            break;
-        }
-
-        // TODO: User configurable depth format
-        if (format.format == VK_FORMAT_D32_SFLOAT) {
-            present_info->vk_depth_format = format;
-            break;
-        }
-         */
-
-        if (format.format == VK_FORMAT_B8G8R8A8_UNORM && format.colorSpace == VK_COLORSPACE_SRGB_NONLINEAR_KHR) {
-            present_info->vk_color_format = format;
-            break;
-        }
-    }
-
-    // TODO: Better presentation mode decision
-    for (VkPresentModeKHR present_mode: present_modes) {
-        if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR || present_mode == VK_PRESENT_MODE_FIFO_KHR) {
-            present_info->vk_mode = present_mode;
-            break;
-        }
-    }
-
-    return present_info;
-}
-
 bool ValWindowRenderTarget::create_swapchain(ValRenderPass *p_val_render_pass, ValInstance* p_val_instance) {
     p_val_instance->await_frame();
 
@@ -146,8 +80,8 @@ bool ValWindowRenderTarget::create_swapchain(ValRenderPass *p_val_render_pass, V
 
     swapchain_create_info.surface = vk_surface;
     swapchain_create_info.minImageCount = image_count;
-    swapchain_create_info.imageFormat = p_val_instance->present_info->vk_color_format.format;
-    swapchain_create_info.imageColorSpace = p_val_instance->present_info->vk_color_format.colorSpace;
+    swapchain_create_info.imageFormat = p_val_instance->present_info->vk_color_format;
+    swapchain_create_info.imageColorSpace = p_val_instance->present_info->vk_colorspace;
     swapchain_create_info.imageExtent = vk_extent;
     swapchain_create_info.imageArrayLayers = 1;
     swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -155,7 +89,7 @@ bool ValWindowRenderTarget::create_swapchain(ValRenderPass *p_val_render_pass, V
     swapchain_create_info.preTransform = vk_capabilities.currentTransform;
     swapchain_create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 
-    swapchain_create_info.presentMode = p_val_instance->present_info->vk_mode;
+    swapchain_create_info.presentMode = p_val_instance->present_info->vk_present_mode;
     swapchain_create_info.clipped = VK_TRUE;
 
     swapchain_create_info.oldSwapchain = vk_swapchain;
@@ -200,7 +134,7 @@ bool ValWindowRenderTarget::create_swapchain(ValRenderPass *p_val_render_pass, V
 
         view_create_info.image = vk_swapchain_images[i];
         view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        view_create_info.format = p_val_instance->present_info->vk_color_format.format;
+        view_create_info.format = p_val_instance->present_info->vk_color_format;
 
         view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
         view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -225,7 +159,7 @@ bool ValWindowRenderTarget::create_swapchain(ValRenderPass *p_val_render_pass, V
     ValImageCreateInfo depth_create_info {};
     depth_create_info.extent.width = vk_extent.width;
     depth_create_info.extent.height = vk_extent.height;
-    depth_create_info.format = VK_FORMAT_D32_SFLOAT; // TODO: Use chosen depth format
+    depth_create_info.format = p_val_instance->present_info->vk_depth_format;
     depth_create_info.usage_flags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
     val_depth_image = ValImage::create(&depth_create_info, p_val_instance);

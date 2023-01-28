@@ -15,6 +15,19 @@
 
 // TODO: Frames in flight?
 
+struct ValInstancePresentPreferences {
+    bool use_sRGB = false;
+    bool use_32bit_depth = false;
+    bool use_vsync = true;
+};
+
+struct ValPresentInfo {
+    VkFormat vk_color_format;
+    VkColorSpaceKHR vk_colorspace;
+    VkFormat vk_depth_format;
+    VkPresentModeKHR vk_present_mode;
+};
+
 struct ValInstanceCreateInfo {
     enum VulkanAPIVersion {
         API_VERSION_1_0,
@@ -48,11 +61,16 @@ struct ValInstanceCreateInfo {
     uint32_t engine_minor_version = 0;
     uint32_t engine_patch_version = 0;
 
-    uint32_t verbosity_flags;
+    uint32_t verbosity_flags = 0;
+
+    std::vector<VkFormat> vk_color_formats;
+    std::vector<VkFormat> vk_depth_formats;
+    std::vector<VkPresentModeKHR> vk_present_modes;
 
 #ifdef SDL_SUPPORT
     // TODO: Multiple window support?
-    SDL_Window* sdl_window;
+    SDL_Window* p_sdl_window = nullptr;
+    ValInstancePresentPreferences *p_present_preferences = nullptr;
 #endif
 };
 
@@ -83,12 +101,19 @@ protected:
     static VkInstance create_vk_instance(ValInstanceCreateInfo* p_create_info);
     static ChosenGPU pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_surface, ValInstanceCreateInfo* p_create_info);
     static VkDevice create_vk_device(VkPhysicalDevice vk_gpu, std::vector<ValQueue>& val_queues, ValInstanceCreateInfo* p_create_info);
-    static VkRenderPass create_vk_render_pass(VkDevice vk_device, ValWindowRenderTarget::PresentInfo* present_info);
     static VmaAllocator create_vma_allocator(VkInstance vk_instance, VkDevice vk_device, VkPhysicalDevice vk_gpu);
     static VkDescriptorPool create_vk_descriptor_pool(VkDevice vk_device);
 
     static VkSemaphore create_vk_semaphore(VkDevice vk_device);
     static VkFence create_vk_fence(VkDevice vk_device);
+
+    // Helper for caching present data
+    bool cache_surface_info(VkInstance vk_instance, VkSurfaceKHR vk_surface, VkPhysicalDevice vk_gpu);
+    VkFormat find_supported_surface_format(const std::vector<VkFormat>& vk_formats);
+    VkFormat find_supported_format(const std::vector<VkFormat>& vk_formats, VkImageTiling vk_tiling, VkFormatFeatureFlags vk_feature_flags);
+    VkPresentModeKHR find_supported_present_mode(const std::vector<VkPresentModeKHR>& vk_present_modes);
+
+    bool determine_present_info(ValInstancePresentPreferences *p_present_preferences);
 
 public:
     static const char* get_error();
@@ -104,7 +129,7 @@ public:
     VkInstance vk_instance = nullptr;
     VkDevice vk_device = nullptr;
     VkPhysicalDevice vk_physical_device = nullptr;
-    ValWindowRenderTarget::PresentInfo* present_info = nullptr;
+    ValPresentInfo* present_info = nullptr;
 
     VmaAllocator vma_allocator;
 
@@ -115,6 +140,9 @@ public:
 
     // TODO: Abstract descriptors and pools
     VkDescriptorPool vk_descriptor_pool;
+
+    std::vector<VkSurfaceFormatKHR> vk_supported_surface_formats;
+    std::vector<VkPresentModeKHR> vk_supported_present_modes;
 
 #ifdef SDL_SUPPORT
     ValWindowRenderTarget *val_main_window;

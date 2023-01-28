@@ -468,6 +468,123 @@ VkFence ValInstance::create_vk_fence(VkDevice vk_device) {
     return vk_fence;
 }
 
+bool ValInstance::cache_surface_info(VkInstance vk_instance, VkSurfaceKHR vk_surface, VkPhysicalDevice vk_gpu) {
+    uint32_t enumeration_count;
+
+    vkGetPhysicalDeviceSurfaceFormatsKHR(vk_gpu, vk_surface, &enumeration_count, nullptr);
+    vk_supported_surface_formats.resize(enumeration_count);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(vk_gpu, vk_surface, &enumeration_count, vk_supported_surface_formats.data());
+
+    if (enumeration_count == 0) {
+        // TODO: Error no formats available!
+        return false;
+    }
+
+    enumeration_count = 0;
+
+    vkGetPhysicalDeviceSurfacePresentModesKHR(vk_gpu, vk_surface, &enumeration_count, nullptr);
+    vk_supported_present_modes.resize(enumeration_count);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(vk_gpu, vk_surface, &enumeration_count, vk_supported_present_modes.data());
+
+    if (enumeration_count == 0) {
+        // TODO: Error no present modes available!
+        return false;
+    }
+
+    return true;
+}
+
+VkFormat ValInstance::find_supported_surface_format(const std::vector<VkFormat>& vk_formats) {
+    for (VkFormat vk_format: vk_formats) {
+        for (VkSurfaceFormatKHR vk_surface_format: vk_supported_surface_formats) {
+            if (vk_surface_format.format == vk_format && vk_surface_format.colorSpace == VK_COLORSPACE_SRGB_NONLINEAR_KHR) {
+                return vk_format;
+            }
+        }
+    }
+
+    return VK_FORMAT_UNDEFINED;
+}
+
+VkFormat ValInstance::find_supported_format(const std::vector<VkFormat> &vk_formats, VkImageTiling vk_tiling, VkFormatFeatureFlags vk_feature_flags) {
+    for (VkFormat vk_attempt_format: vk_formats) {
+        VkFormatProperties vk_format_properties;
+        vkGetPhysicalDeviceFormatProperties(vk_physical_device, vk_attempt_format, &vk_format_properties);
+
+        if (vk_tiling == VK_IMAGE_TILING_LINEAR && (vk_format_properties.linearTilingFeatures & vk_feature_flags) == vk_feature_flags) {
+            return vk_attempt_format;
+        }
+
+        if (vk_tiling == VK_IMAGE_TILING_OPTIMAL && (vk_format_properties.optimalTilingFeatures & vk_feature_flags) == vk_feature_flags) {
+            return vk_attempt_format;
+        }
+    }
+
+    return VK_FORMAT_UNDEFINED;
+}
+
+VkPresentModeKHR ValInstance::find_supported_present_mode(const std::vector<VkPresentModeKHR> &vk_present_modes) {
+    for (VkPresentModeKHR vk_present_mode: vk_present_modes) {
+        for (VkPresentModeKHR vk_supported_present_mode: vk_supported_present_modes) {
+            if (vk_present_mode == vk_supported_present_mode) {
+                return vk_present_mode;
+            }
+        }
+    }
+
+    return VK_PRESENT_MODE_FIFO_KHR;
+}
+
+bool ValInstance::determine_present_info(ValInstancePresentPreferences *p_present_preferences) {
+    if (p_present_preferences == nullptr) {
+        return false;
+    }
+
+    // Try to guess a fitting present format
+    std::vector<VkFormat> vk_formats;
+    std::vector<VkFormat> vk_depth_formats;
+
+    if (p_present_preferences->use_sRGB) {
+        vk_formats.push_back(VK_FORMAT_B8G8R8A8_SRGB);
+    } else {
+        vk_formats.push_back(VK_FORMAT_B8G8R8A8_UNORM);
+    }
+
+    if (p_present_preferences->use_32bit_depth) {
+        vk_formats.push_back(VK_FORMAT_D32_SFLOAT_S8_UINT);
+    }
+
+    // We always push the D24 and D16 formats regardless
+    vk_depth_formats.push_back(VK_FORMAT_D24_UNORM_S8_UINT);
+    vk_depth_formats.push_back(VK_FORMAT_D16_UNORM_S8_UINT);
+
+    // Try to guess a fitting present mode
+    std::vector<VkPresentModeKHR> vk_present_modes;
+
+    if (p_present_preferences->use_vsync) {
+        vk_present_modes.push_back(VK_PRESENT_MODE_FIFO_KHR);
+        vk_present_modes.push_back(VK_PRESENT_MODE_FIFO_RELAXED_KHR);
+    }
+
+    // We always want mailbox or immediate mode
+    vk_present_modes.push_back(VK_PRESENT_MODE_MAILBOX_KHR);
+    vk_present_modes.push_back(VK_PRESENT_MODE_IMMEDIATE_KHR);
+
+    // Then try to find them
+    VkFormat vk_color_format = find_supported_surface_format(vk_formats);
+    VkFormat vk_depth_format = find_supported_format(vk_depth_formats, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    VkPresentModeKHR vk_present_mode = find_supported_present_mode(vk_present_modes);
+
+    present_info = new ValPresentInfo();
+
+    present_info->vk_color_format = vk_color_format;
+    present_info->vk_depth_format = vk_depth_format;
+    present_info->vk_colorspace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+    present_info->vk_present_mode = vk_present_mode;
+
+    return true;
+}
+
 ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_info) {
     if (p_create_info == nullptr) {
         return nullptr;
@@ -488,7 +605,7 @@ ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_in
 
 #ifdef SDL_SUPPORT
     ValRenderTargetCreateInfo window_create_info {};
-    window_create_info.p_window = p_create_info->sdl_window;
+    window_create_info.p_window = p_create_info->p_sdl_window;
     window_create_info.initialize_swapchain = false;
     window_create_info.type = ValRenderTargetCreateInfo::RENDER_TARGET_TYPE_WINDOW;
 
@@ -516,9 +633,33 @@ ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_in
     instance->vk_descriptor_pool = create_vk_descriptor_pool(vk_device);
 
 #ifdef SDL_SUPPORT
-    // We ask the main window for the format and present mode it prefers
-    ValWindowRenderTarget::PresentInfo* present_info = main_window->get_present_info(gpu.vk_device);
-    instance->present_info = present_info;
+    // We need to cache all the possible present modes and formats first
+    instance->cache_surface_info(vk_instance, main_window->vk_surface, gpu.vk_device);
+
+    // Then we need to find an adequate that the user prefers
+    // We have two ways of determining this
+    // The user can use a "ValPresentPreferenceInfo" to automatically decide
+    // Or the user can provide a list of formats and present modes they prefer
+    if (p_create_info->p_present_preferences == nullptr) {
+        // User provided formats
+        VkFormat vk_color_format = instance->find_supported_surface_format(p_create_info->vk_color_formats);
+        VkFormat vk_depth_format = instance->find_supported_format(p_create_info->vk_depth_formats,
+                                                                   VK_IMAGE_TILING_OPTIMAL,
+                                                                   VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        VkPresentModeKHR vk_present_mode = instance->find_supported_present_mode(p_create_info->vk_present_modes);
+
+        instance->present_info = new ValPresentInfo();
+
+        instance->present_info->vk_color_format = vk_color_format;
+        instance->present_info->vk_depth_format = vk_depth_format;
+        instance->present_info->vk_colorspace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+        instance->present_info->vk_present_mode = vk_present_mode;
+    } else {
+        instance->determine_present_info(p_create_info->p_present_preferences);
+    }
+
+    //ValWindowRenderTarget::PresentInfo* present_info = main_window->get_present_info(gpu.vk_device);
+    //instance->present_info = present_info;
 
     // We create a default render pass that has 1 color and 1 depth input
     // The user has access to the main render target we've created, it is up to them to initialize it
