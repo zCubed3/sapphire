@@ -8,7 +8,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "assets/loaders/obj_loader.cpp"
         "assets/loaders/mmdl_loader.cpp"
 
-        "console/console.cpp"
+        "typing/class_registry.cpp"
 
         "data/aabb.cpp"
         "data/color.cpp"

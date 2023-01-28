@@ -16,12 +16,48 @@
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #endif
 
+#include <engine/typing/class_registry.h>
+
 #include <glm.hpp>
 
 #include <gtx/quaternion.hpp>
 #include <gtc/matrix_transform.hpp>
 
+class BaseClass {
+    REFLECT_BASE_CLASS(BaseClass)
+
+    virtual float get_data() {
+        return 0;
+    }
+};
+
+class ChildClass : public BaseClass {
+    REFLECT_CLASS(ChildClass, BaseClass)
+
+    float get_data() override {
+        return 1;
+    }
+};
+
+class ChildChildClass : public ChildClass {
+    REFLECT_CLASS(ChildChildClass, ChildClass)
+
+    float get_data() override {
+        return 2;
+    }
+};
+
 int main(int argc, char **argv) {
+    ClassRegistry::register_class<BaseClass>();
+    ClassRegistry::register_class<ChildClass>();
+    ClassRegistry::register_class<ChildChildClass>();
+
+    ChildChildClass *instance = new ChildChildClass();
+    bool is_child = instance->is_child_of<BaseClass>();
+
+    BaseClass* parent_instance = ClassRegistry::as<BaseClass>(instance);
+    float data = parent_instance->get_data();
+
     AssetLoader::register_engine_asset_loaders();
 
     SDL_Init(SDL_INIT_EVERYTHING);
