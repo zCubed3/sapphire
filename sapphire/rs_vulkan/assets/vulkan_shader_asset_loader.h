@@ -16,6 +16,7 @@ public:
     Asset * load_from_path(const std::string &path) override;
 
     void load_placeholders() override;
+    void unload_placeholders() override;
 };
 
 #endif

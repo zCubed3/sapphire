@@ -7,6 +7,14 @@
 
 std::vector<AssetLoader *> AssetLoader::loaders = {};
 
+void AssetLoader::load_placeholders() {
+
+}
+
+void AssetLoader::unload_placeholders() {
+
+}
+
 void AssetLoader::register_engine_asset_loaders() {
     register_loader<OBJLoader>();
     register_loader<MMDLLoader>();
@@ -34,6 +42,14 @@ void AssetLoader::load_all_placeholders() {
     for (AssetLoader *loader: loaders) {
         if (loader != nullptr) {
             loader->load_placeholders();
+        }
+    }
+}
+
+void AssetLoader::unload_all_placeholders() {
+    for (AssetLoader *loader: loaders) {
+        if (loader != nullptr) {
+            loader->unload_placeholders();
         }
     }
 }

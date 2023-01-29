@@ -30,6 +30,10 @@
 
 // TODO: Wait for rendering to finish
 VulkanRenderServer::~VulkanRenderServer() {
+    if (imgui_initalized) {
+        ImGui_ImplVulkan_Shutdown();
+    }
+
     val_window_render_pass->release(val_instance);
     delete val_window_render_pass;
 
@@ -192,6 +196,8 @@ void VulkanRenderServer::initialize_imgui() {
     end_upload(vk_upload_buffer, false);
 
     ImGui_ImplVulkan_DestroyFontUploadObjects();
+
+    imgui_initalized = true;
 }
 
 bool VulkanRenderServer::present(SDL_Window *p_window) {
