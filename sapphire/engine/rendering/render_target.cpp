@@ -22,8 +22,8 @@ void RenderTarget::begin_attach() {
 
     transform.calculate_matrices();
 
-    view_data.camera_position = glm::vec4(transform.position * correction, 1);
-    view_data.view = transform.trs;
+    view_data.camera_position = glm::vec4(transform.position, 1);
+    view_data.view = transform.trs_inverse;
     view_data.projection = glm::perspective(fov, aspect, near_clip, far_clip);
     view_data.projection[1][1] *= correction.y;
     view_data.view_projection = view_data.projection * view_data.view;

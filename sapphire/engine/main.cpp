@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
         model2.calculate_matrices();
 
         // We don't have a camera, so we need to move our render target
-        rt_window->transform.position = glm::vec3(0, sin(world->elapsed_time), -2);
+        rt_window->transform.position = glm::vec3(cos(world->elapsed_time), sin(world->elapsed_time), 2);
 
         render_server->begin_frame();
 

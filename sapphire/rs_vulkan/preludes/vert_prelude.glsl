@@ -10,8 +10,8 @@
 layout(set = 0, binding = 0) uniform SAPPHIRE_CAMERA_DATA {
     mat4 projection;
     mat4 view;
-    mat4 view_inverse;
     mat4 view_projection;
+    vec4 camera_position;
 } CAMERA_DATA;
 
 layout(set = 0, binding = 1) uniform SAPPHIRE_WORLD_DATA {
