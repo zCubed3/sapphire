@@ -11,15 +11,15 @@
 
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_target.h>
-#include <engine/rendering/rt_sdl_window.h>
-#include <engine/rendering/camera_data.h>
+#include <engine/rendering/sdl_window_render_target.h>
+#include <engine/rendering/view_buffer.h>
 #include <engine/scene/world.h>
 
 #include <rs_vulkan/assets/vulkan_shader_asset.h>
 #include <rs_vulkan/assets/vulkan_shader_asset_loader.h>
-
 #include <rs_vulkan/rendering/vulkan_mesh_buffer.h>
 #include <rs_vulkan/rendering/vulkan_render_target_data.h>
+#include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
 
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
@@ -30,9 +30,6 @@
 
 // TODO: Wait for rendering to finish
 VulkanRenderServer::~VulkanRenderServer() {
-    val_camera_ubo->release(val_instance);
-    delete val_camera_ubo;
-
     val_window_render_pass->release(val_instance);
     delete val_window_render_pass;
 
@@ -61,6 +58,10 @@ std::string VulkanRenderServer::get_error() const {
 
 uint32_t VulkanRenderServer::get_sdl_window_flags() const {
     return SDL_WINDOW_VULKAN;
+}
+
+glm::vec3 VulkanRenderServer::get_coordinate_correction() const {
+    return {1, -1, 1};
 }
 
 // TODO: Vulkan render server errors
@@ -126,22 +127,9 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     val_instance->val_main_window->create_swapchain(val_window_render_pass, val_instance);
 
-    val_camera_ubo = new ValBuffer(
-            sizeof(CameraData),
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
-            val_instance);
-
-    val_world_ubo = new ValBuffer(
-            sizeof(glm::vec4),
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
-            val_instance);
-
     // TODO: User defined layouts
     ValDescriptorSetBuilder val_set_builder;
 
-    val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
     val_descriptor_info = val_set_builder.build(val_instance)[0];
@@ -179,7 +167,7 @@ void VulkanRenderServer::initialize_imgui() {
     pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
     pool_info.maxSets = 1000;
-    pool_info.poolSizeCount = std::size(pool_sizes);
+    pool_info.poolSizeCount = 11;
     pool_info.pPoolSizes = pool_sizes;
 
     VkDescriptorPool vk_imgui_descriptor_pool;
@@ -230,27 +218,15 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     p_target->begin_attach();
     current_target = p_target;
 
-    CameraData camera_data = {
-            p_target->projection,
-            p_target->view,
-            p_target->view_inverse,
-            p_target->eye
-    };
+    // Our camera and world data is already updated by this moment
+    // We just have to update the binding
+    VulkanGraphicsBuffer* view_buffer = reinterpret_cast<VulkanGraphicsBuffer*>(p_target->view_buffer->buffer);
+    //VulkanGraphicsBuffer* world_buffer = reinterpret_cast<VulkanGraphicsBuffer*>(p_target->view_buffer->buffer);
 
-    glm::vec4 world_data = {
-            p_target->world->elapsed_time, 0, 0, 0
-    };
+    ValDescriptorSetWriteInfo view_write_info{};
+    view_write_info.val_buffer = view_buffer->val_buffer;
 
-    ValDescriptorSetWriteInfo camera_write_info{};
-    camera_write_info.val_buffer = val_camera_ubo;
-
-    ValDescriptorSetWriteInfo world_write_info{};
-    world_write_info.binding_index = 1;
-    world_write_info.val_buffer = val_world_ubo;
-
-    val_descriptor_info->write_binding_and_buffer(val_instance, &camera_write_info, &camera_data);
-    val_descriptor_info->write_binding_and_buffer(val_instance, &world_write_info, &world_data);
-
+    val_descriptor_info->write_binding(&view_write_info);
     val_descriptor_info->update_set(val_instance);
 
     VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData*>(p_target->data);
@@ -283,11 +259,22 @@ bool VulkanRenderServer::end_target(RenderTarget *p_target) {
 }
 
 bool VulkanRenderServer::begin_imgui() {
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplSDL2_NewFrame(window);
+    ImGui::NewFrame();
+
     return true;
 }
 
 bool VulkanRenderServer::end_imgui() {
+    ImGui::Render();
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), val_active_render_target->vk_command_buffer);
+
     return true;
+}
+
+GraphicsBuffer *VulkanRenderServer::create_graphics_buffer(size_t size) const {
+    return new VulkanGraphicsBuffer(size);
 }
 
 void VulkanRenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
@@ -298,6 +285,11 @@ void VulkanRenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
 
 void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_target) const {
     if (p_render_target != nullptr) {
+        if (p_render_target->view_buffer == nullptr) {
+            GraphicsBuffer* buffer = create_graphics_buffer(sizeof(ViewBufferData));
+            p_render_target->view_buffer = new ViewBuffer(buffer);
+        }
+
         ValRenderTargetCreateInfo::RenderTargetType type;
         switch (p_render_target->get_type()) {
             default:

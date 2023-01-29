@@ -18,14 +18,13 @@ class ValInstance;
 class ValBuffer;
 
 class VulkanRenderServer : public RenderServer {
+protected:
+    VkCommandBuffer vk_imgui_command_buffer = nullptr;
+
 public:
     SDL_Window* window;
 
     ValInstance* val_instance = nullptr;
-
-    // TODO: Make these local to RenderTargets
-    ValBuffer* val_camera_ubo = nullptr;
-    ValBuffer* val_world_ubo = nullptr;
 
     ValDescriptorSetInfo *val_descriptor_info = nullptr;
     ValRenderPass* val_window_render_pass;
@@ -40,6 +39,8 @@ public:
     std::string get_name() const override;
     std::string get_error() const override;
     uint32_t get_sdl_window_flags() const override;
+
+    glm::vec3 get_coordinate_correction() const override;
 
     bool initialize(SDL_Window *p_window) override;
     void initialize_imgui() override;
@@ -56,6 +57,8 @@ public:
 
     bool begin_imgui() override;
     bool end_imgui() override;
+
+    GraphicsBuffer *create_graphics_buffer(size_t size) const override;
 
     void populate_mesh_buffer(MeshAsset *p_mesh_asset) const override;
     void populate_render_target_data(RenderTarget *p_render_target) const override;

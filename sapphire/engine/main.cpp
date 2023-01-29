@@ -5,8 +5,9 @@
 #include <engine/assets/asset_loader.h>
 #include <engine/assets/shader_asset.h>
 #include <engine/assets/static_mesh_asset.h>
-#include <engine/rendering/rt_sdl_window.h>
+#include <engine/rendering/sdl_window_render_target.h>
 #include <engine/scene/world.h>
+#include <engine/typing/class_registry.h>
 
 #ifdef RS_OPENGL4_SUPPORT
 #include <rs_opengl4/rendering/opengl4_render_server.h>
@@ -17,12 +18,47 @@
 #endif
 
 #include <imgui.h>
+#include <backends/imgui_impl_sdl.h>
 
 #include <glm.hpp>
 #include <gtx/quaternion.hpp>
 #include <gtc/matrix_transform.hpp>
 
+class BaseClass {
+    REFLECT_BASE_CLASS(BaseClass)
+
+    virtual float get_data() {
+        return 0;
+    }
+};
+
+class ChildClass : public BaseClass {
+    REFLECT_CLASS(ChildClass, BaseClass)
+
+    float get_data() override {
+        return 1;
+    }
+};
+
+class ChildChildClass : public ChildClass {
+    REFLECT_CLASS(ChildChildClass, ChildClass)
+
+    float get_data() override {
+        return 2;
+    }
+};
+
 int main(int argc, char **argv) {
+    ClassRegistry::register_class<BaseClass>();
+    ClassRegistry::register_class<ChildClass>();
+    ClassRegistry::register_class<ChildChildClass>();
+
+    ChildChildClass *instance = new ChildChildClass();
+    bool is_child = instance->is_child_of<BaseClass>();
+
+    BaseClass* parent_instance = ClassRegistry::as<BaseClass>(instance);
+    float data = parent_instance->get_data();
+
     AssetLoader::register_engine_asset_loaders();
 
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -64,7 +100,8 @@ int main(int argc, char **argv) {
 
     // We need to load our model and our shader
     MeshAsset *mesh = static_cast<MeshAsset *>(AssetLoader::load_asset("test.obj"));
-    MeshAsset *mesh2 = StaticMeshAsset::get_primitive(StaticMeshAsset::PRIMITIVE_QUAD);
+    //MeshAsset *mesh2 = StaticMeshAsset::get_primitive(StaticMeshAsset::PRIMITIVE_QUAD);
+    MeshAsset *mesh2 = static_cast<MeshAsset *>(AssetLoader::load_asset("test2.obj"));
 
     ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.mspv"));
     //ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.glsl"));
@@ -82,8 +119,8 @@ int main(int argc, char **argv) {
 
     uint32_t last_tick = SDL_GetTicks();
 
-    glm::mat4 model;
-    glm::mat4 model2;
+    Transform model;
+    Transform model2;
 
     bool resized = false;
 
@@ -97,6 +134,8 @@ int main(int argc, char **argv) {
 
     while (keep_running) {
         while (SDL_PollEvent(&event) != 0) {
+            ImGui_ImplSDL2_ProcessEvent(&event);
+
             if (event.type == SDL_QUIT) {
                 keep_running = false;// TEMPORARY!
             }
@@ -133,28 +172,39 @@ int main(int argc, char **argv) {
 
         //rt_window.clear_color = Color(abs(sin(world->elapsed_time)), 0, 0, 1);
 
-        model = glm::identity<glm::mat4>();
-        //model = glm::scale(model, glm::vec3(0.1F, 0.1F, 0.1F));
-        model *= glm::toMat4(glm::quat(glm::radians(euler)));
+        model.position = glm::vec3(-1, 0, 0);
+        model.quaternion = glm::quat(glm::radians(euler));
 
-        model2 = glm::identity<glm::mat4>();
-        model2 = glm::translate(model2, glm::vec3(1, 0, 0));
-        //model2 = glm::scale(model2, glm::vec3(0.1F, 0.1F, 0.1F));
-        model2 *= glm::toMat4(glm::quat(glm::radians(euler)));
+        model.calculate_matrices();
+
+        model2.position = glm::vec3(1, 0, 0);
+        model2.quaternion = glm::quat(glm::radians(euler));
+
+        model2.calculate_matrices();
+
+        // We don't have a camera, so we need to move our render target
+        rt_window->fov = 105;
+        rt_window->transform.position = glm::vec3(0, 0, 2);
 
         render_server->begin_frame();
-
         render_server->begin_target(rt_window);
+        render_server->begin_imgui();
 
         // TODO: MeshRenderer
-        //mesh->shader = shader;
+        mesh->shader = shader;
         mesh->render(model);
 
         //mesh2->shader = shader;
         mesh2->render(model2);
 
-        render_server->end_target(rt_window);
+        ImGui::Begin("Test");
 
+        ImGui::End();
+
+        ImGui::ShowDemoWindow();
+
+        render_server->end_imgui();
+        render_server->end_target(rt_window);
         render_server->end_frame();
 
         render_server->present(main_window);

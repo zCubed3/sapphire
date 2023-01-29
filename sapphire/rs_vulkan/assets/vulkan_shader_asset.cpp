@@ -26,6 +26,9 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     ValShaderModule *vert_module = ValShaderModule::create_shader_module(&vert_module_info, val_instance);
     ValShaderModule *frag_module = ValShaderModule::create_shader_module(&frag_module_info, val_instance);
 
+    // OpenGL culling mode
+    builder.winding_order = ValPipelineBuilder::WINDING_ORDER_COUNTER_CLOCKWISE;
+
     builder.push_module(vert_module);
     builder.push_module(frag_module);
 

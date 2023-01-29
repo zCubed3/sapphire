@@ -8,16 +8,15 @@ layout(location = 0) out vec4 _VERT_COLOR;
 void main() {
     gl_Position = OBJECT_DATA.model_view_projection * vec4(_VERT_POSITION, 1.0);
 
-    vec3 camera_position = vec3(CAMERA_DATA.view_inverse * vec4(0, 0, 0, 1));
     vec3 world_position = vec3(OBJECT_DATA.model * vec4(_VERT_POSITION, 1.0));
 
-    vec3 view = normalize(camera_position - world_position);
+    vec3 view = normalize(VIEW_DATA.camera_position.xyz - world_position);
     vec3 normal = vec3(OBJECT_DATA.model_inverse_transpose * vec4(_VERT_NORMAL, 0.0));
 
     float NdotV = max(0.0, dot(normal, view));
 
-    _VERT_COLOR = vec4(1.0, 0.5686, 0.0, 1.0);
-    _VERT_COLOR *= NdotV * ((sin(WORLD_DATA.time.x) + 1.0) / 2.0);
+    _VERT_COLOR = vec4(1.0, 0.0, 0.0, 1.0);
+    _VERT_COLOR *= NdotV * abs(sin(VIEW_DATA.time.x * 2));
 }
 #endif
 

@@ -1,6 +1,7 @@
 set(SAPPHIRE_ENGINE_SOURCES
         "${THIRD_PARTY_DIR}/imgui/imgui.cpp"
         "${THIRD_PARTY_DIR}/imgui/imgui_draw.cpp"
+        "${THIRD_PARTY_DIR}/imgui/imgui_demo.cpp"
         "${THIRD_PARTY_DIR}/imgui/imgui_tables.cpp"
         "${THIRD_PARTY_DIR}/imgui/imgui_widgets.cpp"
         "${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_sdl.cpp"
@@ -14,18 +15,22 @@ set(SAPPHIRE_ENGINE_SOURCES
         "assets/loaders/obj_loader.cpp"
         "assets/loaders/mmdl_loader.cpp"
 
-        "console/console.cpp"
+        "scene/world.cpp"
+        "scene/transform.cpp"
+
+        "typing/class_registry.cpp"
 
         "data/aabb.cpp"
         "data/color.cpp"
         "data/rect.cpp"
-        "data/transform.cpp"
 
         "rendering/render_target.cpp"
         "rendering/render_target_data.cpp"
-        "rendering/rt_sdl_window.cpp"
+        "rendering/sdl_window_render_target.cpp"
         "rendering/render_server.cpp"
         "rendering/mesh_buffer.cpp"
+        "rendering/view_buffer.cpp"
+        "rendering/graphics_buffer.cpp"
 
         "main.cpp"
         )

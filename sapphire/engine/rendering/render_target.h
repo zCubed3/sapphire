@@ -4,6 +4,9 @@
 #include <engine/data/color.h>
 #include <engine/data/rect.h>
 
+#include <engine/rendering/view_buffer.h>
+#include <engine/scene/transform.h>
+
 #include <glm.hpp>
 
 class World;
@@ -26,27 +29,29 @@ public:
     int clear_flags = ClearFlags::CLEAR_FLAG_COLOR | ClearFlags::CLEAR_FLAG_DEPTH;
     Color clear_color = Color(0.1F, 0.1F, 0.1F, 1.0F);
 
-    // Render targets may have their own view and projection matrices
-    // The top most camera will usually set these
-    glm::mat4 view = {};
-    glm::mat4 view_inverse = {};
-    glm::mat4 projection = {};
-    glm::mat4 eye = {};// View * Projection
+    // Render targets may have their own transforms
+    // This is because multiple cameras may exist in the scene!
+    Transform transform;
+    float fov = 90.0F;
+    float near_clip = 0.01F;
+    float far_clip = 100.0F;
+
+    ViewBufferData view_data;
+    ViewBuffer *view_buffer = nullptr;
+
+    RenderTargetData *data = nullptr;
 
     // The world we render
     World *world = nullptr;
 
-    RenderTargetData *data = nullptr;
-
     virtual ~RenderTarget();
 
     virtual Rect get_rect() = 0;
+    virtual TargetType get_type() = 0;
 
     // Called when this attachment is first rendered to.
     // Useful for setting up matrices!
-    virtual void begin_attach() = 0;
-
-    virtual TargetType get_type() = 0;
+    virtual void begin_attach();
 };
 
 #endif

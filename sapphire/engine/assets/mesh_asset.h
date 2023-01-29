@@ -2,7 +2,7 @@
 #define SAPPHIRE_MESH_ASSET_H
 
 #include <engine/assets/asset.h>
-#include <engine/data/transform.h>
+#include <engine/scene/transform.h>
 
 #include <glm.hpp>
 

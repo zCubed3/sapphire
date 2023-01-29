@@ -5,7 +5,7 @@
 
 #include <glm.hpp>
 
-#include <engine/data/transform.h>
+#include <engine/scene/transform.h>
 
 class ShaderAsset;
 
@@ -19,9 +19,7 @@ public:
         glm::vec2 uv0 = {};
     };
 
-    virtual void render(const Transform &transform, ShaderAsset *p_shader_asset);
-    virtual void render(const glm::mat4 &matrix, ShaderAsset *p_shader_asset);
-    virtual void render(ShaderAsset *p_shader_asset);
+    virtual void render(const Transform &transform, ShaderAsset *p_shader_asset) = 0;
 
     virtual ~MeshBuffer() = default;
 };
