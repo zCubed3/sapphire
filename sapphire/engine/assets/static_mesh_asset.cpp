@@ -114,7 +114,7 @@ StaticMeshAsset *StaticMeshAsset::get_primitive(Primitive primitive) {
         primitive_quad = new StaticMeshAsset();
 
         uint32_t quad_triangles[] = {
-            0, 1, 2, 3, 2, 1
+            2, 1, 0, 1, 2, 3
         };
 
         glm::vec3 quad_positions[] = {
@@ -125,10 +125,10 @@ StaticMeshAsset *StaticMeshAsset::get_primitive(Primitive primitive) {
         };
 
         glm::vec3 quad_normals[] = {
-                {0, 0, -1},
-                {0, 0, -1},
-                {0, 0, -1},
-                {0, 0, -1},
+                {0, 0, 1},
+                {0, 0, 1},
+                {0, 0, 1},
+                {0, 0, 1},
         };
 
         glm::vec2 quad_uvs[] = {

@@ -99,7 +99,8 @@ int main(int argc, char **argv) {
 
     // We need to load our model and our shader
     MeshAsset *mesh = static_cast<MeshAsset *>(AssetLoader::load_asset("test.obj"));
-    MeshAsset *mesh2 = StaticMeshAsset::get_primitive(StaticMeshAsset::PRIMITIVE_QUAD);
+    //MeshAsset *mesh2 = StaticMeshAsset::get_primitive(StaticMeshAsset::PRIMITIVE_QUAD);
+    MeshAsset *mesh2 = static_cast<MeshAsset *>(AssetLoader::load_asset("test2.obj"));
 
     ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.mspv"));
     //ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.glsl"));
@@ -160,6 +161,9 @@ int main(int argc, char **argv) {
 
         //rt_window.clear_color = Color(abs(sin(world->elapsed_time)), 0, 0, 1);
 
+        model.position = glm::vec3(-1, 0, 0);
+        model.quaternion = glm::quat(glm::radians(euler));
+
         model.calculate_matrices();
 
         model2.position = glm::vec3(1, 0, 0);
@@ -168,14 +172,15 @@ int main(int argc, char **argv) {
         model2.calculate_matrices();
 
         // We don't have a camera, so we need to move our render target
-        rt_window->transform.position = glm::vec3(cos(world->elapsed_time), sin(world->elapsed_time), 2);
+        rt_window->fov = 105;
+        rt_window->transform.position = glm::vec3(0, 0, 2);
 
         render_server->begin_frame();
 
         render_server->begin_target(rt_window);
 
         // TODO: MeshRenderer
-        //mesh->shader = shader;
+        mesh->shader = shader;
         mesh->render(model);
 
         //mesh2->shader = shader;

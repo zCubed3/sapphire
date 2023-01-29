@@ -23,10 +23,6 @@ public:
 
     ValInstance* val_instance = nullptr;
 
-    // TODO: Make these local to RenderTargets
-    ValBuffer* val_camera_ubo = nullptr;
-    ValBuffer* val_world_ubo = nullptr;
-
     ValDescriptorSetInfo *val_descriptor_info = nullptr;
     ValRenderPass* val_window_render_pass;
 

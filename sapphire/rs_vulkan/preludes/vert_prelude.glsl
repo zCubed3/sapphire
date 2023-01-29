@@ -7,17 +7,16 @@
 #define VERTEX
 #define VERTEX_STAGE
 
-layout(set = 0, binding = 0) uniform SAPPHIRE_CAMERA_DATA {
+layout(set = 0, binding = 0) uniform SAPPHIRE_VIEW_DATA {
+    // Camera data
     mat4 projection;
     mat4 view;
     mat4 view_projection;
     vec4 camera_position;
-} CAMERA_DATA;
 
-layout(set = 0, binding = 1) uniform SAPPHIRE_WORLD_DATA {
+    // View-world data
     vec4 time;
-} WORLD_DATA;
-
+} VIEW_DATA;
 
 layout(set = 2, binding = 0) uniform SAPPHIRE_OBJECT_DATA {
     mat4 model_view_projection;

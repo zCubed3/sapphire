@@ -6,10 +6,14 @@
 #include <engine/rendering/graphics_buffer.h>
 
 struct ViewBufferData {
+    // Camera data
     glm::mat4 view;
     glm::mat4 projection;
     glm::mat4 view_projection;
     glm::vec4 camera_position;
+
+    // View-world local data
+    glm::vec4 time;
 };
 
 class ViewBuffer {

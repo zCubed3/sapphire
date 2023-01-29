@@ -32,7 +32,7 @@ public:
     // Render targets may have their own transforms
     // This is because multiple cameras may exist in the scene!
     Transform transform;
-    float fov = 40.0F;
+    float fov = 90.0F;
     float near_clip = 0.01F;
     float far_clip = 100.0F;
 

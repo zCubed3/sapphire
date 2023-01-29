@@ -26,9 +26,6 @@
 
 // TODO: Wait for rendering to finish
 VulkanRenderServer::~VulkanRenderServer() {
-    val_camera_ubo->release(val_instance);
-    delete val_camera_ubo;
-
     val_window_render_pass->release(val_instance);
     delete val_window_render_pass;
 
@@ -126,24 +123,9 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     val_instance->val_main_window->create_swapchain(val_window_render_pass, val_instance);
 
-    /*
-    val_camera_ubo = new ValBuffer(
-            sizeof(CameraData),
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
-            val_instance);
-    */
-
-    val_world_ubo = new ValBuffer(
-            sizeof(glm::vec4),
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
-            val_instance);
-
     // TODO: User defined layouts
     ValDescriptorSetBuilder val_set_builder;
 
-    val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
     val_descriptor_info = val_set_builder.build(val_instance)[0];
@@ -188,16 +170,10 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     VulkanGraphicsBuffer* view_buffer = reinterpret_cast<VulkanGraphicsBuffer*>(p_target->view_buffer->buffer);
     //VulkanGraphicsBuffer* world_buffer = reinterpret_cast<VulkanGraphicsBuffer*>(p_target->view_buffer->buffer);
 
-    ValDescriptorSetWriteInfo camera_write_info{};
-    camera_write_info.val_buffer = view_buffer->val_buffer;
+    ValDescriptorSetWriteInfo view_write_info{};
+    view_write_info.val_buffer = view_buffer->val_buffer;
 
-    ValDescriptorSetWriteInfo world_write_info{};
-    world_write_info.binding_index = 1;
-    world_write_info.val_buffer = val_world_ubo;
-
-    val_descriptor_info->write_binding(&camera_write_info);
-    val_descriptor_info->write_binding(&world_write_info);
-
+    val_descriptor_info->write_binding(&view_write_info);
     val_descriptor_info->update_set(val_instance);
 
     VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData*>(p_target->data);
