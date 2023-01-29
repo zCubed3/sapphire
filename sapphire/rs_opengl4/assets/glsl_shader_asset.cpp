@@ -24,6 +24,22 @@ uint32_t GLSLShaderAsset::get_uniform(const std::string &var) {
         // Regardless of whether it exists we cache it
         // When setting is when the index is checked
         uniform_cache.emplace(var, loc);
+        return loc;
+    }
+
+    return iter->second;
+}
+
+uint32_t GLSLShaderAsset::get_uniform_block(const std::string &var) {
+    auto iter = uniform_cache.find(var);
+
+    if (iter == uniform_cache.end()) {
+        uint32_t loc = glGetUniformBlockIndex(shader_handle, var.c_str());
+
+        // Regardless of whether it exists we cache it
+        // When setting is when the index is checked
+        uniform_cache.emplace(var, loc);
+        return loc;
     }
 
     return iter->second;
@@ -41,6 +57,28 @@ std::string GLSLShaderAsset::get_shader_error(uint32_t handle) {
         char *log = new char[log_size];
 
         glGetShaderInfoLog(handle, log_size, nullptr, log);
+
+        std::string log_str(log);
+        delete[] log;
+
+        return log_str;
+    }
+
+    return "";
+}
+
+std::string GLSLShaderAsset::get_program_error(uint32_t handle) {
+    int status;
+    glGetProgramiv(handle, GL_LINK_STATUS, &status);
+
+    if (status != GL_TRUE) {
+        int log_size = 0;
+
+        glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &log_size);
+
+        char *log = new char[log_size];
+
+        glGetProgramInfoLog(handle, log_size, nullptr, log);
 
         std::string log_str(log);
         delete[] log;
@@ -111,6 +149,12 @@ void GLSLShaderAsset::compile_source(const std::string &source) {
     glAttachShader(program, frag_shader);
 
     glLinkProgram(program);
+
+    std::string link_error = get_program_error(program);
+    if (!link_error.empty()) {
+        std::cout << "Program failed to link!\n\n" << link_error << std::endl;
+        failure = true;
+    }
 
     glDetachShader(program, vert_shader);
     glDetachShader(program, frag_shader);

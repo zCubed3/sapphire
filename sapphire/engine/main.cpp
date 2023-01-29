@@ -54,20 +54,41 @@ int main(int argc, char **argv) {
     // TODO: Register engine classes within the class registry
     AssetLoader::register_engine_asset_loaders();
 
-    SDL_Init(SDL_INIT_EVERYTHING);
+    // Load the engine config file (if it exists)
+    ConfigFile engine_config;
+    engine_config.read_from_path("engine.secfg");
 
-    // The render server requires a main window to get things started
-    // TODO: Splash screen?
-    // TODO: Allow changing the server based on a cvar
-    //RenderServer *render_server = new OpenGL4RenderServer();
-    RenderServer *render_server = new VulkanRenderServer();
+    // TODO: Not be case sensitive
+    std::string user_render_server = engine_config.try_get_string("sRenderServer", "Rendering", "Vulkan");
+
+    RenderServer *render_server = nullptr;
+    if (user_render_server == "Vulkan") {
+#ifdef RS_VULKAN_SUPPORT
+        render_server = new VulkanRenderServer();
+#else
+        std::cout << "Error: Vulkan support was not compiled into the engine!" << std::endl;
+        return 1;
+#endif
+    }
+
+    if (user_render_server == "OpenGL4") {
+#ifdef RS_OPENGL4_SUPPORT
+        render_server = new OpenGL4RenderServer();
+#else
+        std::cout << "Error: OpenGL 4 support was not compiled into the engine!" << std::endl;
+        return 1;
+#endif
+    }
+
+    if (render_server == nullptr) {
+        std::cout << "Error: Unrecognized render server '" << user_render_server << "'!" << std::endl;
+        return 1;
+    }
+
     render_server->register_rs_asset_loaders();
 
-    ConfigFile file;
-    file.read_from_path("test.secfg");
-
-    std::vector<std::string> vars = file.try_get_string_list("sVertPath", "VulkanShader");
-
+    // The render server requires a main window to get things started
+    SDL_Init(SDL_INIT_EVERYTHING);
 
     uint32_t window_flags = render_server->get_sdl_window_flags();
 
@@ -88,9 +109,6 @@ int main(int argc, char **argv) {
     );
 
     SDLWindowRenderTarget* rt_window = new SDLWindowRenderTarget(main_window);
-
-    // Each render target has clear operations associated with it
-    rt_window->clear_flags = RenderTarget::CLEAR_FLAG_DEPTH | RenderTarget::CLEAR_FLAG_DEPTH;
 
     if (!render_server->initialize(main_window)) {
         std::cout << render_server->get_error() << std::endl;
@@ -194,11 +212,11 @@ int main(int argc, char **argv) {
         //mesh2->shader = shader;
         mesh2->render(model2);
 
-        ImGui::Begin("Test");
-
+        ImGui::Begin("Renderer Info");
+        ImGui::Text("Rendering API: %s", render_server->get_name().c_str());
         ImGui::End();
 
-        ImGui::ShowDemoWindow();
+        //ImGui::ShowDemoWindow();
 
         render_server->end_imgui();
         render_server->end_target(rt_window);

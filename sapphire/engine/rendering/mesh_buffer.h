@@ -9,6 +9,8 @@
 
 class ShaderAsset;
 
+class ObjectBuffer;
+
 // Abstract render server mesh info
 class MeshBuffer {
 public:
@@ -18,6 +20,9 @@ public:
         glm::vec3 normal = {};
         glm::vec2 uv0 = {};
     };
+
+    // TODO: Move this to renderers and not mesh buffers!
+    ObjectBuffer *object_buffer = nullptr;
 
     virtual void render(const Transform &transform, ShaderAsset *p_shader_asset) = 0;
 

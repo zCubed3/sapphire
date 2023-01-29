@@ -5,9 +5,14 @@
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_server.h>
 #include <engine/rendering/render_target.h>
+#include <engine/rendering/object_buffer.h>
 #include <engine/scene/world.h>
+
 #include <glad/glad.h>
+
 #include <rs_opengl4/assets/glsl_shader_asset.h>
+#include <rs_opengl4/rendering/opengl4_render_server.h>
+#include <rs_opengl4/rendering/opengl4_graphics_buffer.h>
 
 OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
     // TODO: Allow creating mesh buffers without mesh assets?
@@ -28,7 +33,7 @@ OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
 
     tri_count = p_mesh_asset->get_triangle_count();
 
-    for (int v = 0; v < p_mesh_asset->get_vertex_count(); v++) {
+    for (uint32_t v = 0; v < p_mesh_asset->get_vertex_count(); v++) {
         if (positions != nullptr) {
             vertices[v].position = positions[v];
         }
@@ -71,7 +76,31 @@ void OpenGL4MeshBuffer::render(const Transform &transform, ShaderAsset *p_shader
         glsl_shader = GLSLShaderAsset::get_placeholder();
     }
 
-    MeshBuffer::render(transform, p_shader_asset);
+    // Get the current render target
+    const OpenGL4RenderServer* rs_opengl4 = reinterpret_cast<const OpenGL4RenderServer*>(RenderServer::get_singleton());
+    RenderTarget* current_target = rs_opengl4->get_current_target();
+
+    // TODO: Cache this
+    ObjectBufferData data {};
+    data.model = transform.trs;
+    data.model_inverse = transform.trs_inverse;
+    data.model_inverse_transpose = transform.trs_inverse_transpose;
+    data.model_view_projection = current_target->view_data.view_projection * transform.trs;
+
+    object_buffer->write(data);
+
+    uint32_t view_handle = glsl_shader->get_uniform_block("SAPPHIRE_VIEW_DATA");
+    uint32_t object_handle = glsl_shader->get_uniform_block("SAPPHIRE_OBJECT_DATA");
+
+    OpenGL4GraphicsBuffer* view_ubo = reinterpret_cast<OpenGL4GraphicsBuffer*>(current_target->view_buffer->buffer);
+    OpenGL4GraphicsBuffer* object_ubo = reinterpret_cast<OpenGL4GraphicsBuffer*>(object_buffer->buffer);
+
+    glUniformBlockBinding(glsl_shader->shader_handle, view_handle, 0);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, view_ubo->buffer_handle);
+
+    glUniformBlockBinding(glsl_shader->shader_handle, object_handle, 1);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, object_ubo->buffer_handle);
+
 
     glUseProgram(glsl_shader->shader_handle);
 

@@ -4,9 +4,11 @@
 
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_target.h>
+#include <engine/rendering/object_buffer.h>
 
 #include <rs_vulkan/assets/vulkan_shader_asset.h>
 #include <rs_vulkan/rendering/vulkan_render_server.h>
+#include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
 #include <rs_vulkan/val/val_instance.h>
 #include <rs_vulkan/val/pipelines/val_pipeline.h>
 
@@ -41,12 +43,6 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
             vertices[v].uv0 = tex_coords[v];
         }
     }
-
-    transform_ubo = new ValBuffer(
-            sizeof(VulkanMeshBuffer::ObjectData),
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
-            val_instance);
 
     size_t vbo_size = sizeof(Vertex) * p_mesh_asset->get_vertex_count();
     size_t ibo_size = sizeof(uint32_t) * p_mesh_asset->get_triangle_count();
@@ -86,38 +82,32 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
     const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
     ValInstance* val_instance = render_server->val_instance;
 
-    VkDescriptorBufferInfo buffer_info{};
-    buffer_info.buffer = transform_ubo->vk_buffer;
-    buffer_info.offset = 0;
-    buffer_info.range = sizeof(VulkanMeshBuffer::ObjectData);
+    RenderTarget *current_target = render_server->get_current_target();
 
     // If we don't have an instance of the per-object data we must allocate one
     if (val_object_descriptor_info == nullptr) {
         val_object_descriptor_info = vk_shader->val_object_descriptor_set->allocate_set(val_instance);
     }
 
-    VkWriteDescriptorSet descriptor_write{};
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_write.dstSet = val_object_descriptor_info->vk_descriptor_set;
-    descriptor_write.dstBinding = 0;
-    descriptor_write.dstArrayElement = 0;
-    descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptor_write.descriptorCount = 1;
-    descriptor_write.pBufferInfo = &buffer_info;
-    descriptor_write.pImageInfo = nullptr; // Optional
-    descriptor_write.pTexelBufferView = nullptr; // Optional
+    // Our object data is already updated by this moment
+    // We just have to update the binding
+    VulkanGraphicsBuffer* object_ubo = reinterpret_cast<VulkanGraphicsBuffer*>(object_buffer->buffer);
 
-    VulkanMeshBuffer::ObjectData data = {
-            render_server->get_current_target()->view_data.view_projection * transform.trs,
-            transform.trs,
-            transform.trs_inverse,
-            transform.trs_inverse_transpose
-    };
+    ValDescriptorSetWriteInfo object_write_info{};
+    object_write_info.val_buffer = object_ubo->val_buffer;
 
-    transform_ubo->write(&data, val_instance);
-    vkUpdateDescriptorSets(val_instance->vk_device, 1, &descriptor_write, 0, nullptr);
+    ObjectBufferData data {};
+    data.model = transform.trs;
+    data.model_inverse = transform.trs_inverse;
+    data.model_inverse_transpose = transform.trs_inverse_transpose;
+    data.model_view_projection = current_target->view_data.view_projection * transform.trs;
 
-    Rect rect = render_server->get_current_target()->get_rect();
+    object_buffer->write(data);
+
+    val_object_descriptor_info->write_binding(&object_write_info);
+    val_object_descriptor_info->update_set(val_instance);
+
+    Rect rect = current_target->get_rect();
 
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -174,9 +164,6 @@ VulkanMeshBuffer::~VulkanMeshBuffer() {
 
     val_object_descriptor_info->release(val_instance);
     delete val_object_descriptor_info;
-
-    transform_ubo->release(val_instance);
-    delete transform_ubo;
 
     val_vbo->release(val_instance);
     delete val_vbo;

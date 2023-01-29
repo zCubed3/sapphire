@@ -10,14 +10,17 @@ protected:
     static GLSLShaderAsset *placeholder;
     static uint32_t create_shader(uint32_t type, const std::vector<const char *> &sources);
     static std::string get_shader_error(uint32_t handle);
+    static std::string get_program_error(uint32_t handle);
 
     // TODO: Make this editor only?
     std::string source_path;
 
     std::unordered_map<std::string, uint32_t> uniform_cache = {};
-    uint32_t get_uniform(const std::string &var);
 
 public:
+    uint32_t get_uniform(const std::string &var);
+    uint32_t get_uniform_block(const std::string &var);
+
     uint32_t shader_handle = 0;
 
     // GLSL shaders compile through the driver

@@ -9,6 +9,7 @@
 
 #include <rs_opengl4/assets/glsl_shader_asset_loader.h>
 #include <rs_opengl4/rendering/opengl4_mesh_buffer.h>
+#include <rs_opengl4/rendering/opengl4_graphics_buffer.h>
 
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
@@ -170,12 +171,28 @@ bool OpenGL4RenderServer::end_imgui() {
     return true;
 }
 
+GraphicsBuffer *OpenGL4RenderServer::create_graphics_buffer(size_t size) const {
+    uint32_t buffer_handle;
+    glGenBuffers(1, &buffer_handle);
+    glBindBuffer(GL_UNIFORM_BUFFER, buffer_handle);
+    glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    OpenGL4GraphicsBuffer *buffer = new OpenGL4GraphicsBuffer();
+    buffer->buffer_handle = buffer_handle;
+
+    return buffer;
+}
+
 void OpenGL4RenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
     if (p_mesh_asset != nullptr) {
         p_mesh_asset->buffer = new OpenGL4MeshBuffer(p_mesh_asset);
+        RenderServer::populate_mesh_buffer(p_mesh_asset);
     }
 }
 
 void OpenGL4RenderServer::populate_render_target_data(RenderTarget *p_render_target) const {
-    // TODO
+    if (p_render_target != nullptr) {
+        RenderServer::populate_render_target_data(p_render_target);
+    }
 }

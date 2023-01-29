@@ -286,15 +286,13 @@ GraphicsBuffer *VulkanRenderServer::create_graphics_buffer(size_t size) const {
 void VulkanRenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
     if (p_mesh_asset != nullptr) {
         p_mesh_asset->buffer = new VulkanMeshBuffer(p_mesh_asset);
+        RenderServer::populate_mesh_buffer(p_mesh_asset);
     }
 }
 
 void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_target) const {
     if (p_render_target != nullptr) {
-        if (p_render_target->view_buffer == nullptr) {
-            GraphicsBuffer* buffer = create_graphics_buffer(sizeof(ViewBufferData));
-            p_render_target->view_buffer = new ViewBuffer(buffer);
-        }
+        RenderServer::populate_render_target_data(p_render_target);
 
         ValRenderTargetCreateInfo::RenderTargetType type;
         switch (p_render_target->get_type()) {

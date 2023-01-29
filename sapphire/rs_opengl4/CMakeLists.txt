@@ -1,9 +1,10 @@
 set(SAPPHIRE_RS_OPENGL4_SOURCES
         "glad/src/glad.c"
-        "${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_sdl.cpp"
+        "${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_opengl3.cpp"
 
         "rendering/opengl4_render_server.cpp"
         "rendering/opengl4_mesh_buffer.cpp"
+        "rendering/opengl4_graphics_buffer.cpp"
 
         "assets/glsl_shader_asset.cpp"
         "assets/glsl_shader_asset_loader.cpp"
