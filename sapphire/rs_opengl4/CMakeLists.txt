@@ -1,5 +1,6 @@
 set(SAPPHIRE_RS_OPENGL4_SOURCES
         "glad/src/glad.c"
+        "${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_sdl.cpp"
 
         "rendering/opengl4_render_server.cpp"
         "rendering/opengl4_mesh_buffer.cpp"
@@ -16,16 +17,17 @@ target_include_directories(SAPPHIRE_RS_OPENGL4 PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${THIRD_PARTY_DIR}/SDL/include
         ${THIRD_PARTY_DIR}/glm/glm
+        ${THIRD_PARTY_DIR}/imgui
         )
 
 set(PRELUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/preludes)
 set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
-set(GEN_SCRIPT ${SCRIPT_DIR}/gen_glsl_header.py)
+set(GEN_SCRIPT ${SCRIPT_DIR}/gen_resource_header.py)
 
 add_custom_target(SAPPHIRE_RS_OPENGL4_GEN_HEADERS
-        py ${GEN_SCRIPT} ${PRELUDE_DIR}/vert_prelude.glsl ${PRELUDE_DIR}/vert_prelude.glsl.gen.h &&
-        py ${GEN_SCRIPT} ${PRELUDE_DIR}/frag_prelude.glsl ${PRELUDE_DIR}/frag_prelude.glsl.gen.h &&
-        py ${GEN_SCRIPT} ${SHADER_DIR}/error.glsl ${SHADER_DIR}/error.glsl.gen.h
+        py ${GEN_SCRIPT} ${PRELUDE_DIR}/vert_prelude.glsl ${PRELUDE_DIR}/vert_prelude.glsl.gen.h mode=text &&
+        py ${GEN_SCRIPT} ${PRELUDE_DIR}/frag_prelude.glsl ${PRELUDE_DIR}/frag_prelude.glsl.gen.h mode=text &&
+        py ${GEN_SCRIPT} ${SHADER_DIR}/error.glsl ${SHADER_DIR}/error.glsl.gen.h mode=text
         )
 
 add_dependencies(SAPPHIRE_RS_OPENGL4 SAPPHIRE_RS_OPENGL4_GEN_HEADERS)

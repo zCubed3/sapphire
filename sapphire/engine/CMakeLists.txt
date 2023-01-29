@@ -11,9 +11,10 @@ set(SAPPHIRE_ENGINE_SOURCES
         "assets/mesh_asset.cpp"
         "assets/static_mesh_asset.cpp"
         "assets/shader_asset.cpp"
-
         "assets/loaders/obj_loader.cpp"
         "assets/loaders/mmdl_loader.cpp"
+
+        "config/config_file.cpp"
 
         "scene/world.cpp"
         "scene/transform.cpp"

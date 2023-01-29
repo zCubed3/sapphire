@@ -10,6 +10,10 @@
 #include <rs_opengl4/assets/glsl_shader_asset_loader.h>
 #include <rs_opengl4/rendering/opengl4_mesh_buffer.h>
 
+#include <imgui.h>
+#include <backends/imgui_impl_sdl.h>
+#include <backends/imgui_impl_opengl3.h>
+
 void OpenGL4RenderServer::register_rs_asset_loaders() {
     AssetLoader::register_loader<GLSLShaderAssetLoader>();
 }
@@ -67,6 +71,7 @@ bool OpenGL4RenderServer::initialize(SDL_Window *p_window) {
     }
 
     singleton = this;
+    window = p_window;
 
     // TODO: VSync option
     SDL_GL_SetSwapInterval(1);
@@ -79,6 +84,11 @@ bool OpenGL4RenderServer::initialize(SDL_Window *p_window) {
     glDepthFunc(GL_LESS);
 
     return true;
+}
+
+void OpenGL4RenderServer::initialize_imgui() {
+    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+    ImGui_ImplOpenGL3_Init("#version 330");
 }
 
 bool OpenGL4RenderServer::present(SDL_Window *p_window) {
@@ -141,6 +151,21 @@ bool OpenGL4RenderServer::end_target(RenderTarget *p_target) {
     }
 
     current_target = nullptr;
+
+    return true;
+}
+
+bool OpenGL4RenderServer::begin_imgui() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame(window);
+    ImGui::NewFrame();
+
+    return true;
+}
+
+bool OpenGL4RenderServer::end_imgui() {
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     return true;
 }

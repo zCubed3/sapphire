@@ -6,6 +6,14 @@ import os
 
 in_path = sys.argv[1]
 out_path = sys.argv[2]
+mode = "binary"
+
+if len(sys.argv) >= 4:
+    for a in range(3, len(sys.argv)):
+        arg = sys.argv[a]
+
+        if arg.startswith("mode="):
+            mode = arg.replace("mode=", "")
 
 source = ""
 
@@ -18,8 +26,14 @@ source_name = source_name.replace(".", "_")
 print(f"Generating resource header '{out_name}'...")
 print(f"\tInput: {sys.argv[1]}")
 print(f"\tOutput: {sys.argv[2]}")
+print(f"\tMode: {mode}")
 
-with open(sys.argv[1], "rb") as src_file:
+open_flags = "r"
+
+if mode == "binary":
+    open_flags += "b"
+
+with open(sys.argv[1], open_flags) as src_file:
     source = src_file.read()
 
 with open(sys.argv[2], "w") as out_file:
@@ -28,19 +42,26 @@ with open(sys.argv[2], "w") as out_file:
     out_file.write("//\n\n")
 
     source_repr = source
-    #source_repr = source_repr.removeprefix("'").removesuffix("'")
 
-    out_file.write(f"const unsigned char {source_name.upper()}_CONTENTS[] = {{")
+    if mode == "binary":
+        out_file.write(f"const unsigned char {source_name.upper()}_CONTENTS[] = {{")
 
-    i = 0
-    for b in source:
-        if i > 0:
-            out_file.write(', ')
+        i = 0
+        for b in source:
+            if i > 0:
+                out_file.write(', ')
 
-        if i % 16 == 0:
-            out_file.write('\n\t')
+            if i % 16 == 0:
+                out_file.write('\n\t')
 
-        out_file.write(f'0x{b:02X}')
-        i += 1
+            out_file.write(f'0x{b:02X}')
+            i += 1
 
-    out_file.write("\n};")
+        out_file.write("\n};")
+
+    if mode == "text":
+        source_repr = repr(source)
+        source_repr = source_repr.removeprefix("'").removesuffix("'")
+
+        out_file.write(f"const char {source_name.upper()}_CONTENTS[] = \"{source_repr}\";")
+

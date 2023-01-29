@@ -20,6 +20,8 @@
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
 
+#include <config/config_file.h>
+
 #include <glm.hpp>
 #include <gtx/quaternion.hpp>
 #include <gtc/matrix_transform.hpp>
@@ -49,16 +51,7 @@ class ChildChildClass : public ChildClass {
 };
 
 int main(int argc, char **argv) {
-    ClassRegistry::register_class<BaseClass>();
-    ClassRegistry::register_class<ChildClass>();
-    ClassRegistry::register_class<ChildChildClass>();
-
-    ChildChildClass *instance = new ChildChildClass();
-    bool is_child = instance->is_child_of<BaseClass>();
-
-    BaseClass* parent_instance = ClassRegistry::as<BaseClass>(instance);
-    float data = parent_instance->get_data();
-
+    // TODO: Register engine classes within the class registry
     AssetLoader::register_engine_asset_loaders();
 
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -69,6 +62,12 @@ int main(int argc, char **argv) {
     //RenderServer *render_server = new OpenGL4RenderServer();
     RenderServer *render_server = new VulkanRenderServer();
     render_server->register_rs_asset_loaders();
+
+    ConfigFile file;
+    file.read_from_path("test.secfg");
+
+    std::vector<std::string> vars = file.try_get_string_list("sVertPath", "VulkanShader");
+
 
     uint32_t window_flags = render_server->get_sdl_window_flags();
 
