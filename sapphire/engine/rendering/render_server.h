@@ -30,6 +30,7 @@ public:
 
     // TODO: Remove SDL dependency?
     virtual bool initialize(SDL_Window *p_window) = 0;
+    virtual void initialize_imgui() = 0;
 
     virtual bool present(SDL_Window *p_window) = 0;
 
@@ -40,7 +41,13 @@ public:
 
     // Whenever we begin rendering to a target, we call this function
     virtual bool begin_target(RenderTarget *p_target) = 0;
+
+    // Called whenever rendering to a target is finished
     virtual bool end_target(RenderTarget *p_target) = 0;
+
+    // Called to begin rendering ImGui
+    virtual bool begin_imgui() = 0;
+    virtual bool end_imgui() = 0;
 
     // Whenever a mesh is loaded various structures must be created
     virtual void populate_mesh_buffer(MeshAsset *p_mesh_asset) const = 0;

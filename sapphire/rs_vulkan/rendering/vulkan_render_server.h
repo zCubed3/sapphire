@@ -42,6 +42,7 @@ public:
     uint32_t get_sdl_window_flags() const override;
 
     bool initialize(SDL_Window *p_window) override;
+    void initialize_imgui() override;
 
     bool present(SDL_Window *p_window) override;
 
@@ -53,12 +54,15 @@ public:
     bool begin_target(RenderTarget *p_target) override;
     bool end_target(RenderTarget *p_target) override;
 
+    bool begin_imgui() override;
+    bool end_imgui() override;
+
     void populate_mesh_buffer(MeshAsset *p_mesh_asset) const override;
     void populate_render_target_data(RenderTarget *p_render_target) const override;
 
     // TODO: Make this more abstract?
-    VkCommandBuffer begin_upload() const;
-    void end_upload(VkCommandBuffer buffer) const;
+    VkCommandBuffer begin_upload(bool staging = true) const;
+    void end_upload(VkCommandBuffer buffer, bool staging = true) const;
 };
 
 #endif

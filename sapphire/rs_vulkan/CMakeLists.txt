@@ -1,4 +1,6 @@
 set(SAPPHIRE_RS_VULKAN_SOURCES
+        "${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_vulkan.cpp"
+
         "val/val_releasable.cpp"
         "val/val_instance.cpp"
         "val/val_extension.cpp"
@@ -38,6 +40,7 @@ target_include_directories(SAPPHIRE_RS_VULKAN PUBLIC
         ${THIRD_PARTY_DIR}/SDL/include
         ${THIRD_PARTY_DIR}/glm/glm
         ${THIRD_PARTY_DIR}/VulkanMemoryAllocator/src
+        ${THIRD_PARTY_DIR}/imgui
         ${Vulkan_INCLUDE_DIRS}
         )
 

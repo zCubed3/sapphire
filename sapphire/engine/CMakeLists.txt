@@ -1,4 +1,10 @@
 set(SAPPHIRE_ENGINE_SOURCES
+        "${THIRD_PARTY_DIR}/imgui/imgui.cpp"
+        "${THIRD_PARTY_DIR}/imgui/imgui_draw.cpp"
+        "${THIRD_PARTY_DIR}/imgui/imgui_tables.cpp"
+        "${THIRD_PARTY_DIR}/imgui/imgui_widgets.cpp"
+        "${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_sdl.cpp"
+
         "assets/asset.cpp"
         "assets/asset_loader.cpp"
         "assets/mesh_asset.cpp"
@@ -31,6 +37,7 @@ target_include_directories(SAPPHIRE_ENGINE PUBLIC
         ${CODE_DIR}
         ${THIRD_PARTY_DIR}/SDL/include
         ${THIRD_PARTY_DIR}/glm/glm
+        ${THIRD_PARTY_DIR}/imgui
         )
 
 target_compile_definitions(SAPPHIRE_ENGINE PUBLIC

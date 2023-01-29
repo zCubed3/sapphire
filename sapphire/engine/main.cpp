@@ -16,8 +16,9 @@
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #endif
 
-#include <glm.hpp>
+#include <imgui.h>
 
+#include <glm.hpp>
 #include <gtx/quaternion.hpp>
 #include <gtc/matrix_transform.hpp>
 
@@ -85,6 +86,14 @@ int main(int argc, char **argv) {
     glm::mat4 model2;
 
     bool resized = false;
+
+    //
+    // ImGui initialization
+    //
+    ImGui::CreateContext();
+    render_server->initialize_imgui();
+
+    ImGuiStyle &style = ImGui::GetStyle();
 
     while (keep_running) {
         while (SDL_PollEvent(&event) != 0) {
