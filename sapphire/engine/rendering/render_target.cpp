@@ -8,6 +8,7 @@
 #include <gtc/matrix_transform.hpp>
 
 RenderTarget::~RenderTarget() {
+    delete data;
     delete view_buffer;
 }
 

@@ -21,6 +21,7 @@ public:
     GraphicsBuffer *buffer = nullptr;
 
     ViewBuffer(GraphicsBuffer *p_buffer);
+    ~ViewBuffer();
 
     void write(ViewBufferData data);
 };

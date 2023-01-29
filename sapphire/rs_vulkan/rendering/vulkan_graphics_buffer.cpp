@@ -12,6 +12,15 @@ VulkanGraphicsBuffer::VulkanGraphicsBuffer(size_t size) {
             vulkan_rs->val_instance);
 }
 
+VulkanGraphicsBuffer::~VulkanGraphicsBuffer() {
+    const VulkanRenderServer *vulkan_rs = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
+
+    if (val_buffer != nullptr) {
+        val_buffer->release(vulkan_rs->val_instance);
+        delete val_buffer;
+    }
+}
+
 void VulkanGraphicsBuffer::write(void *data, size_t size) {
     const VulkanRenderServer *vulkan_rs = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
 

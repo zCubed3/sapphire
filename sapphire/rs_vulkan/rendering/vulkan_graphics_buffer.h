@@ -10,6 +10,7 @@ public:
     ValBuffer *val_buffer = nullptr;
 
     VulkanGraphicsBuffer(size_t size);
+    ~VulkanGraphicsBuffer() override;
 
     void write(void *data, size_t size) override;
 };

@@ -23,6 +23,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "rendering/render_server.cpp"
         "rendering/mesh_buffer.cpp"
         "rendering/view_buffer.cpp"
+        "rendering/graphics_buffer.cpp"
 
         "main.cpp"
         )
