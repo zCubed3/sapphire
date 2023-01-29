@@ -124,10 +124,8 @@ int main(int argc, char **argv) {
 
     bool resized = false;
 
-    //
-    // ImGui initialization
-    //
-    ImGui::CreateContext();
+    // ImGui my beloved :)
+    ImGuiContext* imgui_context = ImGui::CreateContext();
     render_server->initialize_imgui();
 
     ImGuiStyle &style = ImGui::GetStyle();
@@ -210,6 +208,8 @@ int main(int argc, char **argv) {
         render_server->present(main_window);
     }
 
+    AssetLoader::unload_all_placeholders();
+
     delete mesh;
     delete mesh2;
     delete shader;
@@ -217,6 +217,7 @@ int main(int argc, char **argv) {
     delete rt_window;
 
     delete render_server;
+    ImGui::DestroyContext(imgui_context);
 
     return 0;
 }

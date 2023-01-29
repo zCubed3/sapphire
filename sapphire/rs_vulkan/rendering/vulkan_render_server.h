@@ -19,6 +19,7 @@ class ValBuffer;
 
 class VulkanRenderServer : public RenderServer {
 protected:
+    bool imgui_initalized = false;
     VkCommandBuffer vk_imgui_command_buffer = nullptr;
 
 public:
