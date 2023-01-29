@@ -15,6 +15,9 @@
 //ValBuffer *VulkanMeshBuffer::transform_ubo = nullptr;
 
 VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
+    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+    ValInstance* val_instance = render_server->val_instance;
+
     // TODO: Make the staging buffer more async?
     Vertex *vertices = new Vertex[p_mesh_asset->get_vertex_count()];
 
@@ -38,9 +41,6 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
             vertices[v].uv0 = tex_coords[v];
         }
     }
-
-    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
-    ValInstance* val_instance = render_server->val_instance;
 
     transform_ubo = new ValBuffer(
             sizeof(VulkanMeshBuffer::ObjectData),
@@ -78,8 +78,6 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
 
 // TODO: Instancing
 void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_asset) {
-    MeshBuffer::render(transform, p_shader_asset);
-
     VulkanShaderAsset* vk_shader = reinterpret_cast<VulkanShaderAsset*>(p_shader_asset);
     if (vk_shader == nullptr) {
         vk_shader = VulkanShaderAsset::error_shader;
@@ -110,10 +108,10 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
     descriptor_write.pTexelBufferView = nullptr; // Optional
 
     VulkanMeshBuffer::ObjectData data = {
-            render_server->get_current_target()->eye * transform.get_model(),
-            transform.get_model(),
-            transform.get_model_inverse(),
-            transform.get_model_inverse_transpose()
+            render_server->get_current_target()->view_data.view_projection * transform.trs,
+            transform.trs,
+            transform.trs_inverse,
+            transform.trs_inverse_transpose
     };
 
     transform_ubo->write(&data, val_instance);

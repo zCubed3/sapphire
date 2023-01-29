@@ -5,7 +5,7 @@
 #include <engine/assets/asset_loader.h>
 #include <engine/assets/shader_asset.h>
 #include <engine/assets/static_mesh_asset.h>
-#include <engine/rendering/rt_sdl_window.h>
+#include <engine/rendering/sdl_window_render_target.h>
 #include <engine/scene/world.h>
 
 #ifdef RS_OPENGL4_SUPPORT
@@ -117,8 +117,8 @@ int main(int argc, char **argv) {
 
     uint32_t last_tick = SDL_GetTicks();
 
-    glm::mat4 model;
-    glm::mat4 model2;
+    Transform model;
+    Transform model2;
 
     bool resized = false;
 
@@ -160,14 +160,15 @@ int main(int argc, char **argv) {
 
         //rt_window.clear_color = Color(abs(sin(world->elapsed_time)), 0, 0, 1);
 
-        model = glm::identity<glm::mat4>();
-        //model = glm::scale(model, glm::vec3(0.1F, 0.1F, 0.1F));
-        model *= glm::toMat4(glm::quat(glm::radians(euler)));
+        model.calculate_matrices();
 
-        model2 = glm::identity<glm::mat4>();
-        model2 = glm::translate(model2, glm::vec3(1, 0, 0));
-        //model2 = glm::scale(model2, glm::vec3(0.1F, 0.1F, 0.1F));
-        model2 *= glm::toMat4(glm::quat(glm::radians(euler)));
+        model2.position = glm::vec3(1, 0, 0);
+        model2.quaternion = glm::quat(glm::radians(euler));
+
+        model2.calculate_matrices();
+
+        // We don't have a camera, so we need to move our render target
+        rt_window->transform.position = glm::vec3(0, sin(world->elapsed_time), -2);
 
         render_server->begin_frame();
 

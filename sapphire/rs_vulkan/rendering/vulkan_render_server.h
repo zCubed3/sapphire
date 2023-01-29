@@ -41,6 +41,8 @@ public:
     std::string get_error() const override;
     uint32_t get_sdl_window_flags() const override;
 
+    glm::vec3 get_coordinate_correction() const override;
+
     bool initialize(SDL_Window *p_window) override;
 
     bool present(SDL_Window *p_window) override;
@@ -53,6 +55,7 @@ public:
     bool begin_target(RenderTarget *p_target) override;
     bool end_target(RenderTarget *p_target) override;
 
+    GraphicsBuffer *create_graphics_buffer(size_t size) const override;
     void populate_mesh_buffer(MeshAsset *p_mesh_asset) const override;
     void populate_render_target_data(RenderTarget *p_render_target) const override;
 

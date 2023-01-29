@@ -8,18 +8,21 @@ set(SAPPHIRE_ENGINE_SOURCES
         "assets/loaders/obj_loader.cpp"
         "assets/loaders/mmdl_loader.cpp"
 
+        "scene/world.cpp"
+        "scene/transform.cpp"
+
         "typing/class_registry.cpp"
 
         "data/aabb.cpp"
         "data/color.cpp"
         "data/rect.cpp"
-        "data/transform.cpp"
 
         "rendering/render_target.cpp"
         "rendering/render_target_data.cpp"
-        "rendering/rt_sdl_window.cpp"
+        "rendering/sdl_window_render_target.cpp"
         "rendering/render_server.cpp"
         "rendering/mesh_buffer.cpp"
+        "rendering/view_buffer.cpp"
 
         "main.cpp"
         )

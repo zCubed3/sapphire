@@ -16,8 +16,6 @@ public:
 
     Rect get_rect() override;
 
-    void begin_attach() override;
-
     TargetType get_type() override;
 };
 

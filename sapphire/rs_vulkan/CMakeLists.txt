@@ -25,6 +25,7 @@ set(SAPPHIRE_RS_VULKAN_SOURCES
 
         "rendering/vulkan_render_server.cpp"
         "rendering/vulkan_render_target_data.cpp"
+        "rendering/vulkan_graphics_buffer.cpp"
         "rendering/vulkan_mesh_buffer.cpp"
         )
 
