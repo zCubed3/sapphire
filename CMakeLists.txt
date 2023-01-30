@@ -21,6 +21,8 @@ set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 option(RS_OPENGL4_SUPPORT "Compiles and links OpenGL4 Render Server support into the engine" ON)
 option(RS_VULKAN_SUPPORT "Compiles and links Vulkan Render Server support into the engine" ON)
 
+option(IMGUI_SUPPORT "Compiles ImGui support into the engine" ON)
+
 # TODO: Allow disabling SDL
 
 option(DISABLE_RTTI "Disables RTTI support (in favor of the engine type system)" ON)
@@ -50,6 +52,10 @@ if (DISABLE_RTTI)
     if (WIN32)
         string(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
     endif()
+endif()
+
+if (IMGUI_SUPPORT)
+    list(APPEND SAPPHIRE_DEFINITIONS IMGUI_SUPPORT)
 endif()
 
 if (RS_OPENGL4_SUPPORT)

@@ -7,7 +7,7 @@
 #include <vulkan/vulkan.h>
 
 #include <rs_vulkan/val/data/val_buffer.h>
-#include <rs_vulkan/val/data/val_stagingbuffer.h>
+#include <rs_vulkan/val/data/val_staging_buffer.h>
 #include <rs_vulkan/val/render_targets/val_window_render_target.h>
 #include <rs_vulkan/val/val_extension.h>
 #include <rs_vulkan/val/val_layer.h>

@@ -1,6 +1,5 @@
 set(SAPPHIRE_RS_OPENGL4_SOURCES
         "glad/src/glad.c"
-        "${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_opengl3.cpp"
 
         "rendering/opengl4_render_server.cpp"
         "rendering/opengl4_mesh_buffer.cpp"
@@ -9,16 +8,23 @@ set(SAPPHIRE_RS_OPENGL4_SOURCES
         "rendering/opengl4_texture.cpp"
         )
 
-add_library(SAPPHIRE_RS_OPENGL4 STATIC ${SAPPHIRE_RS_OPENGL4_SOURCES})
-
-target_include_directories(SAPPHIRE_RS_OPENGL4 PUBLIC
+set(SAPPHIRE_RS_OPENGL4_INCLUDE_DIRS
         "glad/include"
         ${CODE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${THIRD_PARTY_DIR}/SDL/include
         ${THIRD_PARTY_DIR}/glm/glm
         ${THIRD_PARTY_DIR}/imgui
-        )
+)
+
+if (IMGUI_SUPPORT)
+    list(APPEND SAPPHIRE_RS_OPENGL4_SOURCES "${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_opengl3.cpp")
+    list(APPEND SAPPHIRE_RS_OPENGL4_INCLUDE_DIRS "${THIRD_PARTY_DIR}/imgui")
+endif()
+
+add_library(SAPPHIRE_RS_OPENGL4 STATIC ${SAPPHIRE_RS_OPENGL4_SOURCES})
+
+target_include_directories(SAPPHIRE_RS_OPENGL4 PUBLIC ${SAPPHIRE_RS_OPENGL4_INCLUDE_DIRS})
 
 set(PRELUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/preludes)
 set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)

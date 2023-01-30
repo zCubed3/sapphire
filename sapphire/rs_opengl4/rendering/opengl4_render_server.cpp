@@ -12,15 +12,17 @@
 #include <rs_opengl4/rendering/opengl4_shader.h>
 #include <rs_opengl4/rendering/opengl4_texture.h>
 
+#if defined(IMGUI_SUPPORT)
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_opengl3.h>
+#endif
 
 void OpenGL4RenderServer::register_rs_asset_loaders() {
 
 }
 
-std::string OpenGL4RenderServer::get_name() const {
+const char* OpenGL4RenderServer::get_name() const {
     return "OpenGL 4.6";// TODO: Other versions?
 }
 
@@ -90,11 +92,6 @@ bool OpenGL4RenderServer::initialize(SDL_Window *p_window) {
     return true;
 }
 
-void OpenGL4RenderServer::initialize_imgui() {
-    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-    ImGui_ImplOpenGL3_Init("#version 330");
-}
-
 bool OpenGL4RenderServer::present(SDL_Window *p_window) {
     if (p_window == nullptr) {
         error = ERR_WINDOW_NULLPTR;
@@ -159,21 +156,6 @@ bool OpenGL4RenderServer::end_target(RenderTarget *p_target) {
     return true;
 }
 
-bool OpenGL4RenderServer::begin_imgui() {
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(window);
-    ImGui::NewFrame();
-
-    return true;
-}
-
-bool OpenGL4RenderServer::end_imgui() {
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-    return true;
-}
-
 GraphicsBuffer *OpenGL4RenderServer::create_graphics_buffer(size_t size) const {
     uint32_t buffer_handle;
     glGenBuffers(1, &buffer_handle);
@@ -207,3 +189,25 @@ void OpenGL4RenderServer::populate_render_target_data(RenderTarget *p_render_tar
         RenderServer::populate_render_target_data(p_render_target);
     }
 }
+
+#if defined(IMGUI_SUPPORT)
+void OpenGL4RenderServer::initialize_imgui() {
+    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+    ImGui_ImplOpenGL3_Init("#version 330");
+}
+
+bool OpenGL4RenderServer::begin_imgui() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame(window);
+    ImGui::NewFrame();
+
+    return true;
+}
+
+bool OpenGL4RenderServer::end_imgui() {
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    return true;
+}
+#endif

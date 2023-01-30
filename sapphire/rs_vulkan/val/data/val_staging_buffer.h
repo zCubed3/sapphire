@@ -1,5 +1,5 @@
-#ifndef SAPPHIRE_VAL_STAGINGBUFFER_H
-#define SAPPHIRE_VAL_STAGINGBUFFER_H
+#ifndef SAPPHIRE_VAL_STAGING_BUFFER_H
+#define SAPPHIRE_VAL_STAGING_BUFFER_H
 
 #include <cstdint>
 #include <vk_mem_alloc.h>

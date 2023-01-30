@@ -21,18 +21,19 @@
 #include <rs_vulkan/rendering/vulkan_shader.h>
 #include <rs_vulkan/rendering/vulkan_texture.h>
 
+#if defined(IMGUI_SUPPORT)
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_vulkan.h>
-
-#define RS_VULKAN_DEBUG
-
+#endif
 
 // TODO: Wait for rendering to finish
 VulkanRenderServer::~VulkanRenderServer() {
+#if defined(IMGUI_SUPPORT)
     if (imgui_initalized) {
         ImGui_ImplVulkan_Shutdown();
     }
+#endif
 
     val_window_render_pass->release(val_instance);
     delete val_window_render_pass;
@@ -50,7 +51,7 @@ void VulkanRenderServer::register_rs_asset_loaders() {
 
 }
 
-std::string VulkanRenderServer::get_name() const {
+const char* VulkanRenderServer::get_name() const {
     // TODO: Include API version?
     return "Vulkan";
 }
@@ -156,57 +157,6 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     return true;
 }
 
-void VulkanRenderServer::initialize_imgui() {
-    ImGui_ImplSDL2_InitForVulkan(window);
-
-    VkDescriptorPoolSize pool_sizes[] =
-    {
-        {VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
-        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
-        {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
-        {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
-        {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
-        {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
-        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
-        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
-        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
-        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
-        {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}
-    };
-
-    VkDescriptorPoolCreateInfo pool_info = {};
-    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-    pool_info.maxSets = 1000;
-    pool_info.poolSizeCount = 11;
-    pool_info.pPoolSizes = pool_sizes;
-
-    VkDescriptorPool vk_imgui_descriptor_pool;
-    vkCreateDescriptorPool(val_instance->vk_device, &pool_info, nullptr, &vk_imgui_descriptor_pool);
-
-    ImGui_ImplVulkan_InitInfo init_info = {};
-    init_info.Instance = val_instance->vk_instance;
-    init_info.PhysicalDevice = val_instance->vk_physical_device;
-    init_info.Device = val_instance->vk_device;
-    init_info.Queue = val_instance->get_queue(ValQueue::QUEUE_TYPE_GRAPHICS).vk_queue;
-    init_info.DescriptorPool = vk_imgui_descriptor_pool;
-    init_info.MinImageCount = 3;
-    init_info.ImageCount = 3;
-    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-
-    ImGui_ImplVulkan_Init(&init_info, val_window_render_pass->vk_render_pass);
-
-    VkCommandBuffer vk_upload_buffer = begin_upload(false);
-
-    ImGui_ImplVulkan_CreateFontsTexture(vk_upload_buffer);
-
-    end_upload(vk_upload_buffer, false);
-
-    ImGui_ImplVulkan_DestroyFontUploadObjects();
-
-    imgui_initalized = true;
-}
-
 bool VulkanRenderServer::present(SDL_Window *p_window) {
     val_instance->val_main_window->present_queue(val_instance);
     return true;
@@ -271,21 +221,6 @@ bool VulkanRenderServer::end_target(RenderTarget *p_target) {
     return true;
 }
 
-bool VulkanRenderServer::begin_imgui() {
-    ImGui_ImplVulkan_NewFrame();
-    ImGui_ImplSDL2_NewFrame(window);
-    ImGui::NewFrame();
-
-    return true;
-}
-
-bool VulkanRenderServer::end_imgui() {
-    ImGui::Render();
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), val_active_render_target->vk_command_buffer);
-
-    return true;
-}
-
 GraphicsBuffer *VulkanRenderServer::create_graphics_buffer(size_t size) const {
     return new VulkanGraphicsBuffer(size);
 }
@@ -340,6 +275,74 @@ void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_targ
         p_render_target->data = new VulkanRenderTargetData(val_target);
     }
 }
+
+#if defined(IMGUI_SUPPORT)
+void VulkanRenderServer::initialize_imgui() {
+    ImGui_ImplSDL2_InitForVulkan(window);
+
+    VkDescriptorPoolSize pool_sizes[] =
+            {
+                    {VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
+                    {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
+                    {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
+                    {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
+                    {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
+                    {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
+                    {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
+                    {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
+                    {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
+                    {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
+                    {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}
+            };
+
+    VkDescriptorPoolCreateInfo pool_info = {};
+    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    pool_info.maxSets = 1000;
+    pool_info.poolSizeCount = 11;
+    pool_info.pPoolSizes = pool_sizes;
+
+    VkDescriptorPool vk_imgui_descriptor_pool;
+    vkCreateDescriptorPool(val_instance->vk_device, &pool_info, nullptr, &vk_imgui_descriptor_pool);
+
+    ImGui_ImplVulkan_InitInfo init_info = {};
+    init_info.Instance = val_instance->vk_instance;
+    init_info.PhysicalDevice = val_instance->vk_physical_device;
+    init_info.Device = val_instance->vk_device;
+    init_info.Queue = val_instance->get_queue(ValQueue::QUEUE_TYPE_GRAPHICS).vk_queue;
+    init_info.DescriptorPool = vk_imgui_descriptor_pool;
+    init_info.MinImageCount = 3;
+    init_info.ImageCount = 3;
+    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+    ImGui_ImplVulkan_Init(&init_info, val_window_render_pass->vk_render_pass);
+
+    VkCommandBuffer vk_upload_buffer = begin_upload(false);
+
+    ImGui_ImplVulkan_CreateFontsTexture(vk_upload_buffer);
+
+    end_upload(vk_upload_buffer, false);
+
+    ImGui_ImplVulkan_DestroyFontUploadObjects();
+
+    imgui_initalized = true;
+}
+
+bool VulkanRenderServer::begin_imgui() {
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplSDL2_NewFrame(window);
+    ImGui::NewFrame();
+
+    return true;
+}
+
+bool VulkanRenderServer::end_imgui() {
+    ImGui::Render();
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), val_active_render_target->vk_command_buffer);
+
+    return true;
+}
+#endif
 
 VkCommandBuffer VulkanRenderServer::begin_upload(bool staging) const {
     ValQueue queue;

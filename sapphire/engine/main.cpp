@@ -24,8 +24,10 @@
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #endif
 
+#if defined(IMGUI_SUPPORT)
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
+#endif
 
 #include <config/config_file.h>
 
@@ -104,7 +106,9 @@ int main(int argc, char **argv) {
 
     uint32_t window_flags = render_server->get_sdl_window_flags();
 
-    std::string window_name = "Sapphire (" + render_server->get_name() + ")";
+    std::string window_name = "Sapphire (";
+    window_name += render_server->get_name();
+    window_name += ")";
 
     // TODO: Abstract window class?
     SDL_Window *main_window = SDL_CreateWindow(
@@ -156,14 +160,18 @@ int main(int argc, char **argv) {
     bool resized = false;
 
     // ImGui my beloved :)
+#if defined(IMGUI_SUPPORT)
     ImGuiContext* imgui_context = ImGui::CreateContext();
     render_server->initialize_imgui();
 
     ImGuiStyle &style = ImGui::GetStyle();
+#endif
 
     while (keep_running) {
         while (SDL_PollEvent(&event) != 0) {
+#if defined(IMGUI_SUPPORT)
             ImGui_ImplSDL2_ProcessEvent(&event);
+#endif
 
             if (event.type == SDL_QUIT) {
                 keep_running = false;// TEMPORARY!
@@ -205,19 +213,27 @@ int main(int argc, char **argv) {
 
         render_server->begin_frame();
         render_server->begin_target(rt_window);
+
+#if defined(IMGUI_SUPPORT)
         render_server->begin_imgui();
+#endif
 
         world->draw();
 
         //actor->transform.position = glm::vec3(0, sin(world->elapsed_time), 0);
 
+#if defined(IMGUI_SUPPORT)
         ImGui::Begin("Renderer Info");
-        ImGui::Text("Rendering API: %s", render_server->get_name().c_str());
+        ImGui::Text("Rendering API: %s", render_server->get_name());
         ImGui::End();
 
         //ImGui::ShowDemoWindow();
+#endif
 
+#if defined(IMGUI_SUPPORT)
         render_server->end_imgui();
+#endif
+
         render_server->end_target(rt_window);
         render_server->end_frame();
 
@@ -234,7 +250,10 @@ int main(int argc, char **argv) {
     delete rt_window;
 
     delete render_server;
+
+#if defined(IMGUI_SUPPORT)
     ImGui::DestroyContext(imgui_context);
+#endif
 
     return 0;
 }

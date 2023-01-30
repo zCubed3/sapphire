@@ -17,6 +17,10 @@ public:
     virtual void tick(World* p_world);
 
     virtual void draw(World* p_world);
+
+#if defined(IMGUI_SUPPORT)
+    virtual void draw_imgui(World *p_world);
+#endif
 };
 
 #endif

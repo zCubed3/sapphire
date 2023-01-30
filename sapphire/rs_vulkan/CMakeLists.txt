@@ -1,15 +1,12 @@
 set(SAPPHIRE_RS_VULKAN_SOURCES
-        "${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_vulkan.cpp"
-
         "val/val_releasable.cpp"
         "val/val_instance.cpp"
         "val/val_extension.cpp"
         "val/val_layer.cpp"
         "val/val_queue.cpp"
         "val/data/val_buffer.cpp"
-        "val/data/val_stagingbuffer.cpp"
+        "val/data/val_staging_buffer.cpp"
         "val/images/val_image.cpp"
-        "val/images/val_texture.cpp"
         "val/pipelines/val_render_pass.cpp"
         "val/pipelines/val_render_pass_builder.cpp"
         "val/pipelines/val_descriptor_set.cpp"
@@ -31,19 +28,24 @@ set(SAPPHIRE_RS_VULKAN_SOURCES
         "rendering/vulkan_texture.cpp"
         )
 
-find_package(Vulkan REQUIRED)
-
-add_library(SAPPHIRE_RS_VULKAN STATIC ${SAPPHIRE_RS_VULKAN_SOURCES})
-
-target_include_directories(SAPPHIRE_RS_VULKAN PUBLIC
+set(SAPPHIRE_RS_VULKAN_INCLUDE_DIRS
         ${CODE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${THIRD_PARTY_DIR}/SDL/include
         ${THIRD_PARTY_DIR}/glm/glm
         ${THIRD_PARTY_DIR}/VulkanMemoryAllocator/src
-        ${THIRD_PARTY_DIR}/imgui
-        ${Vulkan_INCLUDE_DIRS}
-        )
+)
+
+if (IMGUI_SUPPORT)
+    list(APPEND SAPPHIRE_RS_VULKAN_SOURCES "${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_vulkan.cpp")
+    list(APPEND SAPPHIRE_RS_VULKAN_INCLUDE_DIRS "${THIRD_PARTY_DIR}/imgui")
+endif()
+
+find_package(Vulkan REQUIRED)
+
+add_library(SAPPHIRE_RS_VULKAN STATIC ${SAPPHIRE_RS_VULKAN_SOURCES})
+
+target_include_directories(SAPPHIRE_RS_VULKAN PUBLIC ${SAPPHIRE_RS_VULKAN_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS})
 
 target_link_libraries(SAPPHIRE_RS_VULKAN PUBLIC
         ${Vulkan_LIBRARY}
