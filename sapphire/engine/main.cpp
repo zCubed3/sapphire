@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
 
     MeshActor* actor = new MeshActor();
     actor->mesh_asset = mesh;
-    actor->shader_asset = shader;
+    //actor->shader_asset = shader;
 
     world->add_actor(actor);
 

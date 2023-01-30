@@ -1,4 +1,4 @@
-#include "glsl_shader_asset.h"
+#include "opengl4_shader.h"
 
 #include <glad/glad.h>
 
@@ -8,14 +8,30 @@
 
 #include <gtc/type_ptr.hpp>
 
+#include <engine/config/config_file.h>
+
 #include <preludes/frag_prelude.glsl.gen.h>
 #include <preludes/vert_prelude.glsl.gen.h>
 
 #include <shaders/error.glsl.gen.h>
 
-GLSLShaderAsset *GLSLShaderAsset::placeholder = nullptr;
+std::string read_source(const std::string& path) {
+    std::ifstream file(path);
 
-uint32_t GLSLShaderAsset::get_uniform(const std::string &var) {
+    if (file.is_open()) {
+        std::stringstream source;
+        source << file.rdbuf();
+        file.close();
+
+        return source.str();
+    }
+
+    return "";
+}
+
+OpenGL4Shader *OpenGL4Shader::error_shader = nullptr;
+
+uint32_t OpenGL4Shader::get_uniform(const std::string &var) {
     auto iter = uniform_cache.find(var);
 
     if (iter == uniform_cache.end()) {
@@ -30,7 +46,7 @@ uint32_t GLSLShaderAsset::get_uniform(const std::string &var) {
     return iter->second;
 }
 
-uint32_t GLSLShaderAsset::get_uniform_block(const std::string &var) {
+uint32_t OpenGL4Shader::get_uniform_block(const std::string &var) {
     auto iter = uniform_cache.find(var);
 
     if (iter == uniform_cache.end()) {
@@ -45,7 +61,7 @@ uint32_t GLSLShaderAsset::get_uniform_block(const std::string &var) {
     return iter->second;
 }
 
-std::string GLSLShaderAsset::get_shader_error(uint32_t handle) {
+std::string OpenGL4Shader::get_shader_error(uint32_t handle) {
     int status;
     glGetShaderiv(handle, GL_COMPILE_STATUS, &status);
 
@@ -67,7 +83,7 @@ std::string GLSLShaderAsset::get_shader_error(uint32_t handle) {
     return "";
 }
 
-std::string GLSLShaderAsset::get_program_error(uint32_t handle) {
+std::string OpenGL4Shader::get_program_error(uint32_t handle) {
     int status;
     glGetProgramiv(handle, GL_LINK_STATUS, &status);
 
@@ -89,9 +105,9 @@ std::string GLSLShaderAsset::get_program_error(uint32_t handle) {
     return "";
 }
 
-uint32_t GLSLShaderAsset::create_shader(uint32_t type, const std::vector<const char *> &sources) {
+uint32_t OpenGL4Shader::create_shader(uint32_t type, const std::vector<const char *> &sources) {
     uint32_t handle = glCreateShader(type);
-    glShaderSource(handle, 2, sources.data(), nullptr);
+    glShaderSource(handle, static_cast<GLsizei>(sources.size()), sources.data(), nullptr);
     glCompileShader(handle);
 
     /*
@@ -103,30 +119,35 @@ uint32_t GLSLShaderAsset::create_shader(uint32_t type, const std::vector<const c
     return handle;
 }
 
-GLSLShaderAsset::GLSLShaderAsset() {
-}
-
-GLSLShaderAsset::GLSLShaderAsset(const std::string &path) {
-    this->source_path = path;
-    compile_from_disk();
-}
-
-void GLSLShaderAsset::compile_from_disk() {
-    std::ifstream file(source_path);
-
-    if (file.is_open()) {
-        std::stringstream source;
-        source << file.rdbuf();
-        file.close();
-
-        compile_source(source.str());
+bool OpenGL4Shader::make_from_semd(ConfigFile *p_semd_file) {
+    if (p_semd_file == nullptr) {
+        return false;
     }
+
+    // We load all the sources provided by the semd
+    std::vector<std::string> vert_source_paths = p_semd_file->try_get_string_list("sVertSources", "OpenGL4Shader");
+    std::vector<std::string> frag_source_paths = p_semd_file->try_get_string_list("sFragSources", "OpenGL4Shader");
+
+    std::string vert_source;
+    std::string frag_source;
+
+    for (const std::string& path: vert_source_paths) {
+        vert_source += read_source(path);
+    }
+
+    for (const std::string& path: frag_source_paths) {
+        frag_source += read_source(path);
+    }
+
+    compile_sources(vert_source, frag_source);
+
+    return true;
 }
 
 // TODO: Geometry shaders?
-void GLSLShaderAsset::compile_source(const std::string &source) {
-    uint32_t vert_shader = create_shader(GL_VERTEX_SHADER, {VERT_PRELUDE_CONTENTS, source.c_str()});
-    uint32_t frag_shader = create_shader(GL_FRAGMENT_SHADER, {FRAG_PRELUDE_CONTENTS, source.c_str()});
+void OpenGL4Shader::compile_sources(const std::string &vert_source, const std::string &frag_source) {
+    uint32_t vert_shader = create_shader(GL_VERTEX_SHADER, {vert_source.c_str()});
+    uint32_t frag_shader = create_shader(GL_FRAGMENT_SHADER, {frag_source.c_str()});
 
     std::string vert_error = get_shader_error(vert_shader);
     std::string frag_error = get_shader_error(frag_shader);
@@ -165,38 +186,14 @@ void GLSLShaderAsset::compile_source(const std::string &source) {
     shader_handle = program;
 }
 
-/*
-void GLSLShaderAsset::set_float(const std::string &var, float val) {
-}
+void OpenGL4Shader::create_error_shader() {
+    error_shader = new OpenGL4Shader();
 
-void GLSLShaderAsset::set_vec2(const std::string &var, const glm::vec2 &val) {
-}
+    std::string vert_source = VERT_PRELUDE_CONTENTS;
+    std::string frag_source = FRAG_PRELUDE_CONTENTS;
 
-void GLSLShaderAsset::set_vec3(const std::string &var, const glm::vec3 &val) {
-}
+    vert_source += ERROR_CONTENTS;
+    frag_source += ERROR_CONTENTS;
 
-void GLSLShaderAsset::set_vec4(const std::string &var, const glm::vec4 &val) {
-    uint32_t loc = get_uniform(var);
-
-    if (loc != GL_INVALID_INDEX) {
-        glUniform4fv(loc, 1, glm::value_ptr(val));
-    }
-}
-
-void GLSLShaderAsset::set_mat4(const std::string &var, const glm::mat4 &val) {
-    uint32_t loc = get_uniform(var);
-
-    if (loc != GL_INVALID_INDEX) {
-        glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(val));
-    }
-}
- */
-
-GLSLShaderAsset *GLSLShaderAsset::get_placeholder() {
-    if (placeholder == nullptr) {
-        placeholder = new GLSLShaderAsset();
-        placeholder->compile_source(ERROR_CONTENTS);
-    }
-
-    return placeholder;
+    error_shader->compile_sources(vert_source, frag_source);
 }

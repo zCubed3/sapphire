@@ -7,16 +7,16 @@
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_target.h>
 
-#include <rs_opengl4/assets/glsl_shader_asset_loader.h>
 #include <rs_opengl4/rendering/opengl4_mesh_buffer.h>
 #include <rs_opengl4/rendering/opengl4_graphics_buffer.h>
+#include <rs_opengl4/rendering/opengl4_shader.h>
 
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_opengl3.h>
 
 void OpenGL4RenderServer::register_rs_asset_loaders() {
-    AssetLoader::register_loader<GLSLShaderAssetLoader>();
+
 }
 
 std::string OpenGL4RenderServer::get_name() const {
@@ -77,7 +77,9 @@ bool OpenGL4RenderServer::initialize(SDL_Window *p_window) {
     // TODO: VSync option
     SDL_GL_SetSwapInterval(1);
 
-    // TODO: Move this to render targets
+    OpenGL4Shader::create_error_shader();
+
+    // TODO: Move these to materials?
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
@@ -186,7 +188,7 @@ GraphicsBuffer *OpenGL4RenderServer::create_graphics_buffer(size_t size) const {
 
 // TODO:
 Shader *OpenGL4RenderServer::create_shader() const {
-    return nullptr;
+    return new OpenGL4Shader();
 }
 
 void OpenGL4RenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
