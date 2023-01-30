@@ -23,6 +23,8 @@ option(RS_VULKAN_SUPPORT "Compiles and links Vulkan Render Server support into t
 
 # TODO: Allow disabling SDL
 
+set(RS_OPENGL4_SUPPORT OFF)
+
 option(DISABLE_RTTI "Disables RTTI support (in favor of the engine type system)" ON)
 
 #

@@ -60,6 +60,7 @@ public:
     bool end_imgui() override;
 
     GraphicsBuffer *create_graphics_buffer(size_t size) const override;
+    Shader *create_shader() const override;
 
     void populate_mesh_buffer(MeshAsset *p_mesh_asset) const override;
     void populate_render_target_data(RenderTarget *p_render_target) const override;

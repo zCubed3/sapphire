@@ -22,13 +22,11 @@ set(SAPPHIRE_RS_VULKAN_SOURCES
         "val/render_targets/val_image_render_target.cpp"
         "val/render_targets/val_window_render_target.cpp"
 
-        "assets/vulkan_shader_asset.cpp"
-        "assets/vulkan_shader_asset_loader.cpp"
-
         "rendering/vulkan_render_server.cpp"
         "rendering/vulkan_render_target_data.cpp"
         "rendering/vulkan_graphics_buffer.cpp"
         "rendering/vulkan_mesh_buffer.cpp"
+        "rendering/vulkan_shader.cpp"
         )
 
 find_package(Vulkan REQUIRED)

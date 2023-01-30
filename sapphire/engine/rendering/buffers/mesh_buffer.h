@@ -7,7 +7,7 @@
 
 #include <engine/scene/transform.h>
 
-class ShaderAsset;
+class Shader;
 class ObjectBuffer;
 
 // Abstract render server mesh info
@@ -20,7 +20,7 @@ public:
         glm::vec2 uv0 = {};
     };
 
-    virtual void render(ObjectBuffer* p_object_buffer, ShaderAsset *p_shader_asset) = 0;
+    virtual void render(ObjectBuffer* p_object_buffer, Shader *p_shader) = 0;
 
     virtual ~MeshBuffer() = default;
 };

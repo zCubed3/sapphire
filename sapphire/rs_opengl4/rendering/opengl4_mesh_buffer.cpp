@@ -68,7 +68,7 @@ OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
     delete[] vertices;
 }
 
-void OpenGL4MeshBuffer::render(ObjectBuffer* p_object_buffer, ShaderAsset *p_shader_asset) {
+void OpenGL4MeshBuffer::render(ObjectBuffer* p_object_buffer, Shader *p_shader) {
     GLSLShaderAsset *glsl_shader = static_cast<GLSLShaderAsset *>(p_shader_asset);
 
     // TODO: ShaderAsset contains get_placeholder() instead?

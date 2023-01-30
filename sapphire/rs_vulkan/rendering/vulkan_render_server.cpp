@@ -15,11 +15,10 @@
 #include <engine/rendering/buffers/view_buffer.h>
 #include <engine/scene/world.h>
 
-#include <rs_vulkan/assets/vulkan_shader_asset.h>
-#include <rs_vulkan/assets/vulkan_shader_asset_loader.h>
 #include <rs_vulkan/rendering/vulkan_mesh_buffer.h>
 #include <rs_vulkan/rendering/vulkan_render_target_data.h>
 #include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
+#include <rs_vulkan/rendering/vulkan_shader.h>
 
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
@@ -47,7 +46,7 @@ VulkanRenderServer::~VulkanRenderServer() {
 }
 
 void VulkanRenderServer::register_rs_asset_loaders() {
-    AssetLoader::register_loader<VulkanShaderAssetLoader>();
+
 }
 
 std::string VulkanRenderServer::get_name() const {
@@ -145,6 +144,11 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     val_default_vertex_input.push_attribute(ValVertexInputBuilder::ATTRIBUTE_DATA_TYPE_VEC2);
 
     singleton = this;
+
+    //
+    // Placeholders
+    //
+    VulkanShader::create_error_shader();
 
     return true;
 }
@@ -281,6 +285,10 @@ bool VulkanRenderServer::end_imgui() {
 
 GraphicsBuffer *VulkanRenderServer::create_graphics_buffer(size_t size) const {
     return new VulkanGraphicsBuffer(size);
+}
+
+Shader *VulkanRenderServer::create_shader() const {
+    return new VulkanShader();
 }
 
 void VulkanRenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {

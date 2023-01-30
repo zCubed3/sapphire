@@ -126,14 +126,14 @@ int main(int argc, char **argv) {
     World *world = new World();
 
     MeshAsset* mesh = reinterpret_cast<MeshAsset*>(AssetLoader::load_asset("test.obj"));
+    ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.semd"));
+
+
     MeshActor* actor = new MeshActor();
-    actor->asset = mesh;
+    actor->mesh_asset = mesh;
+    actor->shader_asset = shader;
 
     world->add_actor(actor);
-
-    //MeshAsset *mesh2 = static_cast<MeshAsset *>(AssetLoader::load_asset("test2.obj"));
-
-    ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.semd"));
 
     AssetLoader::load_all_placeholders();
 

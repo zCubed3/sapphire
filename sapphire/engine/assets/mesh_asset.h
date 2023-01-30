@@ -6,14 +6,13 @@
 
 #include <glm.hpp>
 
-class ShaderAsset;
+class Shader;
 class MeshBuffer;
 class ObjectBuffer;
 
 class MeshAsset : public Asset {
 public:
     // TODO: Asset safety so dangling pointers can't happen
-    ShaderAsset *shader = nullptr;
     MeshBuffer *buffer = nullptr;
 
     ~MeshAsset() override;
@@ -27,7 +26,7 @@ public:
     virtual uint32_t get_vertex_count() = 0;
     virtual uint32_t get_triangle_count() = 0;
 
-    virtual void render(ObjectBuffer *p_object_buffer) = 0;
+    virtual void render(ObjectBuffer *p_object_buffer, Shader *p_shader) = 0;
 };
 
 

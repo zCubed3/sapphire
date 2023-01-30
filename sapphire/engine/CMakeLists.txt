@@ -34,6 +34,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "rendering/render_target_data.cpp"
         "rendering/sdl_window_render_target.cpp"
         "rendering/render_server.cpp"
+        "rendering/shader.cpp"
         "rendering/buffers/mesh_buffer.cpp"
         "rendering/buffers/view_buffer.cpp"
         "rendering/buffers/object_buffer.cpp"

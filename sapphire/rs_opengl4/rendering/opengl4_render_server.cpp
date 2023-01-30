@@ -184,6 +184,11 @@ GraphicsBuffer *OpenGL4RenderServer::create_graphics_buffer(size_t size) const {
     return buffer;
 }
 
+// TODO:
+Shader *OpenGL4RenderServer::create_shader() const {
+    return nullptr;
+}
+
 void OpenGL4RenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
     if (p_mesh_asset != nullptr) {
         p_mesh_asset->buffer = new OpenGL4MeshBuffer(p_mesh_asset);

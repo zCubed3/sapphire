@@ -1,15 +1,74 @@
-#include "vulkan_shader_asset.h"
+#include "vulkan_shader.h"
+
+#include <engine/config/config_file.h>
+
+#include <fstream>
 
 #include <rs_vulkan/rendering/vulkan_render_server.h>
-#include <rs_vulkan/rendering/vulkan_mesh_buffer.h>
-
 #include <rs_vulkan/val/val_instance.h>
 #include <rs_vulkan/val/pipelines/val_shader_module.h>
 #include <rs_vulkan/val/pipelines/val_pipeline_builder.h>
 
-VulkanShaderAsset *VulkanShaderAsset::error_shader = nullptr;
+#include <rs_vulkan/shaders/error.spv.vert.gen.h>
+#include <rs_vulkan/shaders/error.spv.frag.gen.h>
 
-void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, const std::vector<char> &frag_code) {
+std::vector<char> read_file(const std::string& path) {
+    std::vector<char> code;
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+
+    if (file.is_open()) {
+        code.resize(file.tellg());
+        file.seekg(0);
+
+        file.read(code.data(), code.size());
+        file.close();
+    }
+
+    return code;
+}
+
+VulkanShader *VulkanShader::error_shader = nullptr;
+
+VulkanShader::~VulkanShader() {
+    const VulkanRenderServer* rs_instance = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+    ValInstance* val_instance = rs_instance->val_instance;
+
+    if (val_material_descriptor_set != nullptr) {
+        val_material_descriptor_set->release(val_instance);
+        delete val_material_descriptor_set;
+    }
+
+    if (val_object_descriptor_set != nullptr) {
+        val_object_descriptor_set->release(val_instance);
+        delete val_object_descriptor_set;
+    }
+
+    if (val_pipeline != nullptr) {
+        val_pipeline->release(val_instance);
+        delete val_pipeline;
+    }
+}
+
+bool VulkanShader::make_from_semd(ConfigFile *p_semd_file) {
+    if (p_semd_file == nullptr) {
+        return false;
+    }
+
+    std::string vert_path = p_semd_file->try_get_string("sVertBin", "VulkanShader");
+    std::string frag_path = p_semd_file->try_get_string("sFragBin", "VulkanShader");
+
+    if (vert_path.empty() || frag_path.empty()) {
+        return false;
+    }
+
+    std::vector<char> vert_code = read_file(vert_path);
+    std::vector<char> frag_code = read_file(frag_path);
+
+    create_vert_frag(vert_code, frag_code);
+    return true;
+}
+
+void VulkanShader::create_vert_frag(const std::vector<char> &vert_code, const std::vector<char> &frag_code) {
     const VulkanRenderServer *render_server = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
     ValInstance *val_instance = render_server->val_instance;
 
@@ -66,22 +125,19 @@ void VulkanShaderAsset::create_vert_frag(const std::vector<char> &vert_code, con
     delete frag_module;
 }
 
-VulkanShaderAsset::~VulkanShaderAsset() {
-    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
-    ValInstance* val_instance = render_server->val_instance;
+void VulkanShader::create_error_shader() {
+    std::vector<char> vert_code;
+    std::vector<char> frag_code;
 
-    if (val_material_descriptor_set != nullptr) {
-        val_material_descriptor_set->release(val_instance);
-        delete val_material_descriptor_set;
-    }
+    vert_code.resize(sizeof(ERROR_VERT_CONTENTS));
+    frag_code.resize(sizeof(ERROR_FRAG_CONTENTS));
 
-    if (val_object_descriptor_set != nullptr) {
-        val_object_descriptor_set->release(val_instance);
-        delete val_object_descriptor_set;
-    }
+    memcpy(vert_code.data(), ERROR_VERT_CONTENTS, sizeof(ERROR_VERT_CONTENTS));
+    memcpy(frag_code.data(), ERROR_FRAG_CONTENTS, sizeof(ERROR_FRAG_CONTENTS));
 
-    if (val_pipeline != nullptr) {
-        val_pipeline->release(val_instance);
-        delete val_pipeline;
-    }
+    VulkanShader* shader = new VulkanShader();
+    shader->create_vert_frag(vert_code, frag_code);
+
+    VulkanShader::error_shader = shader;
 }
+

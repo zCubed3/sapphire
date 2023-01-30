@@ -3,12 +3,13 @@
 #include <vulkan/vulkan.h>
 
 #include <engine/assets/mesh_asset.h>
+#include <engine/assets/shader_asset.h>
 #include <engine/rendering/render_target.h>
 #include <engine/rendering/buffers/object_buffer.h>
 
-#include <rs_vulkan/assets/vulkan_shader_asset.h>
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
+#include <rs_vulkan/rendering/vulkan_shader.h>
 #include <rs_vulkan/val/val_instance.h>
 #include <rs_vulkan/val/pipelines/val_pipeline.h>
 
@@ -17,8 +18,8 @@
 //ValBuffer *VulkanMeshBuffer::transform_ubo = nullptr;
 
 VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
-    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
-    ValInstance* val_instance = render_server->val_instance;
+    const VulkanRenderServer* rs_instance = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+    ValInstance* val_instance = rs_instance->val_instance;
 
     // TODO: Make the staging buffer more async?
     Vertex *vertices = new Vertex[p_mesh_asset->get_vertex_count()];
@@ -53,12 +54,12 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
     vbo_staging->write(vertices, val_instance);
     ibo_staging->write(triangles, val_instance);
 
-    VkCommandBuffer command_buffer = render_server->begin_upload();
+    VkCommandBuffer command_buffer = rs_instance->begin_upload();
 
     vbo_staging->copy_buffer(command_buffer);
     ibo_staging->copy_buffer(command_buffer);
 
-    render_server->end_upload(command_buffer);
+    rs_instance->end_upload(command_buffer);
 
     val_vbo = vbo_staging->finalize(val_instance);
     val_ibo = ibo_staging->finalize(val_instance);
@@ -73,10 +74,11 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
 }
 
 // TODO: Instancing
-void VulkanMeshBuffer::render(ObjectBuffer *p_object_buffer, ShaderAsset *p_shader_asset) {
-    VulkanShaderAsset* vk_shader = reinterpret_cast<VulkanShaderAsset*>(p_shader_asset);
+void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Shader *p_shader) {
+    VulkanShader *vk_shader = reinterpret_cast<VulkanShader*>(p_shader);
+
     if (vk_shader == nullptr) {
-        vk_shader = VulkanShaderAsset::error_shader;
+        vk_shader = VulkanShader::error_shader;
     }
 
     const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());

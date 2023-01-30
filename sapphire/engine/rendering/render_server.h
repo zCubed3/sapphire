@@ -11,6 +11,7 @@ typedef struct SDL_Window SDL_Window;
 class MeshAsset;
 class RenderTarget;
 class GraphicsBuffer;
+class Shader;
 
 // Abstraction over various rendering APIs
 class RenderServer {
@@ -57,6 +58,9 @@ public:
 
     // Creates a graphics buffer for generic usage within the render pipeline
     virtual GraphicsBuffer *create_graphics_buffer(size_t size) const = 0;
+
+    // Creates a shader that will be setup via a SEMD or other material descriptor
+    virtual Shader *create_shader() const = 0;
 
     // Whenever a mesh is loaded various structures must be created
     virtual void populate_mesh_buffer(MeshAsset *p_mesh_asset) const = 0;
