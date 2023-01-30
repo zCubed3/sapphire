@@ -3,11 +3,21 @@
 
 #include <engine/rendering/shader.h>
 #include <vector>
+#include <vulkan/vulkan.h>
 
 class ValPipeline;
 class ValDescriptorSetInfo;
 
 class VulkanShader : public Shader {
+protected:
+    struct ShaderParameter {
+        uint32_t location;
+        VkDescriptorType type;
+        uint32_t stage_flags;
+    };
+
+    std::vector<ShaderParameter> parameters;
+
 public:
     static VulkanShader *error_shader;
 

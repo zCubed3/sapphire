@@ -78,14 +78,14 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
 
 // TODO: Instancing
 void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Shader *p_shader) {
-    VulkanShader *vk_shader = reinterpret_cast<VulkanShader*>(p_shader);
+    VulkanShader *vk_shader = reinterpret_cast<VulkanShader *>(p_shader);
 
     if (vk_shader == nullptr) {
         vk_shader = VulkanShader::error_shader;
     }
 
-    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
-    ValInstance* val_instance = render_server->val_instance;
+    const VulkanRenderServer *render_server = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
+    ValInstance *val_instance = render_server->val_instance;
 
     RenderTarget *current_target = render_server->get_current_target();
 
@@ -95,13 +95,13 @@ void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Shader *p_shader) {
     }
 
     // TODO: Temp
-    if (val_material_descriptor_info == nullptr) {
+    if (val_material_descriptor_info == nullptr && vk_shader->val_material_descriptor_set != nullptr) {
         val_material_descriptor_info = vk_shader->val_material_descriptor_set->allocate_set(val_instance);
     }
 
     // Our object data is already updated by this moment
     // We just have to update the binding
-    VulkanGraphicsBuffer* object_ubo = reinterpret_cast<VulkanGraphicsBuffer*>(p_object_buffer->buffer);
+    VulkanGraphicsBuffer *object_ubo = reinterpret_cast<VulkanGraphicsBuffer *>(p_object_buffer->buffer);
 
     ValDescriptorSetWriteInfo object_write_info{};
     object_write_info.val_buffer = object_ubo->val_buffer;
@@ -109,28 +109,31 @@ void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Shader *p_shader) {
     val_object_descriptor_info->write_binding(&object_write_info);
     val_object_descriptor_info->update_set(val_instance);
 
-    VulkanTexture* test_tex = reinterpret_cast<VulkanTexture*>(vk_shader->texture_asset->texture);
+    // TODO: Temp
+    if (val_material_descriptor_info != nullptr && vk_shader->texture_asset != nullptr) {
+        VulkanTexture *test_tex = reinterpret_cast<VulkanTexture *>(vk_shader->texture_asset->texture);
 
-    ValDescriptorSetWriteInfo material_write_info{};
-    material_write_info.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    material_write_info.val_image = test_tex->val_image;
+        ValDescriptorSetWriteInfo material_write_info{};
+        material_write_info.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        material_write_info.val_image = test_tex->val_image;
 
-    val_material_descriptor_info->write_binding(&material_write_info);
-    val_material_descriptor_info->update_set(val_instance);
+        val_material_descriptor_info->write_binding(&material_write_info);
+        val_material_descriptor_info->update_set(val_instance);
+    }
 
     Rect rect = current_target->get_rect();
 
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float)rect.width;
-    viewport.height = (float)rect.height;
+    viewport.width = (float) rect.width;
+    viewport.height = (float) rect.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = { static_cast<uint32_t>(rect.width), static_cast<uint32_t>(rect.height) };
+    scissor.extent = {static_cast<uint32_t>(rect.width), static_cast<uint32_t>(rect.height)};
 
     // We assume a command buffer is currently recording
     VkCommandBuffer active_command_buffer = render_server->val_active_render_target->vk_command_buffer;
@@ -145,16 +148,17 @@ void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Shader *p_shader) {
 
     vkCmdBindIndexBuffer(active_command_buffer, val_ibo->vk_buffer, offset, VK_INDEX_TYPE_UINT32);
 
-    // tODO: Temp
-    vkCmdBindDescriptorSets(
-            active_command_buffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            vk_shader->val_pipeline->vk_pipeline_layout,
-            1,
-            1,
-            &val_material_descriptor_info->vk_descriptor_set,
-            0,
-            nullptr);
+    if (val_material_descriptor_info != nullptr) {
+        vkCmdBindDescriptorSets(
+                active_command_buffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                vk_shader->val_pipeline->vk_pipeline_layout,
+                1,
+                1,
+                &val_material_descriptor_info->vk_descriptor_set,
+                0,
+                nullptr);
+    }
 
     vkCmdBindDescriptorSets(
             active_command_buffer,

@@ -54,6 +54,22 @@ bool VulkanShader::make_from_semd(ConfigFile *p_semd_file) {
         return false;
     }
 
+    Shader::make_from_semd(p_semd_file);
+
+    // TODO: Support arrays?
+    std::vector<std::string> texture_params = p_semd_file->try_get_string_list("aTextureParameters", "Material");
+
+    if (!texture_params.empty() && texture_params.size() % 2 == 0) {
+        for (int t = 0; t < texture_params.size(); t += 2) {
+            ShaderParameter parameter {};
+            parameter.location = atoi(texture_params[t].c_str());
+            parameter.stage_flags = VK_SHADER_STAGE_FRAGMENT_BIT;
+            parameter.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+            parameters.push_back(parameter);
+        }
+    }
+
     std::string vert_path = p_semd_file->try_get_string("sVertBin", "VulkanShader");
     std::string frag_path = p_semd_file->try_get_string("sFragBin", "VulkanShader");
 
@@ -86,6 +102,47 @@ void VulkanShader::create_vert_frag(const std::vector<char> &vert_code, const st
     ValShaderModule *frag_module = ValShaderModule::create_shader_module(&frag_module_info, val_instance);
 
     // OpenGL culling mode
+    switch (cull_mode) {
+        case Shader::CULL_MODE_NONE:
+            builder.cull_mode = ValPipelineBuilder::CULL_MODE_OFF;
+            break;
+
+        case Shader::CULL_MODE_BACK:
+            builder.cull_mode = ValPipelineBuilder::CULL_MODE_BACK;
+            break;
+
+        case Shader::CULL_MODE_FRONT:
+            builder.cull_mode = ValPipelineBuilder::CULL_MODE_FRONT;
+            break;
+    }
+
+    switch (depth_op) {
+        case Shader::DEPTH_OP_LESS:
+            builder.depth_compare_op = ValPipelineBuilder::DEPTH_COMPARE_LESS;
+            break;
+
+        case Shader::DEPTH_OP_LESS_OR_EQUAL:
+            builder.depth_compare_op = ValPipelineBuilder::DEPTH_COMPARE_LESS_OR_EQUAL;
+            break;
+
+        case Shader::DEPTH_OP_GREATER:
+            builder.depth_compare_op = ValPipelineBuilder::DEPTH_COMPARE_GREATER;
+            break;
+
+        case Shader::DEPTH_OP_GREATER_OR_EQUAL:
+            builder.depth_compare_op = ValPipelineBuilder::DEPTH_COMPARE_GREATER_OR_EQUAL;
+            break;
+
+        case Shader::DEPTH_OP_EQUAL:
+            builder.depth_compare_op = ValPipelineBuilder::DEPTH_COMPARE_EQUAL;
+            break;
+
+        case Shader::DEPTH_OP_ALWAYS:
+            builder.depth_compare_op = ValPipelineBuilder::DEPTH_COMPARE_ALWAYS;
+            break;
+    }
+
+    builder.depth_write = write_depth;
     builder.winding_order = ValPipelineBuilder::WINDING_ORDER_COUNTER_CLOCKWISE;
 
     builder.push_module(vert_module);
@@ -100,13 +157,27 @@ void VulkanShader::create_vert_frag(const std::vector<char> &vert_code, const st
     // The third set is unique to object instances
     ValDescriptorSetBuilder set_builder {};
 
-    set_builder.push_binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+    // We need to push the parameters as they are ordered
+    bool has_parameters = !parameters.empty();
+    for (int i = 0; i < parameters.size(); i++) {
+        for (ShaderParameter &parameter: parameters) {
+            if (parameter.location == i) {
+                set_builder.push_binding(parameter.type, 1, parameter.stage_flags);
+            }
+        }
+    }
+
+    // If we don't have any parameters we need to push a dummy
+    if (!has_parameters) {
+        set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+    }
 
     set_builder.push_set();
 
     set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
     std::vector<ValDescriptorSetInfo *> sets = set_builder.build(val_instance);
+
     val_material_descriptor_set = sets[0];
     val_object_descriptor_set = sets[1];
 
