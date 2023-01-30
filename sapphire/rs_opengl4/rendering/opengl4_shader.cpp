@@ -119,14 +119,14 @@ uint32_t OpenGL4Shader::create_shader(uint32_t type, const std::vector<const cha
     return handle;
 }
 
-bool OpenGL4Shader::make_from_semd(ConfigFile *p_semd_file) {
-    if (p_semd_file == nullptr) {
+bool OpenGL4Shader::make_from_sesd(ConfigFile *p_sesd_file) {
+    if (p_sesd_file == nullptr) {
         return false;
     }
 
     // We load all the sources provided by the semd
-    std::vector<std::string> vert_source_paths = p_semd_file->try_get_string_list("sVertSources", "OpenGL4Shader");
-    std::vector<std::string> frag_source_paths = p_semd_file->try_get_string_list("sFragSources", "OpenGL4Shader");
+    std::vector<std::string> vert_source_paths = p_sesd_file->try_get_string_list("sVertSources", "OpenGL4Shader");
+    std::vector<std::string> frag_source_paths = p_sesd_file->try_get_string_list("sFragSources", "OpenGL4Shader");
 
     std::string vert_source;
     std::string frag_source;

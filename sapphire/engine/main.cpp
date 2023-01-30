@@ -10,6 +10,7 @@
 #include <engine/assets/shader_asset.h>
 #include <engine/assets/texture_asset.h>
 #include <engine/assets/static_mesh_asset.h>
+#include <engine/rendering/render_server.h>
 #include <engine/rendering/sdl_window_render_target.h>
 #include <engine/rendering/shader.h>
 #include <engine/scene/world.h>
@@ -31,33 +32,11 @@
 
 #include <config/config_file.h>
 
+#include <memory>
+
 #include <glm.hpp>
 #include <gtx/quaternion.hpp>
 #include <gtc/matrix_transform.hpp>
-
-class BaseClass {
-    REFLECT_BASE_CLASS(BaseClass)
-
-    virtual float get_data() {
-        return 0;
-    }
-};
-
-class ChildClass : public BaseClass {
-    REFLECT_CLASS(ChildClass, BaseClass)
-
-    float get_data() override {
-        return 1;
-    }
-};
-
-class ChildChildClass : public ChildClass {
-    REFLECT_CLASS(ChildChildClass, ChildClass)
-
-    float get_data() override {
-        return 2;
-    }
-};
 
 int main(int argc, char **argv) {
     // Our platform we're currently running on
@@ -131,15 +110,15 @@ int main(int argc, char **argv) {
     World *world = new World();
 
     MeshAsset* mesh = reinterpret_cast<MeshAsset*>(AssetLoader::load_asset("test.obj"));
-    ShaderAsset *shader = reinterpret_cast<ShaderAsset*>(AssetLoader::load_asset("test.semd"));
+    MaterialAsset *shader = reinterpret_cast<MaterialAsset *>(AssetLoader::load_asset("test.semd"));
     TextureAsset *texture = reinterpret_cast<TextureAsset*>(AssetLoader::load_asset("test.png"));
 
     MeshActor* actor = new MeshActor();
     actor->mesh_asset = mesh;
-    actor->shader_asset = shader;
+    //actor->shader_asset = shader;
 
     // TODO: Temp and jank
-    shader->shader->texture_asset = texture;
+    //shader->shader->texture_asset = texture;
 
     world->add_actor(actor);
 
@@ -165,6 +144,9 @@ int main(int argc, char **argv) {
     render_server->initialize_imgui();
 
     ImGuiStyle &style = ImGui::GetStyle();
+    ImGuiIO& io = ImGui::GetIO();
+
+    std::vector<double> fps_stack;
 #endif
 
     while (keep_running) {
@@ -223,8 +205,24 @@ int main(int argc, char **argv) {
         //actor->transform.position = glm::vec3(0, sin(world->elapsed_time), 0);
 
 #if defined(IMGUI_SUPPORT)
+        fps_stack.push_back(floor(1.0 / delta));
+
+        while (fps_stack.size() > 10) {
+            fps_stack.erase(fps_stack.begin());
+        }
+
+        double sum = 0;
+        double count = 0;
+        for (double f: fps_stack) {
+            sum += f;
+            count += 1;
+        }
+
+        double average = floor(sum / count);
+
         ImGui::Begin("Renderer Info");
         ImGui::Text("Rendering API: %s", render_server->get_name());
+        ImGui::Text("FPS: %f", average);
         ImGui::End();
 
         //ImGui::ShowDemoWindow();

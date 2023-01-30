@@ -91,7 +91,7 @@ void OpenGL4MeshBuffer::render(ObjectBuffer* p_object_buffer, Shader *p_shader) 
     glUniformBlockBinding(gl_shader->shader_handle, object_handle, 1);
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, object_ubo->buffer_handle);
 
-    glUseProgram(gl_shader->shader_handle);
+    //glUseProgram(gl_shader->shader_handle);
 
     glBindVertexArray(vao);
 

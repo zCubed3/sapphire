@@ -17,7 +17,6 @@ set(SAPPHIRE_ENGINE_SOURCES
         "assets/loaders/stb_image_loader.cpp"
 
         "platforms/platform.cpp"
-        "platforms/win32_platform.cpp"
 
         "config/config_file.cpp"
 
@@ -46,6 +45,10 @@ set(SAPPHIRE_ENGINE_SOURCES
 
         "resources.rc"
         )
+
+if (WIN32)
+    list(APPEND SAPPHIRE_ENGINE_SOURCES "platforms/win32_platform.cpp")
+endif()
 
 add_executable(SAPPHIRE_ENGINE ${SAPPHIRE_ENGINE_SOURCES})
 

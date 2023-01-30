@@ -1,6 +1,8 @@
 #ifndef SAPPHIRE_COLOR_H
 #define SAPPHIRE_COLOR_H
 
+#include <cstdlib>
+
 // Wrapper around color types
 // Avoids including GLM in whenever color is needed
 class Color {

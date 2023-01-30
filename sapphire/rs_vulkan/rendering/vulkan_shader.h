@@ -27,7 +27,7 @@ public:
 
     ~VulkanShader() override;
 
-    bool make_from_semd(ConfigFile *p_semd_file) override;
+    bool make_from_sesd(ConfigFile *p_sesd_file) override;
 
     void create_vert_frag(const std::vector<char>& vert_code, const std::vector<char>& frag_code);
 

@@ -1,6 +1,9 @@
 #ifndef SAPPHIRE_SHADER_H
 #define SAPPHIRE_SHADER_H
 
+#include <string>
+#include <unordered_map>
+
 class ConfigFile;
 
 class TextureAsset;
@@ -8,6 +11,8 @@ class TextureAsset;
 // A shader is the underlying program of a material
 class Shader {
 protected:
+    static std::unordered_map<std::string, Shader*> shader_cache;
+
     enum CullMode {
         CULL_MODE_BACK,
         CULL_MODE_FRONT,
@@ -28,11 +33,15 @@ protected:
     DepthOp depth_op = DepthOp::DEPTH_OP_LESS;
 
 public:
+    std::string name;
     TextureAsset* texture_asset = nullptr;
 
-    virtual ~Shader();
+    static Shader* get_cached_shader(const std::string& name);
+    static void cache_shader(Shader* shader);
 
-    virtual bool make_from_semd(ConfigFile *p_semd_file);
+    virtual ~Shader() = default;
+
+    virtual bool make_from_sesd(ConfigFile *p_sesd_file);
 };
 
 #endif

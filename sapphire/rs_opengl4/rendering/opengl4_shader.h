@@ -22,7 +22,7 @@ public:
     uint32_t get_uniform(const std::string &var);
     uint32_t get_uniform_block(const std::string &var);
 
-    bool make_from_semd(ConfigFile *p_semd_file) override;
+    bool make_from_sesd(ConfigFile *p_sesd_file) override;
 
     // TODO: Error reporting
     void compile_sources(const std::string &vert_source, const std::string &frag_source);

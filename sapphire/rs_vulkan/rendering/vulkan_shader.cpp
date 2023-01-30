@@ -49,15 +49,15 @@ VulkanShader::~VulkanShader() {
     }
 }
 
-bool VulkanShader::make_from_semd(ConfigFile *p_semd_file) {
-    if (p_semd_file == nullptr) {
+bool VulkanShader::make_from_sesd(ConfigFile *p_sesd_file) {
+    if (p_sesd_file == nullptr) {
         return false;
     }
 
-    Shader::make_from_semd(p_semd_file);
+    Shader::make_from_sesd(p_sesd_file);
 
     // TODO: Support arrays?
-    std::vector<std::string> texture_params = p_semd_file->try_get_string_list("aTextureParameters", "Material");
+    std::vector<std::string> texture_params = p_sesd_file->try_get_string_list("aTextureParameters", "Material");
 
     if (!texture_params.empty() && texture_params.size() % 2 == 0) {
         for (int t = 0; t < texture_params.size(); t += 2) {
@@ -70,8 +70,8 @@ bool VulkanShader::make_from_semd(ConfigFile *p_semd_file) {
         }
     }
 
-    std::string vert_path = p_semd_file->try_get_string("sVertBin", "VulkanShader");
-    std::string frag_path = p_semd_file->try_get_string("sFragBin", "VulkanShader");
+    std::string vert_path = p_sesd_file->try_get_string("sVertBin", "VulkanShader");
+    std::string frag_path = p_sesd_file->try_get_string("sFragBin", "VulkanShader");
 
     if (vert_path.empty() || frag_path.empty()) {
         return false;

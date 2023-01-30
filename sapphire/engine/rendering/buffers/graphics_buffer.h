@@ -1,6 +1,8 @@
 #ifndef SAPPHIRE_GRAPHICS_BUFFER_H
 #define SAPPHIRE_GRAPHICS_BUFFER_H
 
+#include <cstdlib>
+
 class GraphicsBuffer {
 public:
     virtual ~GraphicsBuffer();

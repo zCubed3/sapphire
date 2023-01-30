@@ -1,5 +1,7 @@
 #include "static_mesh_asset.h"
 
+#include <cstring>
+
 #include <engine/rendering/buffers/mesh_buffer.h>
 #include <engine/rendering/render_server.h>
 

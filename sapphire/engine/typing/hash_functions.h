@@ -1,6 +1,8 @@
 #ifndef SAPPHIRE_HASH_FUNCTIONS_H
 #define SAPPHIRE_HASH_FUNCTIONS_H
 
+#include <cstdlib>
+
 // http://www.cse.yorku.ca/~oz/hash.html
 constexpr size_t hash_cstr_djb2(const char* string) {
     if (string == nullptr) {

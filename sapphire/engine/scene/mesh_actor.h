@@ -4,7 +4,7 @@
 #include <engine/scene/actor.h>
 
 class MeshAsset;
-class ShaderAsset;
+class MaterialAsset;
 class ObjectBuffer;
 
 // TODO: This is a temporary mesh renderer; replace it with something better!
@@ -14,7 +14,7 @@ class MeshActor : public Actor {
 public:
     ObjectBuffer* buffer = nullptr;
     MeshAsset* mesh_asset = nullptr;
-    ShaderAsset* shader_asset = nullptr;
+    MaterialAsset * shader_asset = nullptr;
 
     MeshActor();
     ~MeshActor() override;

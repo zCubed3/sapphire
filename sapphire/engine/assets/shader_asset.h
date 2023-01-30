@@ -3,11 +3,12 @@
 
 #include <engine/assets/asset.h>
 #include <glm.hpp>
+#include <memory>
 #include <string>
 
 class Shader;
 
-class ShaderAsset : public Asset {
+class MaterialAsset : public Asset {
 public:
     Shader* shader = nullptr;
 };
