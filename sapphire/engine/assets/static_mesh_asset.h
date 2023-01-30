@@ -44,7 +44,7 @@ public:
     uint32_t get_vertex_count() override;
     uint32_t get_triangle_count() override;
 
-    void render(const Transform &transform) override;
+    void render(ObjectBuffer *p_object_buffer) override;
 
     // TODO: ProceduralMeshAsset for procedural primitives?
     static StaticMeshAsset *get_primitive(Primitive primitive);

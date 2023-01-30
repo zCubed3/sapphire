@@ -1,6 +1,6 @@
 #include "static_mesh_asset.h"
 
-#include <engine/rendering/mesh_buffer.h>
+#include <engine/rendering/buffers/mesh_buffer.h>
 #include <engine/rendering/render_server.h>
 
 StaticMeshAsset *StaticMeshAsset::primitive_quad = nullptr;
@@ -103,9 +103,9 @@ uint32_t StaticMeshAsset::get_triangle_count() {
     return static_cast<uint32_t>(triangle_count);
 }
 
-void StaticMeshAsset::render(const Transform &transform) {
+void StaticMeshAsset::render(ObjectBuffer *p_object_buffer) {
     if (buffer != nullptr) {
-        buffer->render(transform, shader);
+        buffer->render(p_object_buffer, shader);
     }
 }
 

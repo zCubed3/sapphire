@@ -2,7 +2,7 @@
 #define SAPPHIRE_OPENGL4_GRAPHICS_BUFFER_H
 
 #include <cstdint>
-#include <engine/rendering/graphics_buffer.h>
+#include <engine/rendering/buffers/graphics_buffer.h>
 
 class OpenGL4GraphicsBuffer : public GraphicsBuffer {
 public:

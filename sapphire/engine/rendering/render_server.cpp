@@ -2,8 +2,8 @@
 
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_target.h>
-#include <engine/rendering/mesh_buffer.h>
-#include <engine/rendering/object_buffer.h>
+#include <engine/rendering/buffers/mesh_buffer.h>
+#include <engine/rendering/buffers/object_buffer.h>
 
 RenderServer *RenderServer::singleton = nullptr;
 
@@ -25,13 +25,6 @@ glm::vec3 RenderServer::get_coordinate_correction() const {
 
 void RenderServer::on_window_resized() {
 
-}
-
-void RenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
-    if (p_mesh_asset->buffer != nullptr) {
-        GraphicsBuffer* buffer = create_graphics_buffer(sizeof(ObjectBufferData));
-        p_mesh_asset->buffer->object_buffer = new ObjectBuffer(buffer);
-    }
 }
 
 void RenderServer::populate_render_target_data(RenderTarget *p_render_target) const {

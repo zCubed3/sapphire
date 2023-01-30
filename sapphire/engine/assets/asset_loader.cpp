@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-#include <engine/assets/loaders/mmdl_loader.h>
 #include <engine/assets/loaders/obj_loader.h>
+#include <engine/assets/loaders/semd_loader.h>
 
 std::vector<AssetLoader *> AssetLoader::loaders = {};
 
@@ -17,7 +17,7 @@ void AssetLoader::unload_placeholders() {
 
 void AssetLoader::register_engine_asset_loaders() {
     register_loader<OBJLoader>();
-    register_loader<MMDLLoader>();
+    register_loader<SEMDLoader>();
 }
 
 Asset *AssetLoader::load_asset(const std::string &path) {
@@ -29,7 +29,7 @@ Asset *AssetLoader::load_asset(const std::string &path) {
         if (loader != nullptr) {
             for (const std::string &expected: loader->get_extensions()) {
                 if (extension == expected) {
-                    return loader->load_from_path(path);
+                    return loader->load_from_path(path, extension);
                 }
             }
         }

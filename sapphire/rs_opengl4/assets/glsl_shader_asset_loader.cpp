@@ -12,7 +12,7 @@ std::vector<std::string> GLSLShaderAssetLoader::get_extensions() {
     return {"glsl"};
 }
 
-Asset *GLSLShaderAssetLoader::load_from_path(const std::string &path) {
+Asset *GLSLShaderAssetLoader::load_from_path(const std::string &path, const std::string& extension) {
     // Verify the shader actually exists first
     // TODO: Smarter verification
     // TODO: OS utilities?

@@ -1,6 +1,6 @@
 #include "view_buffer.h"
 
-#include <engine/rendering/graphics_buffer.h>
+#include <engine/rendering/buffers/graphics_buffer.h>
 
 ViewBuffer::ViewBuffer(GraphicsBuffer *p_buffer) {
     buffer = p_buffer;

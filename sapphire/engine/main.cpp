@@ -2,12 +2,17 @@
 
 #include <SDL.h>
 
+#ifdef WIN32
+#include <engine/platforms/win32_platform.h>
+#endif
+
 #include <engine/assets/asset_loader.h>
 #include <engine/assets/shader_asset.h>
 #include <engine/assets/static_mesh_asset.h>
 #include <engine/rendering/sdl_window_render_target.h>
 #include <engine/scene/world.h>
 #include <engine/typing/class_registry.h>
+#include <engine/scene/mesh_actor.h>
 
 #ifdef RS_OPENGL4_SUPPORT
 #include <rs_opengl4/rendering/opengl4_render_server.h>
@@ -51,6 +56,12 @@ class ChildChildClass : public ChildClass {
 };
 
 int main(int argc, char **argv) {
+    // Our platform we're currently running on
+    const Platform *platform = nullptr;
+#ifdef WIN32
+    platform = Win32Platform::create_win32_platform();
+#endif
+
     // TODO: Register engine classes within the class registry
     AssetLoader::register_engine_asset_loaders();
 
@@ -92,11 +103,7 @@ int main(int argc, char **argv) {
 
     uint32_t window_flags = render_server->get_sdl_window_flags();
 
-    std::string window_name = "Sapphire";
-
-    window_name += " (";
-    window_name += render_server->get_name();
-    window_name += ")";
+    std::string window_name = "Sapphire (" + render_server->get_name() + ")";
 
     // TODO: Abstract window class?
     SDL_Window *main_window = SDL_CreateWindow(
@@ -116,18 +123,21 @@ int main(int argc, char **argv) {
     }
 
     // We need to load our model and our shader
-    MeshAsset *mesh = static_cast<MeshAsset *>(AssetLoader::load_asset("test.obj"));
-    //MeshAsset *mesh2 = StaticMeshAsset::get_primitive(StaticMeshAsset::PRIMITIVE_QUAD);
-    MeshAsset *mesh2 = static_cast<MeshAsset *>(AssetLoader::load_asset("test2.obj"));
+    World *world = new World();
 
-    ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.mspv"));
-    //ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.glsl"));
+    MeshAsset* mesh = reinterpret_cast<MeshAsset*>(AssetLoader::load_asset("test.obj"));
+    MeshActor* actor = new MeshActor();
+    actor->asset = mesh;
+
+    world->add_actor(actor);
+
+    //MeshAsset *mesh2 = static_cast<MeshAsset *>(AssetLoader::load_asset("test2.obj"));
+
+    ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.semd"));
 
     AssetLoader::load_all_placeholders();
 
     render_server->populate_render_target_data(rt_window);
-
-    World *world = new World();
 
     rt_window->world = world;
 
@@ -205,12 +215,9 @@ int main(int argc, char **argv) {
         render_server->begin_target(rt_window);
         render_server->begin_imgui();
 
-        // TODO: MeshRenderer
-        mesh->shader = shader;
-        mesh->render(model);
+        world->draw();
 
-        //mesh2->shader = shader;
-        mesh2->render(model2);
+        actor->transform.position = glm::vec3(0, sin(world->elapsed_time), 0);
 
         ImGui::Begin("Renderer Info");
         ImGui::Text("Rendering API: %s", render_server->get_name().c_str());
@@ -227,8 +234,8 @@ int main(int argc, char **argv) {
 
     AssetLoader::unload_all_placeholders();
 
+    delete actor;
     delete mesh;
-    delete mesh2;
     delete shader;
 
     delete rt_window;

@@ -13,7 +13,7 @@ std::vector<std::string> VulkanShaderAssetLoader::get_extensions() {
 
 // TODO: Replace MSPV with a custom "Sapphire Vulkan Shader Binary" (SVSB)
 // TODO: Replace loading shaders as-is with a custom shader markup language
-Asset *VulkanShaderAssetLoader::load_from_path(const std::string &path) {
+Asset *VulkanShaderAssetLoader::load_from_path(const std::string &path, const std::string& extension) {
     std::ifstream file(path, std::ios_base::binary);
 
     if (file.is_open()) {

@@ -8,12 +8,15 @@
 
 class ShaderAsset;
 class MeshBuffer;
+class ObjectBuffer;
 
 class MeshAsset : public Asset {
 public:
     // TODO: Asset safety so dangling pointers can't happen
     ShaderAsset *shader = nullptr;
     MeshBuffer *buffer = nullptr;
+
+    ~MeshAsset() override;
 
     virtual glm::vec3 *get_position_data(size_t *p_length) = 0;
     virtual glm::vec3 *get_normal_data(size_t *p_length) = 0;
@@ -24,9 +27,7 @@ public:
     virtual uint32_t get_vertex_count() = 0;
     virtual uint32_t get_triangle_count() = 0;
 
-    virtual void render(const Transform &transform) = 0;
-
-    ~MeshAsset();
+    virtual void render(ObjectBuffer *p_object_buffer) = 0;
 };
 
 

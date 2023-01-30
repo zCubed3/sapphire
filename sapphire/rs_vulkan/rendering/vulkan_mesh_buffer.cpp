@@ -4,7 +4,7 @@
 
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_target.h>
-#include <engine/rendering/object_buffer.h>
+#include <engine/rendering/buffers/object_buffer.h>
 
 #include <rs_vulkan/assets/vulkan_shader_asset.h>
 #include <rs_vulkan/rendering/vulkan_render_server.h>
@@ -73,7 +73,7 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
 }
 
 // TODO: Instancing
-void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_asset) {
+void VulkanMeshBuffer::render(ObjectBuffer *p_object_buffer, ShaderAsset *p_shader_asset) {
     VulkanShaderAsset* vk_shader = reinterpret_cast<VulkanShaderAsset*>(p_shader_asset);
     if (vk_shader == nullptr) {
         vk_shader = VulkanShaderAsset::error_shader;
@@ -91,18 +91,10 @@ void VulkanMeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_
 
     // Our object data is already updated by this moment
     // We just have to update the binding
-    VulkanGraphicsBuffer* object_ubo = reinterpret_cast<VulkanGraphicsBuffer*>(object_buffer->buffer);
+    VulkanGraphicsBuffer* object_ubo = reinterpret_cast<VulkanGraphicsBuffer*>(p_object_buffer->buffer);
 
     ValDescriptorSetWriteInfo object_write_info{};
     object_write_info.val_buffer = object_ubo->val_buffer;
-
-    ObjectBufferData data {};
-    data.model = transform.trs;
-    data.model_inverse = transform.trs_inverse;
-    data.model_inverse_transpose = transform.trs_inverse_transpose;
-    data.model_view_projection = current_target->view_data.view_projection * transform.trs;
-
-    object_buffer->write(data);
 
     val_object_descriptor_info->write_binding(&object_write_info);
     val_object_descriptor_info->update_set(val_instance);

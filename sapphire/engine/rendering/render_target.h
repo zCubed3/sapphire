@@ -4,7 +4,7 @@
 #include <engine/data/color.h>
 #include <engine/data/rect.h>
 
-#include <engine/rendering/view_buffer.h>
+#include <engine/rendering/buffers/view_buffer.h>
 #include <engine/scene/transform.h>
 
 #include <glm.hpp>

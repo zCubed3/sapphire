@@ -12,7 +12,7 @@
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_target.h>
 #include <engine/rendering/sdl_window_render_target.h>
-#include <engine/rendering/view_buffer.h>
+#include <engine/rendering/buffers/view_buffer.h>
 #include <engine/scene/world.h>
 
 #include <rs_vulkan/assets/vulkan_shader_asset.h>
@@ -286,7 +286,6 @@ GraphicsBuffer *VulkanRenderServer::create_graphics_buffer(size_t size) const {
 void VulkanRenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
     if (p_mesh_asset != nullptr) {
         p_mesh_asset->buffer = new VulkanMeshBuffer(p_mesh_asset);
-        RenderServer::populate_mesh_buffer(p_mesh_asset);
     }
 }
 

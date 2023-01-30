@@ -59,7 +59,7 @@ public:
     virtual GraphicsBuffer *create_graphics_buffer(size_t size) const = 0;
 
     // Whenever a mesh is loaded various structures must be created
-    virtual void populate_mesh_buffer(MeshAsset *p_mesh_asset) const;
+    virtual void populate_mesh_buffer(MeshAsset *p_mesh_asset) const = 0;
 
     // Whenever a render target is created various structures must be created
     virtual void populate_render_target_data(RenderTarget *p_render_target) const;

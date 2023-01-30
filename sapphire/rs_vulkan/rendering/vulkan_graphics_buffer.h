@@ -1,7 +1,7 @@
 #ifndef SAPPHIRE_VULKAN_GRAPHICS_BUFFER_H
 #define SAPPHIRE_VULKAN_GRAPHICS_BUFFER_H
 
-#include <engine/rendering/graphics_buffer.h>
+#include <engine/rendering/buffers/graphics_buffer.h>
 
 class ValBuffer;
 

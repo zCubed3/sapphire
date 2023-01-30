@@ -3,7 +3,7 @@
 
 #include <glm.hpp>
 
-#include <engine/rendering/graphics_buffer.h>
+#include <engine/rendering/buffers/graphics_buffer.h>
 
 struct ObjectBufferData {
     glm::mat4 model_view_projection;
@@ -16,6 +16,7 @@ class ObjectBuffer {
 public:
     GraphicsBuffer *buffer = nullptr;
 
+    ObjectBuffer();
     ObjectBuffer(GraphicsBuffer *p_buffer);
     ~ObjectBuffer();
 

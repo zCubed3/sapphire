@@ -5,7 +5,7 @@
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_server.h>
 #include <engine/rendering/render_target.h>
-#include <engine/rendering/object_buffer.h>
+#include <engine/rendering/buffers/object_buffer.h>
 #include <engine/scene/world.h>
 
 #include <glad/glad.h>
@@ -68,7 +68,7 @@ OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
     delete[] vertices;
 }
 
-void OpenGL4MeshBuffer::render(const Transform &transform, ShaderAsset *p_shader_asset) {
+void OpenGL4MeshBuffer::render(ObjectBuffer* p_object_buffer, ShaderAsset *p_shader_asset) {
     GLSLShaderAsset *glsl_shader = static_cast<GLSLShaderAsset *>(p_shader_asset);
 
     // TODO: ShaderAsset contains get_placeholder() instead?
@@ -80,20 +80,11 @@ void OpenGL4MeshBuffer::render(const Transform &transform, ShaderAsset *p_shader
     const OpenGL4RenderServer* rs_opengl4 = reinterpret_cast<const OpenGL4RenderServer*>(RenderServer::get_singleton());
     RenderTarget* current_target = rs_opengl4->get_current_target();
 
-    // TODO: Cache this
-    ObjectBufferData data {};
-    data.model = transform.trs;
-    data.model_inverse = transform.trs_inverse;
-    data.model_inverse_transpose = transform.trs_inverse_transpose;
-    data.model_view_projection = current_target->view_data.view_projection * transform.trs;
-
-    object_buffer->write(data);
-
     uint32_t view_handle = glsl_shader->get_uniform_block("SAPPHIRE_VIEW_DATA");
     uint32_t object_handle = glsl_shader->get_uniform_block("SAPPHIRE_OBJECT_DATA");
 
     OpenGL4GraphicsBuffer* view_ubo = reinterpret_cast<OpenGL4GraphicsBuffer*>(current_target->view_buffer->buffer);
-    OpenGL4GraphicsBuffer* object_ubo = reinterpret_cast<OpenGL4GraphicsBuffer*>(object_buffer->buffer);
+    OpenGL4GraphicsBuffer* object_ubo = reinterpret_cast<OpenGL4GraphicsBuffer*>(p_object_buffer->buffer);
 
     glUniformBlockBinding(glsl_shader->shader_handle, view_handle, 0);
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, view_ubo->buffer_handle);

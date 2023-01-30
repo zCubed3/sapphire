@@ -1,7 +1,7 @@
 #ifndef SAPPHIRE_VULKAN_MESH_BUFFER_H
 #define SAPPHIRE_VULKAN_MESH_BUFFER_H
 
-#include <engine/rendering/mesh_buffer.h>
+#include <engine/rendering/buffers/mesh_buffer.h>
 #include <vulkan/vulkan.h>
 #include <vector>
 
@@ -21,7 +21,7 @@ protected:
 public:
     VulkanMeshBuffer(MeshAsset* p_mesh_asset);
 
-    void render(const Transform &transform, ShaderAsset *p_shader_asset) override;
+    void render(ObjectBuffer *p_object_buffer, ShaderAsset *p_shader_asset) override;
 
     ~VulkanMeshBuffer() override;
 };

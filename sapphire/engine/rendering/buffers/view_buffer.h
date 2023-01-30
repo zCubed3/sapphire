@@ -3,7 +3,7 @@
 
 #include <glm.hpp>
 
-#include <engine/rendering/graphics_buffer.h>
+#include <engine/rendering/buffers/graphics_buffer.h>
 
 struct ViewBufferData {
     // Camera data

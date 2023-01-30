@@ -17,7 +17,7 @@ std::vector<std::string> OBJLoader::get_extensions() {
     return {"obj"};
 }
 
-Asset *OBJLoader::load_from_path(const std::string &path) {
+Asset *OBJLoader::load_from_path(const std::string &path, const std::string& extension) {
     std::ifstream file(path);
 
     if (file.is_open()) {

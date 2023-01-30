@@ -12,10 +12,15 @@ set(SAPPHIRE_ENGINE_SOURCES
         "assets/static_mesh_asset.cpp"
         "assets/shader_asset.cpp"
         "assets/loaders/obj_loader.cpp"
-        "assets/loaders/mmdl_loader.cpp"
+        "assets/loaders/semd_loader.cpp"
+
+        "platforms/platform.cpp"
+        "platforms/win32_platform.cpp"
 
         "config/config_file.cpp"
 
+        "scene/actor.cpp"
+        "scene/mesh_actor.cpp"
         "scene/world.cpp"
         "scene/transform.cpp"
 
@@ -29,10 +34,10 @@ set(SAPPHIRE_ENGINE_SOURCES
         "rendering/render_target_data.cpp"
         "rendering/sdl_window_render_target.cpp"
         "rendering/render_server.cpp"
-        "rendering/mesh_buffer.cpp"
-        "rendering/view_buffer.cpp"
-        "rendering/object_buffer.cpp"
-        "rendering/graphics_buffer.cpp"
+        "rendering/buffers/mesh_buffer.cpp"
+        "rendering/buffers/view_buffer.cpp"
+        "rendering/buffers/object_buffer.cpp"
+        "rendering/buffers/graphics_buffer.cpp"
 
         "main.cpp"
         )

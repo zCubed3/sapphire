@@ -2,7 +2,7 @@
 #define SAPPHIRE_OPENGL4_MESH_BUFFER_H
 
 #include <cstdint>
-#include <engine/rendering/mesh_buffer.h>
+#include <engine/rendering/buffers/mesh_buffer.h>
 
 class MeshAsset;
 
@@ -17,7 +17,7 @@ protected:
 public:
     OpenGL4MeshBuffer(MeshAsset *p_mesh_asset);
 
-    void render(const Transform &transform, ShaderAsset *p_shader_asset) override;
+    void render(ObjectBuffer* p_object_buffer, ShaderAsset *p_shader_asset) override;
 };
 
 
