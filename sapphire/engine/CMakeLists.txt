@@ -41,6 +41,8 @@ set(SAPPHIRE_ENGINE_SOURCES
         "rendering/buffers/graphics_buffer.cpp"
 
         "main.cpp"
+
+        "resources.rc"
         )
 
 add_executable(SAPPHIRE_ENGINE ${SAPPHIRE_ENGINE_SOURCES})

@@ -89,6 +89,8 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     // TODO: Optional SDL?
     // TODO: Allow switching between sRGB and Linear
     ValInstancePresentPreferences present_preferences {};
+    present_preferences.use_vsync = true;
+
     val_create_info.p_present_preferences = &present_preferences;
 
     val_create_info.p_sdl_window = p_window;

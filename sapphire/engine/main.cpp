@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 
     // Load the engine config file (if it exists)
     ConfigFile engine_config;
-    engine_config.read_from_path("engine.secfg");
+    engine_config.read_from_path("engine.secf");
 
     // TODO: Not be case sensitive
     std::string user_render_server = engine_config.try_get_string("sRenderServer", "Rendering", "Vulkan");
@@ -126,12 +126,11 @@ int main(int argc, char **argv) {
     World *world = new World();
 
     MeshAsset* mesh = reinterpret_cast<MeshAsset*>(AssetLoader::load_asset("test.obj"));
-    ShaderAsset *shader = static_cast<ShaderAsset *>(AssetLoader::load_asset("test.semd"));
-
+    ShaderAsset *shader = reinterpret_cast<ShaderAsset*>(AssetLoader::load_asset("test.semd"));
 
     MeshActor* actor = new MeshActor();
     actor->mesh_asset = mesh;
-    //actor->shader_asset = shader;
+    actor->shader_asset = shader;
 
     world->add_actor(actor);
 
