@@ -10,6 +10,7 @@
 #include <rs_opengl4/rendering/opengl4_mesh_buffer.h>
 #include <rs_opengl4/rendering/opengl4_graphics_buffer.h>
 #include <rs_opengl4/rendering/opengl4_shader.h>
+#include <rs_opengl4/rendering/opengl4_texture.h>
 
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
@@ -189,6 +190,10 @@ GraphicsBuffer *OpenGL4RenderServer::create_graphics_buffer(size_t size) const {
 // TODO:
 Shader *OpenGL4RenderServer::create_shader() const {
     return new OpenGL4Shader();
+}
+
+Texture *OpenGL4RenderServer::create_texture() const {
+    return new OpenGL4Texture();
 }
 
 void OpenGL4RenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {

@@ -12,6 +12,7 @@ class MeshAsset;
 class RenderTarget;
 class GraphicsBuffer;
 class Shader;
+class Texture;
 
 // Abstraction over various rendering APIs
 class RenderServer {
@@ -61,6 +62,9 @@ public:
 
     // Creates a shader that will be setup via a SEMD or other material descriptor
     virtual Shader *create_shader() const = 0;
+
+    // Creates a texture that will be setup via an image loader
+    virtual Texture *create_texture() const = 0;
 
     // Whenever a mesh is loaded various structures must be created
     virtual void populate_mesh_buffer(MeshAsset *p_mesh_asset) const = 0;

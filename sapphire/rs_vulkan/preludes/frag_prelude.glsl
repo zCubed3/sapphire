@@ -24,3 +24,10 @@ layout(set = 2, binding = 0) uniform SAPPHIRE_OBJECT_DATA {
     mat4 model_inverse;
     mat4 model_inverse_transpose;
 } OBJECT_DATA;
+
+//
+// API defines
+//
+#ifndef VULKAN
+#define VULKAN
+#endif

@@ -32,10 +32,50 @@ std::vector<std::string> ConfigFile::ConfigEntry::get_string_list() {
     return values;
 }
 
+std::vector<int> ConfigFile::ConfigEntry::get_int_list() {
+    std::string buffer;
+    std::vector<int> values{};
+
+    for (char c: string_value) {
+        if (c != ';' && c != '.' && c != '-') {
+            buffer += c;
+        } else {
+            values.push_back(atoi(buffer.c_str()));
+            buffer.clear();
+        }
+    }
+
+    if (!buffer.empty()) {
+        values.push_back(atoi(buffer.c_str()));
+    }
+
+    return values;
+}
+
+std::vector<float> ConfigFile::ConfigEntry::get_float_list() {
+    std::string buffer;
+    std::vector<float> values{};
+
+    for (char c: string_value) {
+        if (c != ';' && c != '.' && c != '-') {
+            buffer += c;
+        } else {
+            values.push_back(static_cast<float>(atof(buffer.c_str())));
+            buffer.clear();
+        }
+    }
+
+    if (!buffer.empty()) {
+        values.push_back(static_cast<float>(atof(buffer.c_str())));
+    }
+
+    return values;
+}
+
 int ConfigFile::ConfigEntry::try_get_int(int fallback) {
     // TODO: Safety could be better
     for (char c: string_value) {
-        if (!is_number(c) && c != '.' && c != '-') {
+        if (!is_number(c) && c != '.') {
             return fallback;
         }
     }
@@ -50,7 +90,7 @@ int ConfigFile::ConfigEntry::try_get_int(int fallback) {
 float ConfigFile::ConfigEntry::try_get_float(float fallback) {
     // TODO: Safety could be better
     for (char c: string_value) {
-        if (!is_number(c) && c != '.' && c != '-') {
+        if (!is_number(c) && c != '.') {
             return fallback;
         }
     }
@@ -84,6 +124,26 @@ std::vector<std::string> ConfigFile::ConfigSection::try_get_string_list(const st
     for (ConfigEntry &entry: entries) {
         if (entry.name == name) {
             return entry.get_string_list();
+        }
+    }
+
+    return fallback;
+}
+
+std::vector<int> ConfigFile::ConfigSection::try_get_int_list(const std::string &name, const std::vector<int> &fallback) {
+    for (ConfigEntry &entry: entries) {
+        if (entry.name == name) {
+            return entry.get_int_list();
+        }
+    }
+
+    return fallback;
+}
+
+std::vector<float> ConfigFile::ConfigSection::try_get_float_list(const std::string &name, const std::vector<float> &fallback) {
+    for (ConfigEntry &entry: entries) {
+        if (entry.name == name) {
+            return entry.get_float_list();
         }
     }
 
@@ -227,6 +287,34 @@ std::vector<std::string> ConfigFile::try_get_string_list(const std::string &name
         for (ConfigSection &test_section: sections) {
             if (test_section.name == section) {
                 return test_section.try_get_string_list(name, fallback);
+            }
+        }
+    }
+
+    return fallback;
+}
+
+std::vector<int> ConfigFile::try_get_int_list(const std::string &name, const std::string &section, const std::vector<int> &fallback) {
+    if (section.empty()) {
+        global_section.try_get_int_list(name, fallback);
+    } else {
+        for (ConfigSection &test_section: sections) {
+            if (test_section.name == section) {
+                return test_section.try_get_int_list(name, fallback);
+            }
+        }
+    }
+
+    return fallback;
+}
+
+std::vector<float> ConfigFile::try_get_float_list(const std::string &name, const std::string &section, const std::vector<float> &fallback) {
+    if (section.empty()) {
+        global_section.try_get_float_list(name, fallback);
+    } else {
+        for (ConfigSection &test_section: sections) {
+            if (test_section.name == section) {
+                return test_section.try_get_float_list(name, fallback);
             }
         }
     }

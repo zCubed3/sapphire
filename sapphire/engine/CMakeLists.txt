@@ -13,6 +13,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "assets/shader_asset.cpp"
         "assets/loaders/obj_loader.cpp"
         "assets/loaders/semd_loader.cpp"
+        "assets/loaders/stb_image_loader.cpp"
 
         "platforms/platform.cpp"
         "platforms/win32_platform.cpp"
@@ -53,6 +54,7 @@ target_include_directories(SAPPHIRE_ENGINE PUBLIC
         ${THIRD_PARTY_DIR}/SDL/include
         ${THIRD_PARTY_DIR}/glm/glm
         ${THIRD_PARTY_DIR}/imgui
+        ${THIRD_PARTY_DIR}/stb
         )
 
 target_compile_definitions(SAPPHIRE_ENGINE PUBLIC

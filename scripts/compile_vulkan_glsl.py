@@ -19,6 +19,7 @@ for i in range(3, len(sys.argv)):
 
 with open(temp_merge_path, "w") as merge_file:
     merge_file.write(source)
+    merge_file.write("\n\n")
 
 subprocess.run(["glslc", f"-fshader-stage={stage}", "-o", out_path, temp_merge_path])
 os.remove(temp_merge_path)

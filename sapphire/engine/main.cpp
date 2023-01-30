@@ -62,7 +62,6 @@ int main(int argc, char **argv) {
     platform = Win32Platform::create_win32_platform();
 #endif
 
-    // TODO: Register engine classes within the class registry
     AssetLoader::register_engine_asset_loaders();
 
     // Load the engine config file (if it exists)
@@ -127,6 +126,7 @@ int main(int argc, char **argv) {
 
     MeshAsset* mesh = reinterpret_cast<MeshAsset*>(AssetLoader::load_asset("test.obj"));
     ShaderAsset *shader = reinterpret_cast<ShaderAsset*>(AssetLoader::load_asset("test.semd"));
+    Asset *texture = AssetLoader::load_asset("test.png");
 
     MeshActor* actor = new MeshActor();
     actor->mesh_asset = mesh;
@@ -196,16 +196,6 @@ int main(int argc, char **argv) {
 
         //rt_window.clear_color = Color(abs(sin(world->elapsed_time)), 0, 0, 1);
 
-        model.position = glm::vec3(-1, 0, 0);
-        model.quaternion = glm::quat(glm::radians(euler));
-
-        model.calculate_matrices();
-
-        model2.position = glm::vec3(1, 0, 0);
-        model2.quaternion = glm::quat(glm::radians(euler));
-
-        model2.calculate_matrices();
-
         // We don't have a camera, so we need to move our render target
         rt_window->fov = 105;
         rt_window->transform.position = glm::vec3(0, 0, 2);
@@ -216,7 +206,7 @@ int main(int argc, char **argv) {
 
         world->draw();
 
-        actor->transform.position = glm::vec3(0, sin(world->elapsed_time), 0);
+        //actor->transform.position = glm::vec3(0, sin(world->elapsed_time), 0);
 
         ImGui::Begin("Renderer Info");
         ImGui::Text("Rendering API: %s", render_server->get_name().c_str());

@@ -4,6 +4,7 @@
 
 #include <engine/assets/loaders/obj_loader.h>
 #include <engine/assets/loaders/semd_loader.h>
+#include <engine/assets/loaders/stb_image_loader.h>
 
 std::vector<AssetLoader *> AssetLoader::loaders = {};
 
@@ -18,6 +19,7 @@ void AssetLoader::unload_placeholders() {
 void AssetLoader::register_engine_asset_loaders() {
     register_loader<OBJLoader>();
     register_loader<SEMDLoader>();
+    register_loader<STBImageLoader>();
 }
 
 Asset *AssetLoader::load_asset(const std::string &path) {

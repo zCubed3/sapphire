@@ -6,6 +6,7 @@ set(SAPPHIRE_RS_OPENGL4_SOURCES
         "rendering/opengl4_mesh_buffer.cpp"
         "rendering/opengl4_graphics_buffer.cpp"
         "rendering/opengl4_shader.cpp"
+        "rendering/opengl4_texture.cpp"
         )
 
 add_library(SAPPHIRE_RS_OPENGL4 STATIC ${SAPPHIRE_RS_OPENGL4_SOURCES})

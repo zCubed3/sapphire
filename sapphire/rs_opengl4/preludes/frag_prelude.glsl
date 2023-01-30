@@ -24,3 +24,10 @@ layout (std140) uniform SAPPHIRE_OBJECT_DATA {
     mat4 model_inverse;
     mat4 model_inverse_transpose;
 } OBJECT_DATA;
+
+//
+// API defines
+//
+#ifndef OPENGL4
+#define OPENGL4
+#endif

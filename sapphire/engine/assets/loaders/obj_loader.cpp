@@ -54,6 +54,10 @@ Asset *OBJLoader::load_from_path(const std::string &path, const std::string& ext
                     glm::vec2 uv{};
 
                     sscanf(contents.c_str(), "%f %f", &uv.x, &uv.y);
+
+                    // OBJ UVs are upside down
+                    uv.y = 1.0F - uv.y;
+
                     unweld_tex_coords.emplace_back(uv);
 
                     continue;

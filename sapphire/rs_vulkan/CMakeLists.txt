@@ -27,6 +27,7 @@ set(SAPPHIRE_RS_VULKAN_SOURCES
         "rendering/vulkan_graphics_buffer.cpp"
         "rendering/vulkan_mesh_buffer.cpp"
         "rendering/vulkan_shader.cpp"
+        "rendering/vulkan_texture.cpp"
         )
 
 find_package(Vulkan REQUIRED)

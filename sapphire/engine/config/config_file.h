@@ -11,6 +11,8 @@ public:
         std::string string_value;
 
         std::vector<std::string> get_string_list();
+        std::vector<int> get_int_list();
+        std::vector<float> get_float_list();
         int try_get_int(int fallback = 0);
         float try_get_float(float fallback = 0.0F);
     };
@@ -24,6 +26,8 @@ public:
 
         std::string try_get_string(const std::string &name, const std::string &fallback = "");
         std::vector<std::string> try_get_string_list(const std::string &name, const std::vector<std::string> &fallback = {});
+        std::vector<int> try_get_int_list(const std::string &name, const std::vector<int> &fallback = {});
+        std::vector<float> try_get_float_list(const std::string &name, const std::vector<float> &fallback = {});
         int try_get_int(const std::string &name, int fallback = 0);
         float try_get_float(const std::string &name, float fallback = 0.0F);
     };
@@ -36,6 +40,8 @@ public:
 
     std::string try_get_string(const std::string &name, const std::string &section, const std::string &fallback = "");
     std::vector<std::string> try_get_string_list(const std::string &name, const std::string &section, const std::vector<std::string> &fallback = {});
+    std::vector<int> try_get_int_list(const std::string &name, const std::string &section, const std::vector<int> &fallback = {});
+    std::vector<float> try_get_float_list(const std::string &name, const std::string &section, const std::vector<float> &fallback = {});
     int try_get_int(const std::string &name, const std::string &section = "", int fallback = 0);
     float try_get_float(const std::string &name, const std::string &section = "", float fallback = 0);
 };
