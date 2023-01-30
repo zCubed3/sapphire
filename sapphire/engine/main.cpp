@@ -8,8 +8,10 @@
 
 #include <engine/assets/asset_loader.h>
 #include <engine/assets/shader_asset.h>
+#include <engine/assets/texture_asset.h>
 #include <engine/assets/static_mesh_asset.h>
 #include <engine/rendering/sdl_window_render_target.h>
+#include <engine/rendering/shader.h>
 #include <engine/scene/world.h>
 #include <engine/typing/class_registry.h>
 #include <engine/scene/mesh_actor.h>
@@ -126,11 +128,14 @@ int main(int argc, char **argv) {
 
     MeshAsset* mesh = reinterpret_cast<MeshAsset*>(AssetLoader::load_asset("test.obj"));
     ShaderAsset *shader = reinterpret_cast<ShaderAsset*>(AssetLoader::load_asset("test.semd"));
-    Asset *texture = AssetLoader::load_asset("test.png");
+    TextureAsset *texture = reinterpret_cast<TextureAsset*>(AssetLoader::load_asset("test.png"));
 
     MeshActor* actor = new MeshActor();
     actor->mesh_asset = mesh;
     actor->shader_asset = shader;
+
+    // TODO: Temp and jank
+    shader->shader->texture_asset = texture;
 
     world->add_actor(actor);
 
@@ -180,19 +185,17 @@ int main(int argc, char **argv) {
         uint32_t tick = SDL_GetTicks();
         float delta = (tick - last_tick) / 1000.0F;
 
+        glm::vec3 euler {};
+        euler.x = sin(world->elapsed_time) * 10;
+        euler.y = cos(world->elapsed_time) * 10;
 
         last_tick = tick;
 
-        world->elapsed_time += delta;
         world->delta_time = delta;
 
-        glm::vec3 euler = glm::vec3(0, world->elapsed_time * 90, 0);
+        actor->transform.quaternion = glm::quat(glm::radians(euler));
 
-        float x = sin(world->elapsed_time);
-        float y = cos(world->elapsed_time);
-
-        euler.x = x * 30;
-        euler.y = y * 30;
+        world->elapsed_time += delta;
 
         //rt_window.clear_color = Color(abs(sin(world->elapsed_time)), 0, 0, 1);
 
@@ -224,6 +227,7 @@ int main(int argc, char **argv) {
     AssetLoader::unload_all_placeholders();
 
     delete actor;
+    delete texture;
     delete mesh;
     delete shader;
 

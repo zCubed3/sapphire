@@ -47,7 +47,9 @@ add_subdirectory(${THIRD_PARTY_DIR}/SDL)
 list(APPEND SAPPHIRE_DEFINITIONS "SDL_SUPPORT")
 
 if (DISABLE_RTTI)
-    string(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    if (WIN32)
+        string(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    endif()
 endif()
 
 if (RS_OPENGL4_SUPPORT)

@@ -2,13 +2,30 @@
 
 #include <rs_vulkan/val/val_instance.h>
 
-void ValDescriptorSet::write_binding(ValDescriptorSetWriteInfo *p_write_info) {
-    VkDescriptorBufferInfo* buffer_info = new VkDescriptorBufferInfo();
-    buffer_info->buffer = p_write_info->val_buffer->vk_buffer;
-    buffer_info->offset = 0;
-    buffer_info->range = static_cast<uint32_t>(p_write_info->val_buffer->size);
+#include <rs_vulkan/val/images/val_image.h>
 
-    vk_buffer_infos.push_back(buffer_info);
+void ValDescriptorSet::write_binding(ValDescriptorSetWriteInfo *p_write_info) {
+    VkDescriptorBufferInfo *buffer_info = nullptr;
+    VkDescriptorImageInfo *image_info = nullptr;
+
+    if (p_write_info->type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+        buffer_info = new VkDescriptorBufferInfo();
+        buffer_info->buffer = p_write_info->val_buffer->vk_buffer;
+        buffer_info->offset = 0;
+        buffer_info->range = static_cast<uint32_t>(p_write_info->val_buffer->size);
+
+        vk_buffer_infos.push_back(buffer_info);
+    }
+
+    // TODO: Writeable textures?
+    if (p_write_info->type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+        image_info = new VkDescriptorImageInfo();
+        image_info->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        image_info->imageView = p_write_info->val_image->vk_image_view;
+        image_info->sampler = p_write_info->val_image->vk_sampler;
+
+        vk_image_infos.push_back(image_info);
+    }
 
     VkWriteDescriptorSet descriptor_write{};
     descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -18,7 +35,7 @@ void ValDescriptorSet::write_binding(ValDescriptorSetWriteInfo *p_write_info) {
     descriptor_write.descriptorType = p_write_info->type;
     descriptor_write.descriptorCount = p_write_info->count;
     descriptor_write.pBufferInfo = buffer_info;
-    descriptor_write.pImageInfo = nullptr; // Optional
+    descriptor_write.pImageInfo = image_info;
     descriptor_write.pTexelBufferView = nullptr; // Optional
 
     vk_write_sets.push_back(descriptor_write);
@@ -38,7 +55,12 @@ void ValDescriptorSet::update_set(ValInstance *p_val_instance) {
         delete buffer_info;
     }
 
+    for (VkDescriptorImageInfo* image_info: vk_image_infos) {
+        delete image_info;
+    }
+
     vk_buffer_infos.clear();
+    vk_image_infos.clear();
     vk_write_sets.clear();
 }
 

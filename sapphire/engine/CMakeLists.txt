@@ -11,6 +11,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "assets/mesh_asset.cpp"
         "assets/static_mesh_asset.cpp"
         "assets/shader_asset.cpp"
+        "assets/texture_asset.cpp"
         "assets/loaders/obj_loader.cpp"
         "assets/loaders/semd_loader.cpp"
         "assets/loaders/stb_image_loader.cpp"

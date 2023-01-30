@@ -8,6 +8,8 @@ class Texture;
 class TextureAsset : public Asset {
 public:
     Texture *texture = nullptr;
+
+    ~TextureAsset() override;
 };
 
 #endif

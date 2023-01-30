@@ -34,5 +34,5 @@ Asset *STBImageLoader::load_from_path(const std::string &path, const std::string
 
     delete[] bytes;
 
-    return nullptr;
+    return asset;
 }

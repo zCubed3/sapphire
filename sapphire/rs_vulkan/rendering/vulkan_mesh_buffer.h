@@ -18,6 +18,9 @@ protected:
     ValBuffer *val_ibo = nullptr;
     ValDescriptorSet *val_object_descriptor_info = nullptr;
 
+    // TODO: Temp
+    ValDescriptorSet *val_material_descriptor_info = nullptr;
+
 public:
     VulkanMeshBuffer(MeshAsset* p_mesh_asset);
 

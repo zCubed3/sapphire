@@ -100,7 +100,7 @@ void VulkanShader::create_vert_frag(const std::vector<char> &vert_code, const st
     // The third set is unique to object instances
     ValDescriptorSetBuilder set_builder {};
 
-    set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+    set_builder.push_binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
     set_builder.push_set();
 

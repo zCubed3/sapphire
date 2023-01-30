@@ -19,6 +19,7 @@
 #include <rs_vulkan/rendering/vulkan_render_target_data.h>
 #include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
 #include <rs_vulkan/rendering/vulkan_shader.h>
+#include <rs_vulkan/rendering/vulkan_texture.h>
 
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
@@ -291,6 +292,10 @@ GraphicsBuffer *VulkanRenderServer::create_graphics_buffer(size_t size) const {
 
 Shader *VulkanRenderServer::create_shader() const {
     return new VulkanShader();
+}
+
+Texture *VulkanRenderServer::create_texture() const {
+    return new VulkanTexture();
 }
 
 void VulkanRenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {

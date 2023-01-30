@@ -7,6 +7,7 @@
 #include <rs_vulkan/val/val_releasable.h>
 
 class ValBuffer;
+class ValImage;
 
 // TODO: Support textures
 struct ValDescriptorSetWriteInfo {
@@ -16,11 +17,13 @@ struct ValDescriptorSetWriteInfo {
 
     VkDescriptorType type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     ValBuffer *val_buffer = nullptr;
+    ValImage *val_image = nullptr;
 };
 
 class ValDescriptorSet : public ValReleasable {
 protected:
     std::vector<VkDescriptorBufferInfo*> vk_buffer_infos;
+    std::vector<VkDescriptorImageInfo*> vk_image_infos;
     std::vector<VkWriteDescriptorSet> vk_write_sets;
 
 public:

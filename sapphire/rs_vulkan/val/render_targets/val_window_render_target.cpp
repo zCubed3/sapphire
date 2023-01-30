@@ -161,6 +161,7 @@ bool ValWindowRenderTarget::create_swapchain(ValRenderPass *p_val_render_pass, V
     depth_create_info.extent.height = vk_extent.height;
     depth_create_info.format = p_val_instance->present_info->vk_depth_format;
     depth_create_info.usage_flags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    depth_create_info.aspect_flags = VK_IMAGE_ASPECT_DEPTH_BIT;
 
     val_depth_image = ValImage::create(&depth_create_info, p_val_instance);
 
