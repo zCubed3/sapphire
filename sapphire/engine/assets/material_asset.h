@@ -1,5 +1,5 @@
-#ifndef SAPPHIRE_SHADER_ASSET_H
-#define SAPPHIRE_SHADER_ASSET_H
+#ifndef SAPPHIRE_MATERIAL_ASSET_H
+#define SAPPHIRE_MATERIAL_ASSET_H
 
 #include <engine/assets/asset.h>
 #include <glm.hpp>
@@ -7,10 +7,12 @@
 #include <string>
 
 class Shader;
+class Material;
+class TextureAsset;
 
 class MaterialAsset : public Asset {
 public:
-    Shader* shader = nullptr;
+    Material* material = nullptr;
 };
 
 #endif

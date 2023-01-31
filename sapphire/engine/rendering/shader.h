@@ -5,10 +5,8 @@
 #include <unordered_map>
 
 class ConfigFile;
-
 class TextureAsset;
 
-// A shader is the underlying program of a material
 class Shader {
 protected:
     static std::unordered_map<std::string, Shader*> shader_cache;
@@ -33,8 +31,21 @@ protected:
     DepthOp depth_op = DepthOp::DEPTH_OP_LESS;
 
 public:
+    enum ShaderParameterType {
+        SHADER_PARAMETER_TEXTURE
+    };
+
+    // TODO: Better abstract material parameters?
+    struct ShaderParameter {
+        ShaderParameterType type;
+        std::string name;
+        uint32_t location;
+        void* data;
+    };
+
     std::string name;
-    TextureAsset* texture_asset = nullptr;
+
+    std::vector<ShaderParameter> parameters {};
 
     static Shader* get_cached_shader(const std::string& name);
     static void cache_shader(Shader* shader);

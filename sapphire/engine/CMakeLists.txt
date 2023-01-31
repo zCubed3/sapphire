@@ -10,7 +10,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "assets/asset_loader.cpp"
         "assets/mesh_asset.cpp"
         "assets/static_mesh_asset.cpp"
-        "assets/shader_asset.cpp"
+        "assets/material_asset.cpp"
         "assets/texture_asset.cpp"
         "assets/loaders/obj_loader.cpp"
         "assets/loaders/semd_loader.cpp"
@@ -36,10 +36,15 @@ set(SAPPHIRE_ENGINE_SOURCES
         "rendering/sdl_window_render_target.cpp"
         "rendering/render_server.cpp"
         "rendering/shader.cpp"
+        "rendering/material.cpp"
         "rendering/buffers/mesh_buffer.cpp"
         "rendering/buffers/view_buffer.cpp"
         "rendering/buffers/object_buffer.cpp"
         "rendering/buffers/graphics_buffer.cpp"
+        "rendering/draw_calls/draw_call.cpp"
+        "rendering/draw_calls/mesh_draw_call.cpp"
+
+        "panels/panel.cpp"
 
         "main.cpp"
 

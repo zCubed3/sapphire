@@ -54,5 +54,17 @@ bool Shader::make_from_sesd(ConfigFile *p_sesd_file) {
         depth_op = DEPTH_OP_ALWAYS;
     }
 
+    std::vector<std::string> texture_params = p_sesd_file->try_get_string_list("aTextureParameters", "Shader");
+
+    if (!texture_params.empty() && texture_params.size() % 2 == 0) {
+        for (int t = 0; t < texture_params.size(); t += 2) {
+            ShaderParameter parameter {};
+            parameter.location = atoi(texture_params[t].c_str());
+            parameter.name = texture_params[t + 1];
+
+            parameters.push_back(parameter);
+        }
+    }
+
     return true;
 }

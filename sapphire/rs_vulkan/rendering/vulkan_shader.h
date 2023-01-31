@@ -10,13 +10,13 @@ class ValDescriptorSetInfo;
 
 class VulkanShader : public Shader {
 protected:
-    struct ShaderParameter {
+    struct VulkanParameter {
         uint32_t location;
         VkDescriptorType type;
         uint32_t stage_flags;
     };
 
-    std::vector<ShaderParameter> parameters;
+    std::vector<VulkanParameter> vulkan_parameters;
 
 public:
     static VulkanShader *error_shader;

@@ -19,12 +19,12 @@ protected:
     ValDescriptorSet *val_object_descriptor_info = nullptr;
 
     // TODO: Temp
-    ValDescriptorSet *val_material_descriptor_info = nullptr;
+
 
 public:
     VulkanMeshBuffer(MeshAsset* p_mesh_asset);
 
-    void render(ObjectBuffer* p_object_buffer, Shader *p_shader) override;
+    void render(ObjectBuffer* p_object_buffer, Material *p_material) override;
 
     ~VulkanMeshBuffer() override;
 };

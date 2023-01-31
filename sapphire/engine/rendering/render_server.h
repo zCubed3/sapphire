@@ -3,6 +3,8 @@
 
 #include <cstdint>
 #include <string>
+#include <queue>
+#include <unordered_map>
 
 #include <glm.hpp>
 
@@ -13,6 +15,8 @@ class RenderTarget;
 class GraphicsBuffer;
 class Shader;
 class Texture;
+class Material;
+class DrawCall;
 
 // Abstraction over various rendering APIs
 class RenderServer {
@@ -52,14 +56,19 @@ public:
     // Called whenever rendering to a target is finished
     virtual bool end_target(RenderTarget *p_target) = 0;
 
+    // Pushes a MeshDrawCall to the rendering queue
+
     // Creates a graphics buffer for generic usage within the render pipeline
     virtual GraphicsBuffer *create_graphics_buffer(size_t size) const = 0;
 
-    // Creates a shader that will be setup via a SEMD or other material descriptor
+    // Creates a shader that will be setup via a SESD
     virtual Shader *create_shader() const = 0;
 
     // Creates a texture that will be setup via an image loader
     virtual Texture *create_texture() const = 0;
+
+    // Creates a material that will be setup via a SEMD
+    virtual Material *create_material() const = 0;
 
     // Whenever a mesh is loaded various structures must be created
     virtual void populate_mesh_buffer(MeshAsset *p_mesh_asset) const = 0;

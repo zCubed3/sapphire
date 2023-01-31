@@ -68,8 +68,8 @@ OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
     delete[] vertices;
 }
 
-void OpenGL4MeshBuffer::render(ObjectBuffer* p_object_buffer, Shader *p_shader) {
-    OpenGL4Shader *gl_shader = static_cast<OpenGL4Shader*>(p_shader);
+void OpenGL4MeshBuffer::render(ObjectBuffer* p_object_buffer, Material *p_material) {
+    OpenGL4Shader *gl_shader = static_cast<OpenGL4Shader*>(p_material);
 
     if (gl_shader == nullptr) {
         gl_shader = OpenGL4Shader::error_shader;
@@ -91,7 +91,7 @@ void OpenGL4MeshBuffer::render(ObjectBuffer* p_object_buffer, Shader *p_shader) 
     glUniformBlockBinding(gl_shader->shader_handle, object_handle, 1);
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, object_ubo->buffer_handle);
 
-    //glUseProgram(gl_shader->shader_handle);
+    glUseProgram(gl_shader->shader_handle);
 
     glBindVertexArray(vao);
 

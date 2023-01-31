@@ -26,6 +26,7 @@ set(SAPPHIRE_RS_VULKAN_SOURCES
         "rendering/vulkan_mesh_buffer.cpp"
         "rendering/vulkan_shader.cpp"
         "rendering/vulkan_texture.cpp"
+        "rendering/vulkan_material.cpp"
         )
 
 set(SAPPHIRE_RS_VULKAN_INCLUDE_DIRS

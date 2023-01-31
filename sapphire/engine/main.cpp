@@ -7,15 +7,15 @@
 #endif
 
 #include <engine/assets/asset_loader.h>
-#include <engine/assets/shader_asset.h>
-#include <engine/assets/texture_asset.h>
+#include <engine/assets/material_asset.h>
 #include <engine/assets/static_mesh_asset.h>
+#include <engine/assets/texture_asset.h>
 #include <engine/rendering/render_server.h>
 #include <engine/rendering/sdl_window_render_target.h>
 #include <engine/rendering/shader.h>
+#include <engine/scene/mesh_actor.h>
 #include <engine/scene/world.h>
 #include <engine/typing/class_registry.h>
-#include <engine/scene/mesh_actor.h>
 
 #ifdef RS_OPENGL4_SUPPORT
 #include <rs_opengl4/rendering/opengl4_render_server.h>
@@ -110,12 +110,12 @@ int main(int argc, char **argv) {
     World *world = new World();
 
     MeshAsset* mesh = reinterpret_cast<MeshAsset*>(AssetLoader::load_asset("test.obj"));
-    MaterialAsset *shader = reinterpret_cast<MaterialAsset *>(AssetLoader::load_asset("test.semd"));
+    MaterialAsset *material = reinterpret_cast<MaterialAsset *>(AssetLoader::load_asset("test.semd"));
     TextureAsset *texture = reinterpret_cast<TextureAsset*>(AssetLoader::load_asset("test.png"));
 
     MeshActor* actor = new MeshActor();
     actor->mesh_asset = mesh;
-    //actor->shader_asset = shader;
+    actor->material_asset = material;
 
     // TODO: Temp and jank
     //shader->shader->texture_asset = texture;
@@ -243,7 +243,7 @@ int main(int argc, char **argv) {
     delete actor;
     delete texture;
     delete mesh;
-    delete shader;
+    delete material;
 
     delete rt_window;
 

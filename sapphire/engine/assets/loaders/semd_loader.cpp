@@ -2,10 +2,11 @@
 
 #include <fstream>
 
-#include <engine/assets/shader_asset.h>
+#include <engine/assets/material_asset.h>
 #include <engine/config/config_file.h>
 #include <engine/platforms/platform.h>
 #include <engine/rendering/render_server.h>
+#include <engine/rendering/material.h>
 #include <engine/rendering/shader.h>
 
 std::vector<std::string> SEMDLoader::get_extensions() {
@@ -24,7 +25,7 @@ Asset *SEMDLoader::load_from_path(const std::string &path, const std::string& ex
         ConfigFile semd_file;
         semd_file.read_from_path(path);
 
-        std::string sesd_path = semd_file.try_get_string("sSESDPath", "Shader");
+        std::string sesd_path = semd_file.try_get_string("sSESDPath", "Material");
         if (!Platform::get_singleton()->file_exists(sesd_path)) {
             return nullptr;
         }
@@ -49,8 +50,12 @@ Asset *SEMDLoader::load_from_path(const std::string &path, const std::string& ex
             Shader::cache_shader(shader);
         }
 
+        Material* material = rs_instance->create_material();
+        material->shader = shader;
+        material->make_from_semd(&semd_file);
+
         MaterialAsset *asset = new MaterialAsset();
-        asset->shader = shader;
+        asset->material = material;
 
         return asset;
     }

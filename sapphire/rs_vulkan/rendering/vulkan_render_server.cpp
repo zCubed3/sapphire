@@ -20,12 +20,15 @@
 #include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
 #include <rs_vulkan/rendering/vulkan_shader.h>
 #include <rs_vulkan/rendering/vulkan_texture.h>
+#include <rs_vulkan/rendering/vulkan_material.h>
 
 #if defined(IMGUI_SUPPORT)
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_vulkan.h>
 #endif
+
+#define RS_VULKAN_DEBUG
 
 // TODO: Wait for rendering to finish
 VulkanRenderServer::~VulkanRenderServer() {
@@ -231,6 +234,10 @@ Shader *VulkanRenderServer::create_shader() const {
 
 Texture *VulkanRenderServer::create_texture() const {
     return new VulkanTexture();
+}
+
+Material *VulkanRenderServer::create_material() const {
+    return new VulkanMaterial();
 }
 
 void VulkanRenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {

@@ -6,7 +6,7 @@
 
 #include <glm.hpp>
 
-class Shader;
+class Material;
 class MeshBuffer;
 class ObjectBuffer;
 
@@ -26,7 +26,7 @@ public:
     virtual uint32_t get_vertex_count() = 0;
     virtual uint32_t get_triangle_count() = 0;
 
-    virtual void render(ObjectBuffer *p_object_buffer, Shader *p_shader) = 0;
+    virtual void render(ObjectBuffer *p_object_buffer, Material *p_material) = 0;
 };
 
 

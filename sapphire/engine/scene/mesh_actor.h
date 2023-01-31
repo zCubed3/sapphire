@@ -14,7 +14,7 @@ class MeshActor : public Actor {
 public:
     ObjectBuffer* buffer = nullptr;
     MeshAsset* mesh_asset = nullptr;
-    MaterialAsset * shader_asset = nullptr;
+    MaterialAsset * material_asset = nullptr;
 
     MeshActor();
     ~MeshActor() override;

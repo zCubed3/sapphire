@@ -1,7 +1,7 @@
 #include "mesh_actor.h"
 
+#include <engine/assets/material_asset.h>
 #include <engine/assets/mesh_asset.h>
-#include <engine/assets/shader_asset.h>
 #include <engine/rendering/buffers/object_buffer.h>
 #include <engine/rendering/render_server.h>
 #include <engine/rendering/render_target.h>
@@ -32,7 +32,7 @@ void MeshActor::draw(World *p_world) {
     buffer->write(data);
 
     if (mesh_asset != nullptr) {
-        Shader *shader = shader_asset == nullptr ? nullptr : shader_asset->shader;
-        mesh_asset->render(buffer, shader);
+        Material *material = material_asset == nullptr ? nullptr : material_asset->material;
+        mesh_asset->render(buffer, material);
     }
 }

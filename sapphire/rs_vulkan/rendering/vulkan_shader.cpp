@@ -56,17 +56,14 @@ bool VulkanShader::make_from_sesd(ConfigFile *p_sesd_file) {
 
     Shader::make_from_sesd(p_sesd_file);
 
-    // TODO: Support arrays?
-    std::vector<std::string> texture_params = p_sesd_file->try_get_string_list("aTextureParameters", "Material");
+    for (ShaderParameter& parameter: parameters) {
+        if (parameter.type == Shader::SHADER_PARAMETER_TEXTURE) {
+            VulkanParameter vulkan_parameter {};
+            vulkan_parameter.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            vulkan_parameter.stage_flags = VK_SHADER_STAGE_FRAGMENT_BIT;
+            vulkan_parameter.location = parameter.location;
 
-    if (!texture_params.empty() && texture_params.size() % 2 == 0) {
-        for (int t = 0; t < texture_params.size(); t += 2) {
-            ShaderParameter parameter {};
-            parameter.location = atoi(texture_params[t].c_str());
-            parameter.stage_flags = VK_SHADER_STAGE_FRAGMENT_BIT;
-            parameter.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-
-            parameters.push_back(parameter);
+            vulkan_parameters.push_back(vulkan_parameter);
         }
     }
 
@@ -158,9 +155,9 @@ void VulkanShader::create_vert_frag(const std::vector<char> &vert_code, const st
     ValDescriptorSetBuilder set_builder {};
 
     // We need to push the parameters as they are ordered
-    bool has_parameters = !parameters.empty();
-    for (int i = 0; i < parameters.size(); i++) {
-        for (ShaderParameter &parameter: parameters) {
+    bool has_parameters = !vulkan_parameters.empty();
+    for (int i = 0; i < vulkan_parameters.size(); i++) {
+        for (VulkanParameter &parameter: vulkan_parameters) {
             if (parameter.location == i) {
                 set_builder.push_binding(parameter.type, 1, parameter.stage_flags);
             }
