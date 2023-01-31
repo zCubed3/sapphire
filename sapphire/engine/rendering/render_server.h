@@ -56,8 +56,6 @@ public:
     // Called whenever rendering to a target is finished
     virtual bool end_target(RenderTarget *p_target) = 0;
 
-    // Pushes a MeshDrawCall to the rendering queue
-
     // Creates a graphics buffer for generic usage within the render pipeline
     virtual GraphicsBuffer *create_graphics_buffer(size_t size) const = 0;
 

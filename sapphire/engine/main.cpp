@@ -25,8 +25,11 @@
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #endif
 
+//#define TEST_SECOND_WINDOW
+
 #if defined(IMGUI_SUPPORT)
 #include <imgui.h>
+#include <misc/cpp/imgui_stdlib.h>
 #include <backends/imgui_impl_sdl.h>
 #endif
 
@@ -35,6 +38,7 @@
 #include <memory>
 
 #include <glm.hpp>
+#include <gtc/type_ptr.hpp>
 #include <gtx/quaternion.hpp>
 #include <gtc/matrix_transform.hpp>
 
@@ -147,7 +151,29 @@ int main(int argc, char **argv) {
     ImGuiIO& io = ImGui::GetIO();
 
     std::vector<double> fps_stack;
+
+    std::string test_obj_path;
+    std::string test_semd_path;
+    glm::vec3 test_position = {1, 0, 0};
 #endif
+
+#ifdef TEST_SECOND_WINDOW
+    SDL_Window *sub_window = SDL_CreateWindow(
+            window_name.c_str(),
+            SDL_WINDOWPOS_UNDEFINED,
+            SDL_WINDOWPOS_UNDEFINED,
+            800,
+            600,
+            window_flags | SDL_WINDOW_RESIZABLE
+    );
+
+    SDLWindowRenderTarget* rt_sub_window = new SDLWindowRenderTarget(sub_window);
+    render_server->populate_render_target_data(rt_sub_window);
+#endif
+
+    // We don't have a camera, so we need to move our render target initially
+    rt_window->fov = 105;
+    rt_window->transform.position = glm::vec3(0, 0, 2);
 
     while (keep_running) {
         while (SDL_PollEvent(&event) != 0) {
@@ -189,10 +215,6 @@ int main(int argc, char **argv) {
 
         //rt_window.clear_color = Color(abs(sin(world->elapsed_time)), 0, 0, 1);
 
-        // We don't have a camera, so we need to move our render target
-        rt_window->fov = 105;
-        rt_window->transform.position = glm::vec3(0, 0, 2);
-
         render_server->begin_frame();
         render_server->begin_target(rt_window);
 
@@ -225,6 +247,32 @@ int main(int argc, char **argv) {
         ImGui::Text("FPS: %f", average);
         ImGui::End();
 
+        ImGui::Begin("Camera");
+        ImGui::DragFloat3("Position", glm::value_ptr(rt_window->transform.position), 0.001F);
+        ImGui::DragFloat4("Quaternion", glm::value_ptr(rt_window->transform.quaternion), 0.001F);
+        ImGui::DragFloat3("Scale", glm::value_ptr(rt_window->transform.scale), 0.001F);
+        ImGui::End();
+
+        ImGui::Begin("SEMD Debugger");
+        ImGui::InputText("OBJ Path", &test_obj_path);
+        ImGui::InputText("SEMD Path", &test_semd_path);
+        ImGui::DragFloat3("Position", glm::value_ptr(test_position), 0.01F);
+
+        if (ImGui::Button("Create")) {
+            MeshAsset* debug_mesh = reinterpret_cast<MeshAsset*>(AssetLoader::load_asset(test_obj_path));
+            MaterialAsset *debug_material = reinterpret_cast<MaterialAsset *>(AssetLoader::load_asset(test_semd_path));
+
+            MeshActor* debug_actor = new MeshActor();
+            debug_actor->mesh_asset = debug_mesh;
+            debug_actor->material_asset = debug_material;
+
+            debug_actor->transform.position = test_position;
+
+            world->add_actor(debug_actor);
+        }
+
+        ImGui::End();
+
         //ImGui::ShowDemoWindow();
 #endif
 
@@ -233,6 +281,13 @@ int main(int argc, char **argv) {
 #endif
 
         render_server->end_target(rt_window);
+
+#ifdef TEST_SECOND_WINDOW
+        render_server->begin_target(rt_sub_window);
+
+        render_server->end_target(rt_sub_window);
+#endif
+
         render_server->end_frame();
 
         render_server->present(main_window);

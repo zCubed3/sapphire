@@ -22,6 +22,8 @@
 #include <rs_vulkan/rendering/vulkan_texture.h>
 #include <rs_vulkan/rendering/vulkan_material.h>
 
+#include <rs_vulkan/val/pipelines/val_pipeline.h>
+
 #if defined(IMGUI_SUPPORT)
 #include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
@@ -173,10 +175,13 @@ bool VulkanRenderServer::begin_frame() {
     val_instance->await_frame();
     vkResetFences(val_instance->vk_device, 1, &val_instance->vk_render_fence);
 
+    val_instance->block_await = true;
+
     return true;
 }
 
 bool VulkanRenderServer::end_frame() {
+    val_instance->block_await = false;
     return true;
 }
 
@@ -203,6 +208,17 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
 
             val_active_render_target->clear_color = { p_target->clear_color[0], p_target->clear_color[1], p_target->clear_color[2], p_target->clear_color[3] };
             val_active_render_target->begin_render(val_window_render_pass, val_instance);
+
+            // TODO: Make a dummy shader?
+            vkCmdBindDescriptorSets(
+                    val_active_render_target->vk_command_buffer,
+                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    VulkanShader::error_shader->val_pipeline->vk_pipeline_layout,
+                    0,
+                    1,
+                    &val_descriptor_info->val_descriptor_set->vk_descriptor_set,
+                    0,
+                    nullptr);
         }
     }
 
@@ -215,6 +231,15 @@ bool VulkanRenderServer::end_target(RenderTarget *p_target) {
     if (target_data != nullptr) {
         if (target_data->val_render_target != nullptr) {
             target_data->val_render_target->end_render(val_instance);
+
+            // TODO: Not immediately submit
+            if (target_data->val_render_target != val_instance->val_main_window) {
+                // TODO: Not always assume this is a window
+                val_instance->await_frame();
+
+                ValWindowRenderTarget *window_rt = reinterpret_cast<ValWindowRenderTarget *>(target_data->val_render_target);
+                window_rt->present_queue(val_instance);
+            }
         }
     }
 
@@ -270,6 +295,7 @@ void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_targ
         if (type == ValRenderTargetCreateInfo::RENDER_TARGET_TYPE_WINDOW) {
             SDLWindowRenderTarget *sdl_target = static_cast<SDLWindowRenderTarget*>(p_render_target);
             create_info.p_window = sdl_target->window;
+            create_info.val_render_pass = val_window_render_pass;
 
             if (sdl_target->window == val_instance->val_main_window->sdl_window) {
                 // The main window for bootstrapping is already populated

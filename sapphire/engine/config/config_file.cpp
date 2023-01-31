@@ -349,3 +349,13 @@ float ConfigFile::try_get_float(const std::string &name, const std::string &sect
 
     return fallback;
 }
+
+ConfigFile::ConfigSection& ConfigFile::get_section(const std::string &name) {
+    for (ConfigSection& section: sections) {
+        if (section.name == name) {
+            return section;
+        }
+    }
+
+    return global_section;
+}

@@ -149,6 +149,7 @@ public:
 #endif
 
     std::vector<ValQueue> val_queues;
+    bool block_await = false;
 };
 
 #endif

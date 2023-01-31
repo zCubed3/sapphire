@@ -38,6 +38,8 @@ public:
     void read_from_path(const std::string &path);
     void read(const std::string &contents);
 
+    ConfigSection &get_section(const std::string &name);
+
     std::string try_get_string(const std::string &name, const std::string &section, const std::string &fallback = "");
     std::vector<std::string> try_get_string_list(const std::string &name, const std::string &section, const std::vector<std::string> &fallback = {});
     std::vector<int> try_get_int_list(const std::string &name, const std::string &section, const std::vector<int> &fallback = {});

@@ -4,6 +4,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "${THIRD_PARTY_DIR}/imgui/imgui_demo.cpp"
         "${THIRD_PARTY_DIR}/imgui/imgui_tables.cpp"
         "${THIRD_PARTY_DIR}/imgui/imgui_widgets.cpp"
+        "${THIRD_PARTY_DIR}/imgui/misc/cpp/imgui_stdlib.cpp"
         "${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_sdl.cpp"
 
         "assets/asset.cpp"

@@ -81,7 +81,12 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
 void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Material *p_material) {
     // We expect the material to have been bound and updated
     // Therefore we just simply grab the shader
-    VulkanShader *vk_shader = reinterpret_cast<VulkanShader *>(p_material->shader);
+    VulkanShader *vk_shader = nullptr;
+    if (p_material != nullptr) {
+        // TODO: Actually do what stupid past me said
+        p_material->bind();
+        vk_shader = reinterpret_cast<VulkanShader *>(p_material->shader);
+    }
 
     if (vk_shader == nullptr) {
         vk_shader = VulkanShader::error_shader;
@@ -132,16 +137,6 @@ void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Material *p_materia
     vkCmdBindVertexBuffers(active_command_buffer, 0, 1, &val_vbo->vk_buffer, &offset);
 
     vkCmdBindIndexBuffer(active_command_buffer, val_ibo->vk_buffer, offset, VK_INDEX_TYPE_UINT32);
-
-    vkCmdBindDescriptorSets(
-            active_command_buffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            vk_shader->val_pipeline->vk_pipeline_layout,
-            0,
-            1,
-            &render_server->val_descriptor_info->val_descriptor_set->vk_descriptor_set,
-            0,
-            nullptr);
 
     vkCmdBindDescriptorSets(
             active_command_buffer,
