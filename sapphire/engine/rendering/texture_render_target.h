@@ -10,9 +10,10 @@ protected:
     Rect rect = {};
 
 public:
-    Texture* texture = nullptr;
-
     TextureRenderTarget(int width, int height);
+
+    void resize(int width, int height);
+    Texture *get_texture();
 
     TargetType get_type() override;
     Rect get_rect() override;

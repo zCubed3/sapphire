@@ -17,6 +17,8 @@ public:
     const char * get_title() override;
 
 protected:
+    void draw_actor_entry(Actor *p_actor);
+
     void draw_contents() override;
 };
 #endif

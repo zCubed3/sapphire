@@ -11,14 +11,14 @@
 #include <engine/assets/static_mesh_asset.h>
 #include <engine/assets/texture_asset.h>
 #include <engine/rendering/render_server.h>
-#include <engine/rendering/texture_render_target.h>
 #include <engine/rendering/sdl_window_render_target.h>
 #include <engine/rendering/shader.h>
 #include <engine/rendering/texture.h>
+#include <engine/rendering/texture_render_target.h>
 #include <engine/scene/mesh_actor.h>
 #include <engine/scene/world.h>
-#include <engine/typing/class_registry.h>
 #include <engine/timing/timing.h>
+#include <engine/typing/class_registry.h>
 
 #ifdef RS_OPENGL4_SUPPORT
 #include <rs_opengl4/rendering/opengl4_render_server.h>
@@ -31,13 +31,14 @@
 #define TEST_MULTI_WINDOW
 
 #if defined(IMGUI_SUPPORT)
+#include <backends/imgui_impl_sdl.h>
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
-#include <backends/imgui_impl_sdl.h>
 
 #include <engine/editor/panels/actor_panel.h>
 #include <engine/editor/panels/renderer_panel.h>
 #include <engine/editor/panels/world_actor_panel.h>
+#include <engine/editor/panels/world_view_panel.h>
 #endif
 
 #include <config/config_file.h>
@@ -45,14 +46,14 @@
 #include <memory>
 
 #include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 #include <gtx/quaternion.hpp>
-#include <gtc/matrix_transform.hpp>
 
 #ifdef TEST_MULTI_WINDOW
 struct ChildWindow {
-    SDL_Window* window;
-    SDLWindowRenderTarget* rt;
+    SDL_Window *window;
+    SDLWindowRenderTarget *rt;
 };
 #endif
 
@@ -114,10 +115,9 @@ int main(int argc, char **argv) {
             SDL_WINDOWPOS_UNDEFINED,
             1280,
             720,
-            window_flags | SDL_WINDOW_RESIZABLE
-    );
+            window_flags | SDL_WINDOW_RESIZABLE);
 
-    SDLWindowRenderTarget* rt_window = new SDLWindowRenderTarget(main_window);
+    SDLWindowRenderTarget *rt_window = new SDLWindowRenderTarget(main_window);
     SDL_SetWindowData(main_window, "RT", rt_window);
 
     if (!render_server->initialize(main_window)) {
@@ -128,15 +128,19 @@ int main(int argc, char **argv) {
     // We need to load our model and our shader
     World *world = new World();
 
-    MeshAsset* mesh = reinterpret_cast<MeshAsset*>(AssetLoader::load_asset("test.obj"));
+    MeshAsset *mesh = reinterpret_cast<MeshAsset *>(AssetLoader::load_asset("test.obj"));
+
+    Asset *test = AssetLoader::load_asset("test.semd");
     MaterialAsset *material = reinterpret_cast<MaterialAsset *>(AssetLoader::load_asset("test.semd"));
 
-    MeshActor* actor = new MeshActor();
+    const char *name = test->get_class_name();
+
+    MeshActor *actor = new MeshActor();
     actor->mesh_asset = mesh;
     actor->material_asset = material;
 
     // TODO: Temp and jank
-    TextureRenderTarget* rt_texture = new TextureRenderTarget(256, 256);
+    TextureRenderTarget *rt_texture = new TextureRenderTarget(256, 256);
     rt_texture->transform.position = {1, 0, 2};
     rt_texture->world = world;
 
@@ -172,18 +176,21 @@ int main(int argc, char **argv) {
     std::string test_semd_path;
     glm::vec3 test_position = {1, 0, 0};
 
-    WorldActorPanel* world_actor_panel = new WorldActorPanel();
+    WorldActorPanel *world_actor_panel = new WorldActorPanel();
     world_actor_panel->target = world;
 
-    ActorPanel* actor_panel = new ActorPanel();
+    ActorPanel *actor_panel = new ActorPanel();
     actor_panel->target = nullptr;
     actor_panel->world = world;
 
     RendererPanel *renderer_panel = new RendererPanel();
+
+    WorldViewPanel *view_panel = new WorldViewPanel();
+    view_panel->world = world;
 #endif
 
 #ifdef TEST_MULTI_WINDOW
-    std::vector<ChildWindow> child_windows {};
+    std::vector<ChildWindow> child_windows{};
 #endif
 
     // We don't have a camera, so we need to move our render target initially
@@ -201,7 +208,7 @@ int main(int argc, char **argv) {
 #if defined(TEST_MULTI_WINDOW)
             size_t index = 0;
             bool closed = false;
-            for (ChildWindow& window: child_windows) {
+            for (ChildWindow &window: child_windows) {
                 if (event.type == SDL_WINDOWEVENT) {
                     if (event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window.window)) {
                         closed = true;
@@ -233,7 +240,7 @@ int main(int argc, char **argv) {
             if (event.type == SDL_WINDOWEVENT) {
                 if (event.window.event == SDL_WINDOWEVENT_RESTORED && event.window.windowID == SDL_GetWindowID(main_window)) {
 #if defined(TEST_MULTI_WINDOW)
-                    for (ChildWindow& window: child_windows) {
+                    for (ChildWindow &window: child_windows) {
                         SDL_RestoreWindow(window.window);
                     }
 #endif
@@ -249,7 +256,7 @@ int main(int argc, char **argv) {
         timing->new_frame();
         float delta = static_cast<float>(timing->get_delta());
 
-        glm::vec3 euler {};
+        glm::vec3 euler{};
         euler.x = sin(world->elapsed_time) * 10;
         euler.y = cos(world->elapsed_time) * 10;
 
@@ -264,7 +271,7 @@ int main(int argc, char **argv) {
         render_server->begin_frame();
 
 #ifdef TEST_MULTI_WINDOW
-        for (ChildWindow& window: child_windows) {
+        for (ChildWindow &window: child_windows) {
             render_server->begin_target(window.rt);
             render_server->begin_imgui(window.rt);
 
@@ -280,6 +287,8 @@ int main(int argc, char **argv) {
             render_server->end_target(window.rt);
         }
 #endif
+
+        view_panel->draw_world(render_server);
 
         render_server->begin_target(rt_texture);
 
@@ -320,16 +329,15 @@ int main(int argc, char **argv) {
             window_name += render_server->get_name();
             window_name += ")";
 
-            SDL_Window* sub_window = SDL_CreateWindow(
+            SDL_Window *sub_window = SDL_CreateWindow(
                     window_name.c_str(),
                     SDL_WINDOWPOS_UNDEFINED,
                     SDL_WINDOWPOS_UNDEFINED,
                     800,
                     600,
-                    window_flags | SDL_WINDOW_RESIZABLE
-            );
+                    window_flags | SDL_WINDOW_RESIZABLE);
 
-            SDLWindowRenderTarget* rt_sub_window = new SDLWindowRenderTarget(sub_window);
+            SDLWindowRenderTarget *rt_sub_window = new SDLWindowRenderTarget(sub_window);
 
             render_server->populate_render_target_data(rt_sub_window);
 
@@ -351,14 +359,20 @@ int main(int argc, char **argv) {
         ImGui::DragFloat3("Position", glm::value_ptr(rt_texture->transform.position), 0.01F);
         ImGui::DragFloat4("Quaternion", glm::value_ptr(rt_texture->transform.quaternion), 0.01F);
         ImGui::DragFloat3("Scale", glm::value_ptr(rt_texture->transform.scale), 0.01F);
-        ImGui::Image(rt_texture->texture->get_imgui_handle(), {256, 256}, {0, 0}, {1, correction});
+        ImGui::Image(rt_texture->get_texture()->get_imgui_handle(), {256, 256}, {0, 0}, {1, correction});
         ImGui::End();
 
-        ImGui::Begin("Panels");
-        ImGui::Checkbox("World", &world_actor_panel->open);
-        ImGui::Checkbox("Actor", &actor_panel->open);
-        ImGui::Checkbox("Renderer", &renderer_panel->open);
-        ImGui::End();
+        ImGui::BeginMainMenuBar();
+
+        if (ImGui::BeginMenu("Panels")) {
+            ImGui::Checkbox("World", &world_actor_panel->open);
+            ImGui::Checkbox("Actor", &actor_panel->open);
+            ImGui::Checkbox("Renderer", &renderer_panel->open);
+
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMainMenuBar();
 
 
         ImGui::Begin("SEMD Debugger");
@@ -367,10 +381,10 @@ int main(int argc, char **argv) {
         ImGui::DragFloat3("Position", glm::value_ptr(test_position), 0.01F);
 
         if (ImGui::Button("Create")) {
-            MeshAsset* debug_mesh = reinterpret_cast<MeshAsset*>(AssetLoader::load_asset(test_obj_path));
+            MeshAsset *debug_mesh = reinterpret_cast<MeshAsset *>(AssetLoader::load_asset(test_obj_path));
             MaterialAsset *debug_material = reinterpret_cast<MaterialAsset *>(AssetLoader::load_asset(test_semd_path));
 
-            MeshActor* debug_actor = new MeshActor();
+            MeshActor *debug_actor = new MeshActor();
             debug_actor->mesh_asset = debug_mesh;
             debug_actor->material_asset = debug_material;
 
@@ -384,10 +398,11 @@ int main(int argc, char **argv) {
         world_actor_panel->draw_panel();
         actor_panel->draw_panel();
         renderer_panel->draw_panel();
+        view_panel->draw_panel();
 
         actor_panel->target = world_actor_panel->selected;
 
-        //ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow();
 #endif
 
 #if defined(IMGUI_SUPPORT)

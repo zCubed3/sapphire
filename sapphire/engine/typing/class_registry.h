@@ -28,8 +28,11 @@ public:
     // TODO: Assertions?
     template<class T>
     static ClassRegisterStatus register_class() {
-        const char* name = T::get_class_name();
-        size_t hash = T::get_class_hash();
+        // We have to construct a temporary instance of T
+        T* temp = new T();
+
+        const char* name = temp->get_class_name();
+        size_t hash = temp->get_class_hash();
 
         if (name == nullptr) {
             return CLASS_REGISTER_NULLPTR;
@@ -41,19 +44,21 @@ public:
         entry.hash = hash;
 
         // Check if the class has a parent
-        const char* parent_name = T::get_parent_class_name();
+        const char* parent_name = temp->get_parent_class_name();
 
         if (parent_name != nullptr) {
             entry.parent_name = parent_name;
-            entry.parent_hash = T::get_parent_class_hash();
+            entry.parent_hash = temp->get_parent_class_hash();
         }
+
+        delete temp;
 
         class_map.emplace(entry.hash, entry);
         return CLASS_REGISTER_SUCCESS;
     }
 
     template<class TChild, class TParent>
-    static bool is_child_of() {
+    static bool is_child_of(TChild* instance) {
         // We need to traverse up the type tree if there isn't a match initially
         size_t hash = TChild::get_class_hash();
         size_t parent_hash = TParent::get_class_hash();

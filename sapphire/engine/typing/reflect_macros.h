@@ -6,8 +6,8 @@
 // TODO: Multiple parents?
 #define REFLECT_BASE(CLASS_NAME)                                                    \
 public:                                                                             \
-    static const char* get_class_name() { return #CLASS_NAME; }                     \
-    static size_t get_class_hash() { return hash_cstr_djb2(#CLASS_NAME); }          \
+    const char* get_class_name() { return #CLASS_NAME; }                            \
+    size_t get_class_hash() { return hash_cstr_djb2(#CLASS_NAME); }                 \
 
 
 #define REFLECT_INHERITANCE_CHECKS(CLASS_NAME)                                      \
@@ -20,15 +20,17 @@ public:                                                                         
 
 #define REFLECT_BASE_CLASS(CLASS_NAME)                                              \
     REFLECT_BASE(CLASS_NAME)                                                        \
-    static const char* get_parent_class_name() { return nullptr; }                  \
-    static size_t get_parent_class_hash() { return -1; }                            \
+    const char* get_parent_class_name() { return nullptr; }                         \
+    size_t get_parent_class_hash() { return -1; }                                   \
+                                                                                    \
     REFLECT_INHERITANCE_CHECKS(CLASS_NAME)                                          \
 
 
 #define REFLECT_CLASS(CLASS_NAME, PARENT_NAME)                                      \
     REFLECT_BASE(CLASS_NAME)                                                        \
-    static const char* get_parent_class_name() { return #PARENT_NAME; }             \
-    static size_t get_parent_class_hash() { return hash_cstr_djb2(#PARENT_NAME); }  \
+    const char* get_parent_class_name() { return #PARENT_NAME; }                    \
+    size_t get_parent_class_hash() { return hash_cstr_djb2(#PARENT_NAME); }         \
+                                                                                    \
     REFLECT_INHERITANCE_CHECKS(CLASS_NAME)                                          \
 
 #endif

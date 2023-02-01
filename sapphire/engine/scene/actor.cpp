@@ -1,12 +1,23 @@
 #include "actor.h"
 
+#include <random>
+
 #include <math/angle_math.h>
 
 #include <gtc/type_ptr.hpp>
 
 #if defined(IMGUI_SUPPORT)
 #include <imgui.h>
+#include <misc/cpp/imgui_stdlib.h>
 #endif
+
+// TODO: Better generate IDs
+Actor::Actor() {
+    std::random_device rd;
+    auto engine = std::default_random_engine(rd());
+
+    id = engine();
+}
 
 Actor::~Actor() {
 
@@ -22,6 +33,12 @@ void Actor::draw(World *p_world) {
 
 #if defined(IMGUI_SUPPORT)
 void Actor::draw_imgui(World *p_world) {
+    if (ImGui::CollapsingHeader("Actor")) {
+        ImGui::InputText("Name", &name);
+
+        ImGui::Text("ID: %zu", id);
+    }
+
     if (ImGui::CollapsingHeader("Transform")) {
         glm::vec3 euler = glm::degrees(glm::eulerAngles(transform.quaternion));
 

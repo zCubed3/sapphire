@@ -6,6 +6,8 @@
 class Texture;
 
 class TextureAsset : public Asset {
+    REFLECT_CLASS(TextureAsset, Asset)
+
 public:
     Texture *texture = nullptr;
 

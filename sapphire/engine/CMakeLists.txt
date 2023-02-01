@@ -53,6 +53,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "editor/panels/actor_panel.cpp"
         "editor/panels/renderer_panel.cpp"
         "editor/panels/world_actor_panel.cpp"
+        "editor/panels/world_view_panel.cpp"
 
         "main.cpp"
 

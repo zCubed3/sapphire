@@ -7,13 +7,22 @@
 class ValImageRenderTarget : public ValRenderTarget {
 protected:
     VkFramebuffer get_framebuffer(ValInstance *p_val_instance) override;
+    VkExtent2D get_extent(ValInstance *p_val_instance) override;
 
 public:
     VkFramebuffer vk_framebuffer = nullptr;
     ValImage* val_color_image = nullptr;
     ValImage* val_depth_image = nullptr;
 
+    VkExtent2D vk_extent {};
+    VkFormat vk_format;
+    ValRenderPass* val_render_pass = nullptr;
+
     ValImageRenderTarget(ValRenderTargetCreateInfo *p_create_info, ValInstance *p_val_instance);
+
+    void recreate_target(ValInstance *p_val_instance);
+
+    void resize(int width, int height, ValInstance *p_val_instance) override;
 };
 
 

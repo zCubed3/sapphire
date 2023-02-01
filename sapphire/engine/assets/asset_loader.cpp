@@ -6,6 +6,10 @@
 #include <engine/assets/loaders/semd_loader.h>
 #include <engine/assets/loaders/stb_image_loader.h>
 
+#include <engine/assets/asset.h>
+#include <engine/assets/texture_asset.h>
+#include <engine/assets/material_asset.h>
+
 std::vector<AssetLoader *> AssetLoader::loaders = {};
 
 void AssetLoader::load_placeholders() {
@@ -20,6 +24,10 @@ void AssetLoader::register_engine_asset_loaders() {
     register_loader<OBJLoader>();
     register_loader<SEMDLoader>();
     register_loader<STBImageLoader>();
+
+    ClassRegistry::register_class<Asset>();
+    ClassRegistry::register_class<TextureAsset>();
+    ClassRegistry::register_class<MaterialAsset>();
 }
 
 Asset *AssetLoader::load_asset(const std::string &path) {

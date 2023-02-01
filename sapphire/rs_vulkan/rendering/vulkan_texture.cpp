@@ -11,9 +11,14 @@
 VulkanTexture::~VulkanTexture() {
     const VulkanRenderServer *rs_instance = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
 
-    if (val_image != nullptr) {
+    if (val_image != nullptr && owns_image) {
         val_image->release(rs_instance->val_instance);
         delete val_image;
+    }
+
+    if (val_imgui_descriptor_set != nullptr) {
+        val_imgui_descriptor_set->release(rs_instance->val_instance);
+        delete val_imgui_descriptor_set;
     }
 }
 

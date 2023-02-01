@@ -7,20 +7,47 @@ VkFramebuffer ValImageRenderTarget::get_framebuffer(ValInstance *p_val_instance)
     return vk_framebuffer;
 }
 
+VkExtent2D ValImageRenderTarget::get_extent(ValInstance *p_val_instance) {
+    return vk_extent;
+}
+
 // TODO: Not use a constructor (for error catching)
 ValImageRenderTarget::ValImageRenderTarget(ValRenderTargetCreateInfo *p_create_info, ValInstance *p_val_instance) {
-    creation_extent = p_create_info->extent;
+    vk_extent = p_create_info->extent;
+    vk_format = p_create_info->format;
+    val_render_pass = p_create_info->val_render_pass;
+
+    recreate_target(p_val_instance);
+}
+
+void ValImageRenderTarget::recreate_target(ValInstance *p_val_instance) {
+    if (val_color_image != nullptr) {
+        val_color_image->release(p_val_instance);
+        delete val_color_image;
+        val_color_image = nullptr;
+    }
+
+    if (val_depth_image != nullptr) {
+        val_depth_image->release(p_val_instance);
+        delete val_depth_image;
+        val_depth_image = nullptr;
+    }
+
+    if (vk_framebuffer != nullptr) {
+        vkDestroyFramebuffer(p_val_instance->vk_device, vk_framebuffer, nullptr);
+        vk_framebuffer = nullptr;
+    }
 
     ValImageCreateInfo color_create_info {};
-    color_create_info.format = p_create_info->format;
-    color_create_info.extent.width = p_create_info->extent.width;
-    color_create_info.extent.height = p_create_info->extent.height;
+    color_create_info.format = vk_format;
+    color_create_info.extent.width = vk_extent.width;
+    color_create_info.extent.height = vk_extent.height;
     color_create_info.usage_flags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     color_create_info.aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT;
 
     ValImageCreateInfo depth_create_info {};
-    depth_create_info.extent.width = p_create_info->extent.width;
-    depth_create_info.extent.height = p_create_info->extent.height;
+    depth_create_info.extent.width = vk_extent.width;
+    depth_create_info.extent.height = vk_extent.height;
     depth_create_info.format = p_val_instance->present_info->vk_depth_format;
     depth_create_info.usage_flags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
     depth_create_info.aspect_flags = VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -36,14 +63,21 @@ ValImageRenderTarget::ValImageRenderTarget(ValRenderTargetCreateInfo *p_create_i
 
     VkFramebufferCreateInfo framebuffer_create_info{};
     framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebuffer_create_info.renderPass = p_create_info->val_render_pass->vk_render_pass;
+    framebuffer_create_info.renderPass = val_render_pass->vk_render_pass;
     framebuffer_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
     framebuffer_create_info.pAttachments = attachments.data();
-    framebuffer_create_info.width = p_create_info->extent.width;
-    framebuffer_create_info.height = p_create_info->extent.height;
+    framebuffer_create_info.width = vk_extent.width;
+    framebuffer_create_info.height = vk_extent.height;
     framebuffer_create_info.layers = 1;
 
     if (vkCreateFramebuffer(p_val_instance->vk_device, &framebuffer_create_info, nullptr, &vk_framebuffer) != VK_SUCCESS) {
         // TODO: Error, failed to create framebuffer!
     }
+}
+
+void ValImageRenderTarget::resize(int width, int height, ValInstance *p_val_instance) {
+    vk_extent.width = width;
+    vk_extent.height = height;
+
+    recreate_target(p_val_instance);
 }

@@ -351,10 +351,8 @@ void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_targ
         p_render_target->data = vulkan_data;
 
         if (type == ValRenderTargetCreateInfo::RENDER_TARGET_TYPE_IMAGE) {
-            TextureRenderTarget *texture_target = reinterpret_cast<TextureRenderTarget *>(p_render_target);
             ValImageRenderTarget *image_target = reinterpret_cast<ValImageRenderTarget*>(val_target);
-
-            texture_target->texture = new VulkanTexture(image_target->val_color_image);
+            vulkan_data->texture = new VulkanTexture(image_target->val_color_image, false);
         }
     }
 }

@@ -11,6 +11,7 @@ public:
     bool open = true;
 
     virtual bool can_close();
+    virtual bool has_menu_bar();
     virtual const char* get_title() = 0;
 
     virtual void draw_panel();

@@ -43,10 +43,8 @@ class ValRenderTarget : public ValReleasable {
 protected:
     // TODO: Expose this?
     virtual VkFramebuffer get_framebuffer(ValInstance *p_val_instance) = 0;
-    virtual VkExtent2D get_extent(ValInstance *p_val_instance);
+    virtual VkExtent2D get_extent(ValInstance *p_val_instance) = 0;
     virtual bool get_wait_for_image();
-
-    VkExtent2D creation_extent {};
 
 public:
     // Each render target has a command buffer
@@ -58,6 +56,8 @@ public:
 
     virtual bool begin_render(ValRenderPass *p_val_render_pass, ValInstance *p_val_instance);
     virtual bool end_render(ValInstance *p_val_instance);
+
+    virtual void resize(int width, int height, ValInstance *p_val_instance);
 
     static ValRenderTarget *create_render_target(ValRenderTargetCreateInfo *p_create_info, ValInstance *p_val_instance);
 };

@@ -13,6 +13,11 @@ public:
     std::string name = "Actor";
     Transform transform;
 
+    size_t id; // TODO: Non-randomized IDs?
+
+    std::vector<Actor*> children;
+
+    Actor();
     virtual ~Actor();
 
     virtual void tick(World* p_world);

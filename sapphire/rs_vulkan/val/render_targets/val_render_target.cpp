@@ -5,10 +5,6 @@
 #include <rs_vulkan/val/render_targets/val_window_render_target.h>
 #include <rs_vulkan/val/pipelines/val_render_pass.h>
 
-VkExtent2D ValRenderTarget::get_extent(ValInstance *p_val_instance) {
-    return creation_extent;
-}
-
 bool ValRenderTarget::get_wait_for_image() {
     return false;
 }
@@ -90,6 +86,10 @@ bool ValRenderTarget::end_render(ValInstance *p_val_instance) {
     }
 
     return true;
+}
+
+void ValRenderTarget::resize(int width, int height, ValInstance *p_val_instance) {
+
 }
 
 ValRenderTarget *ValRenderTarget::create_render_target(ValRenderTargetCreateInfo *p_create_info, ValInstance *p_val_instance) {

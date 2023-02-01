@@ -1,6 +1,10 @@
 #include "vulkan_render_target_data.h"
 
+#include <engine/rendering/render_target.h>
+
 #include <rs_vulkan/rendering/vulkan_render_server.h>
+#include <rs_vulkan/rendering/vulkan_texture.h>
+#include <rs_vulkan/val/render_targets/val_image_render_target.h>
 
 VulkanRenderTargetData::VulkanRenderTargetData(ValRenderTarget *p_val_render_target) {
     val_render_target = p_val_render_target;
@@ -16,4 +20,20 @@ VulkanRenderTargetData::~VulkanRenderTargetData() {
         val_render_target->release(val_instance);
         delete val_render_target;
     }
+}
+
+void VulkanRenderTargetData::resize(int width, int height, RenderTarget* p_target) {
+    if (p_target->get_type() == RenderTarget::TARGET_TYPE_TEXTURE) {
+        const VulkanRenderServer* rs_instance = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+        ValImageRenderTarget *image_target = reinterpret_cast<ValImageRenderTarget*>(val_render_target);
+
+        val_render_target->resize(width, height, rs_instance->val_instance);
+
+        delete texture;
+        texture = new VulkanTexture(image_target->val_color_image, false);
+    }
+}
+
+Texture *VulkanRenderTargetData::get_texture() {
+    return texture;
 }

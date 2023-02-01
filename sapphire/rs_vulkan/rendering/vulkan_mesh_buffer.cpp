@@ -146,7 +146,6 @@ void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Material *p_materia
             0,
             nullptr);
 
-
     vkCmdDrawIndexed(active_command_buffer, tri_count, 1, 0, 0, 0);
 }
 
