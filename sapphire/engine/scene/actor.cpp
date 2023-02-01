@@ -1,5 +1,7 @@
 #include "actor.h"
 
+#include <math/angle_math.h>
+
 #include <gtc/type_ptr.hpp>
 
 #if defined(IMGUI_SUPPORT)
@@ -27,7 +29,9 @@ void Actor::draw_imgui(World *p_world) {
         ImGui::DragFloat3("Euler", glm::value_ptr(euler), 0.02F);
         ImGui::DragFloat3("Scale", glm::value_ptr(transform.scale), 0.02F);
 
-        transform.quaternion = glm::quat(glm::radians(euler));
+        euler = glm::radians(euler);
+
+        transform.quaternion = glm::quat(euler);
     }
 }
 #endif

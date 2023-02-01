@@ -13,9 +13,9 @@ class ValDescriptorSet;
 class VulkanMeshBuffer : public MeshBuffer {
 protected:
     uint32_t tri_count;
+    uint32_t sub_ibo_offset = 0;
 
-    ValBuffer *val_vbo = nullptr;
-    ValBuffer *val_ibo = nullptr;
+    ValBuffer *val_mbo = nullptr;
     ValDescriptorSet *val_object_descriptor_info = nullptr;
 
     // TODO: Temp

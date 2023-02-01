@@ -31,6 +31,8 @@ set(SAPPHIRE_ENGINE_SOURCES
         "data/color.cpp"
         "data/rect.cpp"
 
+        "math/angle_math.cpp"
+
         "rendering/render_target.cpp"
         "rendering/texture_render_target.cpp"
         "rendering/sdl_window_render_target.cpp"

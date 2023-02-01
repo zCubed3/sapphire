@@ -15,12 +15,12 @@
 #include <rs_opengl4/rendering/opengl4_render_server.h>
 #include <rs_opengl4/rendering/opengl4_shader.h>
 
+// TODO: Generate one engine default VAO
 OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
     // TODO: Allow creating mesh buffers without mesh assets?
     // TODO: Other types of mesh buffer for instancing, skinning, etc?
     glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ibo);
+    glGenBuffers(1, &mbo);
 
     // TODO: Updating buffers post-construction
     // TODO: Optional channels?
@@ -55,12 +55,26 @@ OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
     }
 
     glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, mbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mbo);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * p_mesh_asset->get_vertex_count(), vertices, GL_STATIC_DRAW);
+    uint32_t vbo_size = sizeof(Vertex) * p_mesh_asset->get_vertex_count();
+    uint32_t ibo_size = sizeof(uint32_t) * p_mesh_asset->get_triangle_count();
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * p_mesh_asset->get_triangle_count(), triangles, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vbo_size + ibo_size, nullptr, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vbo_size, vertices);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, vbo_size, ibo_size, triangles);
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+
+    const size_t vertex_size = sizeof(Vertex);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertex_size, nullptr);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertex_size, (void *) (sizeof(float) * 3));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertex_size, (void *) (sizeof(float) * 6));
+
+    sub_ibo_offset = vbo_size;
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -101,27 +115,10 @@ void OpenGL4MeshBuffer::render(ObjectBuffer *p_object_buffer, Material *p_materi
 
     glBindVertexArray(vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, mbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mbo);
 
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    //glEnableVertexAttribArray(3);
-
-    const size_t vertex_size = sizeof(Vertex);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertex_size, nullptr);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertex_size, (void *) (sizeof(float) * 3));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertex_size, (void *) (sizeof(float) * 6));
-    //glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, vertex_size, (void *) (sizeof(float) * 8));
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glDrawElements(GL_TRIANGLES, tri_count, GL_UNSIGNED_INT, nullptr);
-
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
-    //glDisableVertexAttribArray(3);
+    glDrawElements(GL_TRIANGLES, tri_count, GL_UNSIGNED_INT, (void*)sub_ibo_offset);
 
     glBindVertexArray(0);
 }

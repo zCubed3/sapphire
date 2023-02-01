@@ -17,7 +17,7 @@ public:
 
     ValStagingBuffer(size_t size, uint32_t usage_flags, ValInstance *p_val_instance);
 
-    void write(void *data, ValInstance *p_val_instance) const;
+    void write(void *data, ValInstance *p_val_instance, size_t offset = 0, size_t size = -1) const;
     void copy_buffer(VkCommandBuffer vk_command_buffer) const;
     ValBuffer* finalize(ValInstance *p_val_instance);
 

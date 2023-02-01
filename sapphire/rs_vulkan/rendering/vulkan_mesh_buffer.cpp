@@ -52,27 +52,25 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
     size_t vbo_size = sizeof(Vertex) * p_mesh_asset->get_vertex_count();
     size_t ibo_size = sizeof(uint32_t) * p_mesh_asset->get_triangle_count();
 
-    ValStagingBuffer* vbo_staging = new ValStagingBuffer(vbo_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, val_instance);
-    ValStagingBuffer* ibo_staging = new ValStagingBuffer(ibo_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, val_instance);
+    sub_ibo_offset = vbo_size;
 
-    vbo_staging->write(vertices, val_instance);
-    ibo_staging->write(triangles, val_instance);
+    size_t mbo_size = vbo_size + ibo_size;
+
+    ValStagingBuffer* mbo_staging = new ValStagingBuffer(mbo_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, val_instance);
+
+    mbo_staging->write(vertices, val_instance, 0, vbo_size);
+    mbo_staging->write(triangles, val_instance, vbo_size, ibo_size);
 
     VkCommandBuffer command_buffer = rs_instance->begin_upload();
 
-    vbo_staging->copy_buffer(command_buffer);
-    ibo_staging->copy_buffer(command_buffer);
+    mbo_staging->copy_buffer(command_buffer);
 
     rs_instance->end_upload(command_buffer);
 
-    val_vbo = vbo_staging->finalize(val_instance);
-    val_ibo = ibo_staging->finalize(val_instance);
+    val_mbo = mbo_staging->finalize(val_instance);
 
-    vbo_staging->release(val_instance);
-    delete vbo_staging;
-
-    ibo_staging->release(val_instance);
-    delete ibo_staging;
+    mbo_staging->release(val_instance);
+    delete mbo_staging;
     
     delete[] vertices;
 }
@@ -134,9 +132,9 @@ void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Material *p_materia
     vkCmdSetScissor(active_command_buffer, 0, 1, &scissor);
 
     VkDeviceSize offset = 0;
-    vkCmdBindVertexBuffers(active_command_buffer, 0, 1, &val_vbo->vk_buffer, &offset);
+    vkCmdBindVertexBuffers(active_command_buffer, 0, 1, &val_mbo->vk_buffer, &offset);
 
-    vkCmdBindIndexBuffer(active_command_buffer, val_ibo->vk_buffer, offset, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(active_command_buffer, val_mbo->vk_buffer, sub_ibo_offset, VK_INDEX_TYPE_UINT32);
 
     vkCmdBindDescriptorSets(
             active_command_buffer,
@@ -159,9 +157,6 @@ VulkanMeshBuffer::~VulkanMeshBuffer() {
     val_object_descriptor_info->release(val_instance);
     delete val_object_descriptor_info;
 
-    val_vbo->release(val_instance);
-    delete val_vbo;
-
-    val_ibo->release(val_instance);
-    delete val_ibo;
+    val_mbo->release(val_instance);
+    delete val_mbo;
 }

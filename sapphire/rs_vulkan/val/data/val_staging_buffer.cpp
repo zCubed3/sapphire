@@ -17,8 +17,8 @@ ValStagingBuffer::ValStagingBuffer(size_t size, uint32_t usage_flags, ValInstanc
             p_val_instance);
 }
 
-void ValStagingBuffer::write(void *data, ValInstance *p_val_instance) const {
-    val_staging_buffer->write(data, p_val_instance);
+void ValStagingBuffer::write(void *data, ValInstance *p_val_instance, size_t offset, size_t size) const {
+    val_staging_buffer->write(data, p_val_instance, offset, size);
 }
 
 void ValStagingBuffer::copy_buffer(VkCommandBuffer vk_command_buffer) const {

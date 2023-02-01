@@ -18,12 +18,17 @@ ValBuffer::ValBuffer(size_t size, uint32_t usage, uint32_t flags, ValInstance *p
     this->size = size;
 }
 
-void ValBuffer::write(void *data, ValInstance *p_val_instance) {
-    if (mapped == nullptr) {
-        vmaMapMemory(p_val_instance->vma_allocator, vma_allocation, &mapped);
+void ValBuffer::write(void *data, ValInstance *p_val_instance, size_t offset, size_t size) {
+    size_t actual = size;
+    if (size == -1) {
+        actual = this->size;
     }
 
-    memcpy(mapped, data, size);
+    if (mapped == nullptr) {
+        vmaMapMemory(p_val_instance->vma_allocator, vma_allocation, reinterpret_cast<void**>(&mapped));
+    }
+
+    memcpy(mapped + offset, data, actual);
 }
 
 void ValBuffer::release(ValInstance *p_val_instance) {

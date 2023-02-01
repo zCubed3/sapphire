@@ -8,9 +8,9 @@ class MeshAsset;
 
 class OpenGL4MeshBuffer : public MeshBuffer {
 protected:
-    uint32_t vao;
-    uint32_t vbo;
-    uint32_t ibo;
+    uint32_t vao = -1;
+    uint32_t mbo = -1;
+    uint32_t sub_ibo_offset = 0;
 
     uint32_t tri_count;
 

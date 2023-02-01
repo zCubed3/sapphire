@@ -10,8 +10,8 @@ class ValInstance;
 
 class ValBuffer : public ValReleasable {
 protected:
-    // Optimization: Leaving memory mapped in Vulkan isn't bad?
-    void *mapped = nullptr;
+    // TODO: Optimization: Leaving memory mapped in Vulkan isn't bad?
+    uint8_t *mapped = nullptr;
 
 public:
     VmaAllocation vma_allocation;
@@ -21,7 +21,7 @@ public:
     ValBuffer() = default;
     ValBuffer(size_t size, uint32_t usage, uint32_t flags, ValInstance *p_val_instance);
 
-    void write(void *data, ValInstance *p_val_instance);
+    void write(void *data, ValInstance *p_val_instance, size_t offset = 0, size_t size = -1);
 
     void release(ValInstance *p_val_instance) override;
 };
