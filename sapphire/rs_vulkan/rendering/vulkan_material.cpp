@@ -15,8 +15,10 @@ void VulkanMaterial::bind() {
     VkCommandBuffer active_command_buffer = rs_instance->val_active_render_target->vk_command_buffer;
     VulkanShader *vk_shader = reinterpret_cast<VulkanShader *>(shader);
 
-    if (val_material_descriptor_info == nullptr && vk_shader->val_material_descriptor_set != nullptr) {
-        val_material_descriptor_info = vk_shader->val_material_descriptor_set->allocate_set(rs_instance->val_instance);
+    if (vk_shader != nullptr) {
+        if (val_material_descriptor_info == nullptr && vk_shader->val_material_descriptor_set != nullptr) {
+            val_material_descriptor_info = vk_shader->val_material_descriptor_set->allocate_set(rs_instance->val_instance);
+        }
     }
 
     if (val_material_descriptor_info != nullptr) {

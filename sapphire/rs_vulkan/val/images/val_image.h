@@ -27,7 +27,8 @@ struct ValImageCreateInfo {
 
     VkExtent3D extent {1, 1, 1};
     uint32_t array_size = 1;
-    uint32_t mip_levels = 1;
+    // TODO: Manual mip loading?
+    bool generate_mips = false;
 
     Dimensions dimensions = DIMENSIONS_2D;
 
@@ -48,7 +49,11 @@ protected:
     ValImage() = default;
     ValBuffer* val_buffer = nullptr;
 
+    bool autogen_mips = false;
+
 public:
+    uint32_t mip_levels = 1;
+
     VkExtent3D vk_extent {};
     VkImage vk_image = nullptr;
     VkImageView vk_image_view = nullptr;
@@ -59,8 +64,10 @@ public:
     static ValImage *create(ValImageCreateInfo *p_create_info, ValInstance *p_val_instance);
 
     void write_bytes(unsigned char *bytes, VkCommandBuffer vk_command_buffer, ValInstance *p_val_instance);
-    void transfer_layout(VkImageLayout old_layout, VkImageLayout new_layout, VkCommandBuffer vk_command_buffer);
     void post_write(ValInstance *p_val_instance);
+
+    void transfer_layout(VkImageLayout old_layout, VkImageLayout new_layout, VkCommandBuffer vk_command_buffer);
+    void generate_mips(VkCommandBuffer vk_command_buffer);
 
     void release(ValInstance *p_val_instance) override;
 };

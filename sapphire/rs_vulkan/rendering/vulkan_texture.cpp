@@ -47,10 +47,11 @@ void VulkanTexture::load_bytes(unsigned char *bytes, int width, int height, int 
     const VulkanRenderServer *rs_instance = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
 
     ValImageCreateInfo create_info{};
+    create_info.generate_mips = true; // TODO: Optional?
     create_info.extent.width = width;
     create_info.extent.height = height;
     create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
-    create_info.usage_flags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    create_info.usage_flags = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
     val_image = ValImage::create(&create_info, rs_instance->val_instance);
 

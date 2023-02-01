@@ -1,5 +1,8 @@
 #include "val_image.h"
 
+#include <cmath>
+#include <algorithm>
+
 #include <rs_vulkan/val/val_instance.h>
 
 ValImage *ValImage::create(ValImageCreateInfo *p_create_info, ValInstance *p_val_instance) {
@@ -36,13 +39,21 @@ ValImage *ValImage::create(ValImageCreateInfo *p_create_info, ValInstance *p_val
         p_create_info->array_size = 6;
     }
 
+    // Calculate the amount of mipmaps we can handle with this texture
+    // TODO: Support this for 3D textures?
+    uint32_t mip_levels = 1;
+
+    if (p_create_info->generate_mips) {
+        mip_levels = static_cast<uint32_t>(std::floor(std::log2(std::max(p_create_info->extent.width, p_create_info->extent.height)))) + 1;
+    }
+
     VkImageCreateInfo image_info {};
     image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     image_info.imageType = image_type;
     image_info.extent.width = p_create_info->extent.width;
     image_info.extent.height = p_create_info->extent.height;
     image_info.extent.depth = p_create_info->extent.depth;
-    image_info.mipLevels = p_create_info->mip_levels;
+    image_info.mipLevels = mip_levels;
     image_info.arrayLayers = p_create_info->array_size;
     image_info.samples = p_create_info->samples;
     image_info.format = p_create_info->format;
@@ -82,7 +93,7 @@ ValImage *ValImage::create(ValImageCreateInfo *p_create_info, ValInstance *p_val
 
     image_view_info.subresourceRange.aspectMask = p_create_info->aspect_flags;
     image_view_info.subresourceRange.baseMipLevel = 0;
-    image_view_info.subresourceRange.levelCount = p_create_info->mip_levels;
+    image_view_info.subresourceRange.levelCount = mip_levels;
     image_view_info.subresourceRange.baseArrayLayer = 0;
     image_view_info.subresourceRange.layerCount = 1;
 
@@ -119,7 +130,7 @@ ValImage *ValImage::create(ValImageCreateInfo *p_create_info, ValInstance *p_val
         sampler_create_info.mipmapMode = sampler_info.mip_mode;
         sampler_create_info.mipLodBias = 0.0f;
         sampler_create_info.minLod = 0.0f;
-        sampler_create_info.maxLod = 0.0f;
+        sampler_create_info.maxLod = static_cast<float>(mip_levels);
 
         if (vkCreateSampler(p_val_instance->vk_device, &sampler_create_info, nullptr, &vk_sampler) != VK_SUCCESS) {
             // TODO: Cleanup
@@ -134,6 +145,8 @@ ValImage *ValImage::create(ValImageCreateInfo *p_create_info, ValInstance *p_val
     image->vma_allocation = vma_allocation;
     image->vk_extent = p_create_info->extent;
     image->vk_aspect_flags = p_create_info->aspect_flags;
+    image->autogen_mips = true;
+    image->mip_levels = mip_levels;
 
     return image;
 }
@@ -171,7 +184,11 @@ void ValImage::write_bytes(unsigned char *bytes, VkCommandBuffer vk_command_buff
                            1,
                            &copy_region);
 
-    transfer_layout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vk_command_buffer);
+    if (autogen_mips) {
+        generate_mips(vk_command_buffer);
+    } else {
+        transfer_layout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vk_command_buffer);
+    }
 }
 
 void ValImage::transfer_layout(VkImageLayout old_layout, VkImageLayout new_layout, VkCommandBuffer vk_command_buffer) {
@@ -185,7 +202,7 @@ void ValImage::transfer_layout(VkImageLayout old_layout, VkImageLayout new_layou
     barrier.image = vk_image;
     barrier.subresourceRange.aspectMask = vk_aspect_flags;
     barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.levelCount = mip_levels;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
 
@@ -220,6 +237,99 @@ void ValImage::transfer_layout(VkImageLayout old_layout, VkImageLayout new_layou
             1,
             &barrier
     );
+}
+
+void ValImage::generate_mips(VkCommandBuffer vk_command_buffer) {
+    VkImageMemoryBarrier barrier{};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.image = vk_image;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.levelCount = 1;
+
+    int32_t mip_width = static_cast<int32_t>(vk_extent.width);
+    int32_t mip_height = static_cast<int32_t>(vk_extent.height);
+
+    for (uint32_t i = 1; i < mip_levels; i++) {
+        barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        barrier.subresourceRange.baseMipLevel = i - 1;
+
+        vkCmdPipelineBarrier(vk_command_buffer,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             0,
+                             0,
+                             nullptr,
+                             0,
+                             nullptr,
+                             1,
+                             &barrier);
+
+        VkImageBlit blit{};
+        blit.srcOffsets[0] = { 0, 0, 0 };
+        blit.srcOffsets[1] = { mip_width, mip_height, 1 };
+        blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        blit.srcSubresource.mipLevel = i - 1;
+        blit.srcSubresource.baseArrayLayer = 0;
+        blit.srcSubresource.layerCount = 1;
+        blit.dstOffsets[0] = { 0, 0, 0 };
+        blit.dstOffsets[1] = { mip_width > 1 ? mip_width / 2 : 1, mip_height > 1 ? mip_height / 2 : 1, 1 };
+        blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        blit.dstSubresource.mipLevel = i;
+        blit.dstSubresource.baseArrayLayer = 0;
+        blit.dstSubresource.layerCount = 1;
+
+        vkCmdBlitImage(vk_command_buffer,
+                       vk_image,
+                       VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                       vk_image,
+                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                       1,
+                       &blit,
+                       VK_FILTER_LINEAR);
+
+        barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        vkCmdPipelineBarrier(vk_command_buffer,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+                             0, nullptr,
+                             0, nullptr,
+                             1, &barrier);
+
+        if (mip_width > 1) {
+            mip_width /= 2;
+        }
+
+        if (mip_height > 1) {
+            mip_height /= 2;
+        }
+    }
+
+    barrier.subresourceRange.baseMipLevel = mip_levels - 1;
+    barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+    vkCmdPipelineBarrier(vk_command_buffer,
+                         VK_PIPELINE_STAGE_TRANSFER_BIT,
+                         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                         0,
+                         0,
+                         nullptr,
+                         0,
+                         nullptr,
+                         1,
+                         &barrier);
 }
 
 void ValImage::post_write(ValInstance *p_val_instance) {
