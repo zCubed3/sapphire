@@ -12,6 +12,7 @@ public:
     bool open = true;
 
     Panel();
+    virtual ~Panel() = default;
 
     virtual bool can_close();
     virtual bool has_menu_bar();

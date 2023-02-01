@@ -21,6 +21,7 @@ public:
     glm::vec3 euler {};
 
     WorldViewPanel();
+    ~WorldViewPanel() override;
 
     const char * get_title() override;
     bool has_menu_bar() override;

@@ -49,13 +49,12 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
         }
     }
 
-    size_t vbo_size = sizeof(Vertex) * p_mesh_asset->get_vertex_count();
-    size_t ibo_size = sizeof(uint32_t) * p_mesh_asset->get_triangle_count();
+    uint32_t vbo_size = sizeof(Vertex) * p_mesh_asset->get_vertex_count();
+    uint32_t ibo_size = sizeof(uint32_t) * p_mesh_asset->get_triangle_count();
 
     sub_ibo_offset = vbo_size;
 
-    size_t mbo_size = vbo_size + ibo_size;
-
+    uint32_t mbo_size = vbo_size + ibo_size;
     ValStagingBuffer* mbo_staging = new ValStagingBuffer(mbo_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, val_instance);
 
     mbo_staging->write(vertices, val_instance, 0, vbo_size);

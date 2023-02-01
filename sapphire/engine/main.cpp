@@ -11,10 +11,10 @@
 #include <engine/assets/static_mesh_asset.h>
 #include <engine/assets/texture_asset.h>
 #include <engine/rendering/render_server.h>
-#include <engine/rendering/sdl_window_render_target.h>
 #include <engine/rendering/shader.h>
 #include <engine/rendering/texture.h>
 #include <engine/rendering/texture_render_target.h>
+#include <engine/rendering/window_render_target.h>
 #include <engine/scene/mesh_actor.h>
 #include <engine/scene/world.h>
 #include <engine/timing/timing.h>
@@ -53,7 +53,7 @@
 #ifdef TEST_MULTI_WINDOW
 struct ChildWindow {
     SDL_Window *window;
-    SDLWindowRenderTarget *rt;
+    WindowRenderTarget *rt;
 };
 #endif
 
@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
             720,
             window_flags | SDL_WINDOW_RESIZABLE);
 
-    SDLWindowRenderTarget *rt_window = new SDLWindowRenderTarget(main_window);
+    WindowRenderTarget *rt_window = new WindowRenderTarget(main_window);
     SDL_SetWindowData(main_window, "RT", rt_window);
 
     if (!render_server->initialize(main_window)) {
@@ -138,13 +138,6 @@ int main(int argc, char **argv) {
     MeshActor *actor = new MeshActor();
     actor->mesh_asset = mesh;
     actor->material_asset = material;
-
-    // TODO: Temp and jank
-    TextureRenderTarget *rt_texture = new TextureRenderTarget(256, 256);
-    rt_texture->transform.position = {1, 0, 2};
-    rt_texture->world = world;
-
-    render_server->populate_render_target_data(rt_texture);
 
     world->add_actor(actor);
 
@@ -291,12 +284,6 @@ int main(int argc, char **argv) {
             panel->draw_world(render_server);
         }
 
-        render_server->begin_target(rt_texture);
-
-        world->draw();
-
-        render_server->end_target(rt_texture);
-
         render_server->begin_target(rt_window);
 
 #if defined(IMGUI_SUPPORT)
@@ -338,7 +325,7 @@ int main(int argc, char **argv) {
                     600,
                     window_flags | SDL_WINDOW_RESIZABLE);
 
-            SDLWindowRenderTarget *rt_sub_window = new SDLWindowRenderTarget(sub_window);
+            WindowRenderTarget *rt_sub_window = new WindowRenderTarget(sub_window);
 
             render_server->populate_render_target_data(rt_sub_window);
 
@@ -352,15 +339,6 @@ int main(int argc, char **argv) {
             child_windows.push_back({sub_window, rt_sub_window});
         }
 
-        ImGui::End();
-
-        float correction = -render_server->get_coordinate_correction().y;
-
-        ImGui::Begin("Render Target");
-        ImGui::DragFloat3("Position", glm::value_ptr(rt_texture->transform.position), 0.01F);
-        ImGui::DragFloat4("Quaternion", glm::value_ptr(rt_texture->transform.quaternion), 0.01F);
-        ImGui::DragFloat3("Scale", glm::value_ptr(rt_texture->transform.scale), 0.01F);
-        ImGui::Image(rt_texture->get_texture()->get_imgui_handle(), {256, 256}, {0, 0}, {1, correction});
         ImGui::End();
 
         ImGui::BeginMainMenuBar();
@@ -403,17 +381,26 @@ int main(int argc, char **argv) {
 
         ImGui::End();
 
+        //ImGui::ShowDemoWindow();
+
         world_actor_panel->draw_panel();
         actor_panel->draw_panel();
         renderer_panel->draw_panel();
 
+        size_t index = 0;
         for (WorldViewPanel* panel: world_panels) {
+            if (!panel->open) {
+                delete panel;
+                world_panels.erase(world_panels.begin() + index);
+
+                break;
+            }
+
             panel->draw_panel();
+            index++;
         }
 
         actor_panel->target = world_actor_panel->selected;
-
-        ImGui::ShowDemoWindow();
 #endif
 
 #if defined(IMGUI_SUPPORT)

@@ -71,9 +71,9 @@ public:
     void populate_render_target_data(RenderTarget *p_render_target) const override;
 
 #if defined(IMGUI_SUPPORT)
-    void initialize_imgui(SDLWindowRenderTarget *p_target) override;
-    bool begin_imgui(SDLWindowRenderTarget *p_target) override;
-    bool end_imgui(SDLWindowRenderTarget *p_target) override;
+    void initialize_imgui(WindowRenderTarget *p_target) override;
+    bool begin_imgui(WindowRenderTarget *p_target) override;
+    bool end_imgui(WindowRenderTarget *p_target) override;
 #endif
 
     // TODO: Make this more abstract?

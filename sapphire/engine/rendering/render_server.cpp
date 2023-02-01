@@ -1,10 +1,10 @@
 #include "render_server.h"
 
 #include <engine/assets/mesh_asset.h>
-#include <engine/rendering/render_target.h>
-#include <engine/rendering/sdl_window_render_target.h>
 #include <engine/rendering/buffers/mesh_buffer.h>
 #include <engine/rendering/buffers/object_buffer.h>
+#include <engine/rendering/render_target.h>
+#include <engine/rendering/window_render_target.h>
 
 #if defined(IMGUI_SUPPORT)
 #include <imgui.h>
@@ -40,7 +40,7 @@ void RenderServer::populate_render_target_data(RenderTarget *p_render_target) co
 }
 
 #if defined(IMGUI_SUPPORT)
-void RenderServer::initialize_imgui(SDLWindowRenderTarget *p_target) {
+void RenderServer::initialize_imgui(WindowRenderTarget *p_target) {
     p_target->imgui_context = ImGui::CreateContext();
     ImGui::SetCurrentContext(p_target->imgui_context);
 

@@ -11,8 +11,8 @@
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/buffers/view_buffer.h>
 #include <engine/rendering/render_target.h>
-#include <engine/rendering/sdl_window_render_target.h>
 #include <engine/rendering/texture_render_target.h>
+#include <engine/rendering/window_render_target.h>
 #include <engine/scene/world.h>
 
 #include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
@@ -185,7 +185,7 @@ bool VulkanRenderServer::present(SDL_Window *p_window) {
 
 void VulkanRenderServer::on_window_resized(SDL_Window *p_window) {
     if (p_window != nullptr) {
-        SDLWindowRenderTarget *rt = reinterpret_cast<SDLWindowRenderTarget *>(SDL_GetWindowData(p_window, "RT"));
+        WindowRenderTarget *rt = reinterpret_cast<WindowRenderTarget *>(SDL_GetWindowData(p_window, "RT"));
         VulkanRenderTargetData *data = reinterpret_cast<VulkanRenderTargetData *>(rt->data);
 
         ValWindowRenderTarget *val_rt = reinterpret_cast<ValWindowRenderTarget *>(data->val_render_target);
@@ -324,7 +324,7 @@ void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_targ
 
         // TODO: Not always assume RENDER_TARGET_TYPE_WINDOW means we can get an SDL window?
         if (type == ValRenderTargetCreateInfo::RENDER_TARGET_TYPE_WINDOW) {
-            SDLWindowRenderTarget *sdl_target = reinterpret_cast<SDLWindowRenderTarget *>(p_render_target);
+            WindowRenderTarget *sdl_target = reinterpret_cast<WindowRenderTarget *>(p_render_target);
             create_info.p_window = sdl_target->window;
             create_info.val_render_pass = val_window_render_pass;
 
@@ -358,7 +358,7 @@ void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_targ
 }
 
 #if defined(IMGUI_SUPPORT)
-void VulkanRenderServer::initialize_imgui(SDLWindowRenderTarget *p_target) {
+void VulkanRenderServer::initialize_imgui(WindowRenderTarget *p_target) {
     ImGuiContext* old_context = ImGui::GetCurrentContext();
 
     RenderServer::initialize_imgui(p_target);
@@ -414,7 +414,7 @@ void VulkanRenderServer::initialize_imgui(SDLWindowRenderTarget *p_target) {
     ImGui::SetCurrentContext(old_context);
 }
 
-bool VulkanRenderServer::begin_imgui(SDLWindowRenderTarget *p_target) {
+bool VulkanRenderServer::begin_imgui(WindowRenderTarget *p_target) {
     ImGui::SetCurrentContext(p_target->imgui_context);
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplSDL2_NewFrame(p_target->window);
@@ -423,7 +423,7 @@ bool VulkanRenderServer::begin_imgui(SDLWindowRenderTarget *p_target) {
     return true;
 }
 
-bool VulkanRenderServer::end_imgui(SDLWindowRenderTarget *p_target) {
+bool VulkanRenderServer::end_imgui(WindowRenderTarget *p_target) {
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), val_active_render_target->vk_command_buffer);
 

@@ -7,7 +7,7 @@
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_target.h>
 #include <engine/rendering/texture_render_target.h>
-#include <engine/rendering/sdl_window_render_target.h>
+#include <engine/rendering/window_render_target.h>
 
 #include <rs_opengl4/rendering/opengl4_mesh_buffer.h>
 #include <rs_opengl4/rendering/opengl4_graphics_buffer.h>
@@ -120,7 +120,7 @@ bool OpenGL4RenderServer::begin_target(RenderTarget *p_target) {
     }
 
     if (p_target->get_type() == RenderTarget::TARGET_TYPE_WINDOW) {
-        SDLWindowRenderTarget *sdl_target = reinterpret_cast<SDLWindowRenderTarget *>(p_target);
+        WindowRenderTarget *sdl_target = reinterpret_cast<WindowRenderTarget *>(p_target);
 
         SDL_GL_MakeCurrent(sdl_target->window, gl_context);
     }
@@ -174,7 +174,7 @@ bool OpenGL4RenderServer::end_target(RenderTarget *p_target) {
     }
 
     if (p_target->get_type() == RenderTarget::TARGET_TYPE_WINDOW) {
-        SDLWindowRenderTarget *sdl_target = reinterpret_cast<SDLWindowRenderTarget *>(p_target);
+        WindowRenderTarget *sdl_target = reinterpret_cast<WindowRenderTarget *>(p_target);
 
         SDL_GL_SwapWindow(sdl_target->window);
     }
@@ -240,7 +240,7 @@ void OpenGL4RenderServer::populate_render_target_data(RenderTarget *p_render_tar
 }
 
 #if defined(IMGUI_SUPPORT)
-void OpenGL4RenderServer::initialize_imgui(SDLWindowRenderTarget *p_target) {
+void OpenGL4RenderServer::initialize_imgui(WindowRenderTarget *p_target) {
     ImGuiContext* old_context = ImGui::GetCurrentContext();
 
     RenderServer::initialize_imgui(p_target);
@@ -251,7 +251,7 @@ void OpenGL4RenderServer::initialize_imgui(SDLWindowRenderTarget *p_target) {
     ImGui::SetCurrentContext(old_context);
 }
 
-bool OpenGL4RenderServer::begin_imgui(SDLWindowRenderTarget *p_target) {
+bool OpenGL4RenderServer::begin_imgui(WindowRenderTarget *p_target) {
     ImGui::SetCurrentContext(p_target->imgui_context);
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(p_target->window);
@@ -260,7 +260,7 @@ bool OpenGL4RenderServer::begin_imgui(SDLWindowRenderTarget *p_target) {
     return true;
 }
 
-bool OpenGL4RenderServer::end_imgui(SDLWindowRenderTarget *p_target) {
+bool OpenGL4RenderServer::end_imgui(WindowRenderTarget *p_target) {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

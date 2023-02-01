@@ -19,6 +19,10 @@ WorldViewPanel::WorldViewPanel() : Panel() {
     rs_instance->populate_render_target_data(target);
 }
 
+WorldViewPanel::~WorldViewPanel() {
+    delete target;
+}
+
 const char *WorldViewPanel::get_title() {
     return "World View";
 }
@@ -103,8 +107,8 @@ void WorldViewPanel::draw_contents() {
         }
 
         target->transform.position += target->transform.quaternion * pan;
-        width = content_size.x;
-        height = content_size.y;
+        width = std::floor(content_size.x);
+        height = std::floor(content_size.y);
     }
 }
 

@@ -9,7 +9,7 @@
 
 typedef struct SDL_Window SDL_Window;
 
-class SDLWindowRenderTarget : public RenderTarget {
+class WindowRenderTarget : public RenderTarget {
 public:
     SDL_Window *window;
 
@@ -17,10 +17,10 @@ public:
     ImGuiContext* imgui_context;
 #endif
 
-    SDLWindowRenderTarget() = delete;
-    SDLWindowRenderTarget(const SDLWindowRenderTarget &) = delete;
+    WindowRenderTarget() = delete;
+    WindowRenderTarget(const WindowRenderTarget &) = delete;
 
-    SDLWindowRenderTarget(SDL_Window *p_window);
+    WindowRenderTarget(SDL_Window *p_window);
 
     Rect get_rect() override;
 

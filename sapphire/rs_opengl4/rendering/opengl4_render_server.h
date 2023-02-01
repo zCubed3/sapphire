@@ -40,9 +40,9 @@ public:
     Material *create_material() const override;
 
 #if defined(IMGUI_SUPPORT)
-    void initialize_imgui(SDLWindowRenderTarget *p_target) override;
-    bool begin_imgui(SDLWindowRenderTarget *p_target) override;
-    bool end_imgui(SDLWindowRenderTarget *p_target) override;
+    void initialize_imgui(WindowRenderTarget *p_target) override;
+    bool begin_imgui(WindowRenderTarget *p_target) override;
+    bool end_imgui(WindowRenderTarget *p_target) override;
 #endif
 
     void populate_mesh_buffer(MeshAsset *p_mesh_asset) const override;
