@@ -55,6 +55,7 @@ void WorldViewPanel::draw_contents() {
         ImGui::DragFloat("Near Plane", &target->near_clip, 0.01F, 0.01F, 1000.0F);
         ImGui::DragFloat("Far Plane", &target->far_clip, 0.01F, 0.01F, 1000.0F);
         ImGui::DragFloat("FOV", &target->fov, 0.01F, 0.01F, 180.0F);
+        ImGui::ColorEdit4("Clear Color", target->clear_color.backing);
 
         ImGui::EndMenu();
     }

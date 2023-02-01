@@ -6,10 +6,9 @@
 // Wrapper around color types
 // Avoids including GLM in whenever color is needed
 class Color {
-protected:
+public:
     float backing[4] = {0, 0, 0, 0};
 
-public:
     Color(float r, float g, float b, float a = 1);
     Color(char r, char g, char b, char a);
 

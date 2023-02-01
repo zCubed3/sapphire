@@ -2,8 +2,15 @@
 
 #include <glad/glad.h>
 
-OpenGL4Texture::OpenGL4Texture(uint32_t handle) {
+OpenGL4Texture::OpenGL4Texture(uint32_t handle, bool owns_handle) {
     this->handle = handle;
+    this->owns_handle = owns_handle;
+}
+
+OpenGL4Texture::~OpenGL4Texture() {
+    if (owns_handle && handle != -1) {
+        glDeleteTextures(1, &handle);
+    }
 }
 
 void *OpenGL4Texture::get_imgui_handle() {

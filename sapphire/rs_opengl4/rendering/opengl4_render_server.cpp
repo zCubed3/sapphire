@@ -233,19 +233,7 @@ void OpenGL4RenderServer::populate_render_target_data(RenderTarget *p_render_tar
 
             Rect rect = image_target->get_rect();
 
-            glGenRenderbuffers(1, &data->depthbuffer_handle);
-            glBindRenderbuffer(GL_RENDERBUFFER, data->depthbuffer_handle);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, rect.width, rect.height);
-
-            glGenTextures(1, &data->texture_handle);
-            glBindTexture(GL_TEXTURE_2D, data->texture_handle);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rect.width, rect.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-
-            // TODO: RenderTarget sampling
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-            image_target->texture = new OpenGL4Texture(data->texture_handle);
+            data->resize(rect.width, rect.height, p_render_target);
             image_target->data = data;
         }
     }

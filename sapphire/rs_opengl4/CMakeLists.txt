@@ -2,6 +2,7 @@ set(SAPPHIRE_RS_OPENGL4_SOURCES
         "glad/src/glad.c"
 
         "rendering/opengl4_render_server.cpp"
+        "rendering/opengl4_render_target_data.cpp"
         "rendering/opengl4_mesh_buffer.cpp"
         "rendering/opengl4_graphics_buffer.cpp"
         "rendering/opengl4_shader.cpp"
