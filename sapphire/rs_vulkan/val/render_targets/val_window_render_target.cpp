@@ -33,7 +33,9 @@ ValWindowRenderTarget::ValWindowRenderTarget(ValRenderTargetCreateInfo *p_create
 }
 
 bool ValWindowRenderTarget::create_swapchain(ValRenderPass *p_val_render_pass, ValInstance* p_val_instance) {
-    p_val_instance->await_frame();
+    if (!p_val_instance->block_await) {
+        p_val_instance->await_frame();
+    }
 
     // TODO: Re-using val images?
     if (val_depth_image != nullptr) {

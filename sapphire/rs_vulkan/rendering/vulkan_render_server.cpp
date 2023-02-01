@@ -361,6 +361,8 @@ void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_targ
 
 #if defined(IMGUI_SUPPORT)
 void VulkanRenderServer::initialize_imgui(SDLWindowRenderTarget *p_target) {
+    ImGuiContext* old_context = ImGui::GetCurrentContext();
+
     RenderServer::initialize_imgui(p_target);
 
     ImGui_ImplSDL2_InitForVulkan(p_target->window);
@@ -410,6 +412,8 @@ void VulkanRenderServer::initialize_imgui(SDLWindowRenderTarget *p_target) {
     ImGui_ImplVulkan_DestroyFontUploadObjects();
 
     imgui_initalized = true;
+
+    ImGui::SetCurrentContext(old_context);
 }
 
 bool VulkanRenderServer::begin_imgui(SDLWindowRenderTarget *p_target) {

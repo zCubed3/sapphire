@@ -27,7 +27,7 @@
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #endif
 
-#define TEST_SECOND_WINDOW
+#define TEST_MULTI_WINDOW
 
 #if defined(IMGUI_SUPPORT)
 #include <imgui.h>
@@ -43,6 +43,13 @@
 #include <gtc/type_ptr.hpp>
 #include <gtx/quaternion.hpp>
 #include <gtc/matrix_transform.hpp>
+
+#ifdef TEST_MULTI_WINDOW
+struct ChildWindow {
+    SDL_Window* window;
+    SDLWindowRenderTarget* rt;
+};
+#endif
 
 int main(int argc, char **argv) {
     // Our platform we're currently running on
@@ -159,28 +166,8 @@ int main(int argc, char **argv) {
     glm::vec3 test_position = {1, 0, 0};
 #endif
 
-#ifdef TEST_SECOND_WINDOW
-    window_name = "Sapphire Sub Window (";
-    window_name += render_server->get_name();
-    window_name += ")";
-
-    SDL_Window *sub_window = SDL_CreateWindow(
-            window_name.c_str(),
-            SDL_WINDOWPOS_UNDEFINED,
-            SDL_WINDOWPOS_UNDEFINED,
-            800,
-            600,
-            window_flags | SDL_WINDOW_RESIZABLE
-    );
-
-    SDLWindowRenderTarget* rt_sub_window = new SDLWindowRenderTarget(sub_window);
-    render_server->populate_render_target_data(rt_sub_window);
-
-    SDL_SetWindowData(sub_window, "RT", rt_sub_window);
-
-    render_server->initialize_imgui(rt_sub_window);
-
-    rt_sub_window->transform.position = {1, 0, 2};
+#ifdef TEST_MULTI_WINDOW
+    std::vector<ChildWindow> child_windows {};
 #endif
 
     // We don't have a camera, so we need to move our render target initially
@@ -195,10 +182,30 @@ int main(int argc, char **argv) {
                 ImGui_ImplSDL2_ProcessEvent(&event);
             }
 
-#if defined(TEST_SECOND_WINDOW)
-            if (SDL_GetWindowFlags(sub_window) & SDL_WINDOW_INPUT_FOCUS) {
-                ImGui::SetCurrentContext(rt_sub_window->imgui_context);
-                ImGui_ImplSDL2_ProcessEvent(&event);
+#if defined(TEST_MULTI_WINDOW)
+            size_t index = 0;
+            bool closed = false;
+            for (ChildWindow& window: child_windows) {
+                if (event.type == SDL_WINDOWEVENT) {
+                    if (event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window.window)) {
+                        closed = true;
+                        break;
+                    }
+                }
+
+                if (SDL_GetWindowFlags(window.window) & SDL_WINDOW_INPUT_FOCUS) {
+                    ImGui::SetCurrentContext(window.rt->imgui_context);
+                    ImGui_ImplSDL2_ProcessEvent(&event);
+                }
+
+                index++;
+            }
+
+            if (closed) {
+                delete child_windows[index].rt;
+                SDL_DestroyWindow(child_windows[index].window);
+
+                child_windows.erase(child_windows.begin() + index);
             }
 #endif
 #endif
@@ -208,6 +215,14 @@ int main(int argc, char **argv) {
             }
 
             if (event.type == SDL_WINDOWEVENT) {
+                if (event.window.event == SDL_WINDOWEVENT_RESTORED && event.window.windowID == SDL_GetWindowID(main_window)) {
+#if defined(TEST_MULTI_WINDOW)
+                    for (ChildWindow& window: child_windows) {
+                        SDL_RestoreWindow(window.window);
+                    }
+#endif
+                }
+
                 if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
                     render_server->on_window_resized(SDL_GetWindowFromID(event.window.windowID));
                 }
@@ -234,20 +249,22 @@ int main(int argc, char **argv) {
 
         render_server->begin_frame();
 
-#ifdef TEST_SECOND_WINDOW
-        render_server->begin_target(rt_sub_window);
-        render_server->begin_imgui(rt_sub_window);
+#ifdef TEST_MULTI_WINDOW
+        for (ChildWindow& window: child_windows) {
+            render_server->begin_target(window.rt);
+            render_server->begin_imgui(window.rt);
 
-        world->draw();
+            world->draw();
 
-        ImGui::Begin("Camera");
-        ImGui::DragFloat3("Position", glm::value_ptr(rt_sub_window->transform.position), 0.01F);
-        ImGui::DragFloat4("Quaternion", glm::value_ptr(rt_sub_window->transform.quaternion), 0.01F);
-        ImGui::DragFloat3("Scale", glm::value_ptr(rt_sub_window->transform.scale), 0.01F);
-        ImGui::End();
+            ImGui::Begin("Camera");
+            ImGui::DragFloat3("Position", glm::value_ptr(window.rt->transform.position), 0.01F);
+            ImGui::DragFloat4("Quaternion", glm::value_ptr(window.rt->transform.quaternion), 0.01F);
+            ImGui::DragFloat3("Scale", glm::value_ptr(window.rt->transform.scale), 0.01F);
+            ImGui::End();
 
-        render_server->end_imgui(rt_sub_window);
-        render_server->end_target(rt_sub_window);
+            render_server->end_imgui(window.rt);
+            render_server->end_target(window.rt);
+        }
 #endif
 
         render_server->begin_target(rt_texture);
@@ -281,6 +298,37 @@ int main(int argc, char **argv) {
         }
 
         double average = floor(sum / count);
+
+        ImGui::Begin("Child Window Test");
+
+        if (ImGui::Button("Create Window")) {
+            window_name = "Sapphire Sub Window (";
+            window_name += render_server->get_name();
+            window_name += ")";
+
+            SDL_Window* sub_window = SDL_CreateWindow(
+                    window_name.c_str(),
+                    SDL_WINDOWPOS_UNDEFINED,
+                    SDL_WINDOWPOS_UNDEFINED,
+                    800,
+                    600,
+                    window_flags | SDL_WINDOW_RESIZABLE
+            );
+
+            SDLWindowRenderTarget* rt_sub_window = new SDLWindowRenderTarget(sub_window);
+
+            render_server->populate_render_target_data(rt_sub_window);
+
+            SDL_SetWindowData(sub_window, "RT", rt_sub_window);
+
+            render_server->initialize_imgui(rt_sub_window);
+
+            rt_sub_window->transform.position = {1, 0, 2};
+
+            child_windows.push_back({sub_window, rt_sub_window});
+        }
+
+        ImGui::End();
 
         ImGui::Begin("Render Target");
         ImGui::DragFloat3("Position", glm::value_ptr(rt_texture->transform.position), 0.01F);
