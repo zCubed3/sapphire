@@ -26,7 +26,9 @@ option(RS_VULKAN_SUPPORT "Compiles and links Vulkan Render Server support into t
 
 option(IMGUI_SUPPORT "Compiles ImGui support into the engine" ON)
 
-# TODO: Allow disabling SDL
+#set(IMGUI_SUPPORT OFF)
+
+# TODO: Allow disabling SDL?
 
 option(DISABLE_RTTI "Disables RTTI support (in favor of the engine type system)" ON)
 

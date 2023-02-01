@@ -128,12 +128,8 @@ int main(int argc, char **argv) {
     // We need to load our model and our shader
     World *world = new World();
 
-    MeshAsset *mesh = reinterpret_cast<MeshAsset *>(AssetLoader::load_asset("test.obj"));
-
-    Asset *test = AssetLoader::load_asset("test.semd");
-    MaterialAsset *material = reinterpret_cast<MaterialAsset *>(AssetLoader::load_asset("test.semd"));
-
-    const char *name = test->get_class_name();
+    std::shared_ptr<MeshAsset> mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.obj"));
+    std::shared_ptr<MaterialAsset> material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test.semd"));
 
     MeshActor *actor = new MeshActor();
     actor->mesh_asset = mesh;
@@ -280,9 +276,11 @@ int main(int argc, char **argv) {
         }
 #endif
 
+#if defined(IMGUI_SUPPORT)
         for (WorldViewPanel* panel: world_panels) {
             panel->draw_world(render_server);
         }
+#endif
 
         render_server->begin_target(rt_window);
 
@@ -367,12 +365,12 @@ int main(int argc, char **argv) {
         ImGui::DragFloat3("Position", glm::value_ptr(test_position), 0.01F);
 
         if (ImGui::Button("Create")) {
-            MeshAsset *debug_mesh = reinterpret_cast<MeshAsset *>(AssetLoader::load_asset(test_obj_path));
-            MaterialAsset *debug_material = reinterpret_cast<MaterialAsset *>(AssetLoader::load_asset(test_semd_path));
+            std::shared_ptr<MeshAsset> debug_mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset(test_obj_path));
+            std::shared_ptr<MaterialAsset> debug_mat = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset(test_semd_path));
 
             MeshActor *debug_actor = new MeshActor();
             debug_actor->mesh_asset = debug_mesh;
-            debug_actor->material_asset = debug_material;
+            debug_actor->material_asset = debug_mat;
 
             debug_actor->transform.position = test_position;
 
@@ -414,12 +412,11 @@ int main(int argc, char **argv) {
         render_server->present(main_window);
     }
 
-    AssetLoader::unload_all_placeholders();
+    AssetLoader::unload_all_assets();
 
     delete actor;
-    delete mesh;
-    delete material;
 
+    render_server->release_imgui(rt_window);
     delete rt_window;
 
     delete render_server;

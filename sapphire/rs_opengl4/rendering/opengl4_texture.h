@@ -13,7 +13,10 @@ public:
     OpenGL4Texture(uint32_t handle, bool owns_handle = true);
     ~OpenGL4Texture() override;
 
+#if defined(IMGUI_SUPPORT)
     void * get_imgui_handle() override;
+#endif
+
     void load_bytes(unsigned char *bytes, int width, int height, int channels) override;
 };
 

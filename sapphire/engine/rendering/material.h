@@ -12,6 +12,8 @@ public:
 
     Shader *shader;
 
+    virtual ~Material() = default;
+
     virtual bool make_from_semd(ConfigFile *p_semd_file);
 
     virtual void bind() = 0;

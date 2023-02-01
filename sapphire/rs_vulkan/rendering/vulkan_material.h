@@ -9,6 +9,8 @@ class VulkanMaterial : public Material {
 public:
     ValDescriptorSet *val_material_descriptor_info = nullptr;
 
+    ~VulkanMaterial() override;
+
     void bind() override;
 };
 

@@ -3,6 +3,8 @@
 
 #include <engine/scene/actor.h>
 
+#include <memory>
+
 class MeshAsset;
 class MaterialAsset;
 class ObjectBuffer;
@@ -13,8 +15,8 @@ class MeshActor : public Actor {
 
 public:
     ObjectBuffer* buffer = nullptr;
-    MeshAsset* mesh_asset = nullptr;
-    MaterialAsset * material_asset = nullptr;
+    std::shared_ptr<MeshAsset> mesh_asset = nullptr;
+    std::shared_ptr<MaterialAsset> material_asset = nullptr;
 
     MeshActor();
     ~MeshActor() override;

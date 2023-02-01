@@ -16,10 +16,12 @@ VulkanTexture::~VulkanTexture() {
         delete val_image;
     }
 
+#if defined(IMGUI_SUPPORT)
     if (val_imgui_descriptor_set != nullptr) {
         val_imgui_descriptor_set->release(rs_instance->val_instance);
         delete val_imgui_descriptor_set;
     }
+#endif
 }
 
 VulkanTexture::VulkanTexture(ValImage *val_image, bool owns_image) {

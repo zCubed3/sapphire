@@ -80,6 +80,7 @@ public:
     virtual void initialize_imgui(WindowRenderTarget *p_target);
     virtual bool begin_imgui(WindowRenderTarget *p_target) = 0;
     virtual bool end_imgui(WindowRenderTarget *p_target) = 0;
+    virtual void release_imgui(WindowRenderTarget *p_target);
 #endif
 };
 

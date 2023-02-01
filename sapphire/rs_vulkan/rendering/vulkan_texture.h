@@ -20,7 +20,10 @@ public:
     VulkanTexture(ValImage *val_image, bool owns_image = true);
     ~VulkanTexture() override;
 
+#if defined(IMGUI_SUPPORT)
     void * get_imgui_handle() override;
+#endif
+
     void load_bytes(unsigned char *bytes, int width, int height, int channels) override;
 };
 

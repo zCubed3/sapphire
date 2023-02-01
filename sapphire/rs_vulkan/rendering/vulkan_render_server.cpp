@@ -44,6 +44,11 @@ VulkanRenderServer::~VulkanRenderServer() {
     val_window_render_pass->release(val_instance);
     delete val_window_render_pass;
 
+    val_target_render_pass->release(val_instance);
+    delete val_target_render_pass;
+
+    delete VulkanShader::error_shader;
+
     //VulkanMeshBuffer::transform_ubo->release(val_instance);
     //delete VulkanMeshBuffer::transform_ubo;
 
@@ -428,6 +433,10 @@ bool VulkanRenderServer::end_imgui(WindowRenderTarget *p_target) {
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), val_active_render_target->vk_command_buffer);
 
     return true;
+}
+
+void VulkanRenderServer::release_imgui(WindowRenderTarget *p_target) {
+    RenderServer::release_imgui(p_target);
 }
 #endif
 

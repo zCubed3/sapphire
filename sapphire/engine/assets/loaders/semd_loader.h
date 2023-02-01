@@ -9,10 +9,13 @@
 class SEMDLoader : public AssetLoader {
     REFLECT_CLASS(SEMDLoader, AssetLoader);
 
+protected:
+    void release_cache() override;
+
 public:
     std::vector<std::string> get_extensions() override;
 
-    Asset * load_from_path(const std::string &path, const std::string& extension) override;
+    std::shared_ptr<Asset> load_from_path(const std::string &path, const std::string& extension) override;
 };
 
 

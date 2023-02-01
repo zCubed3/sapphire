@@ -13,7 +13,12 @@ std::vector<std::string> SEMDLoader::get_extensions() {
     return {"semd", "bsemd"};
 }
 
-Asset *SEMDLoader::load_from_path(const std::string &path, const std::string& extension) {
+void SEMDLoader::release_cache() {
+    AssetLoader::release_cache();
+    Shader::release_cache();
+}
+
+std::shared_ptr<Asset> SEMDLoader::load_from_path(const std::string &path, const std::string& extension) {
     const RenderServer* rs_instance = RenderServer::get_singleton();
 
     if (rs_instance == nullptr) {
@@ -57,7 +62,8 @@ Asset *SEMDLoader::load_from_path(const std::string &path, const std::string& ex
         MaterialAsset *asset = new MaterialAsset();
         asset->material = material;
 
-        return asset;
+        // TODO: Use material name instead
+        return cache_asset(sesd_name, asset);
     }
 
     if (extension == "bsemd") {

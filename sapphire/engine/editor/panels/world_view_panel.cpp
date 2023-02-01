@@ -1,5 +1,6 @@
 #include "world_view_panel.h"
 
+#if defined(IMGUI_SUPPORT)
 #include <engine/rendering/render_server.h>
 #include <engine/rendering/texture.h>
 
@@ -111,4 +112,4 @@ void WorldViewPanel::draw_contents() {
         height = std::floor(content_size.y);
     }
 }
-
+#endif

@@ -9,6 +9,15 @@
 #include <rs_vulkan/val/pipelines/val_pipeline.h>
 #include <rs_vulkan/val/images/val_image.h>
 
+VulkanMaterial::~VulkanMaterial() {
+    const VulkanRenderServer *rs_instance = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
+
+    if (val_material_descriptor_info != nullptr) {
+        val_material_descriptor_info->release(rs_instance->val_instance);
+        delete val_material_descriptor_info;
+    }
+}
+
 void VulkanMaterial::bind() {
     const VulkanRenderServer *rs_instance = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
 
@@ -25,21 +34,20 @@ void VulkanMaterial::bind() {
         if (!shader->parameters.empty()) {
             // Whenever we apply a parameter we check if it has been overriden
             for (Shader::ShaderParameter& param: shader->parameters) {
-                void* data = nullptr;
+                void* data = param.data;
+                std::shared_ptr<Asset> asset_ref = param.asset_ref;
+
                 for (Shader::ShaderParameter& override_param: parameter_overrides) {
                     if (override_param.name == param.name) {
                         data = override_param.data;
+                        asset_ref = override_param.asset_ref;
                         break;
                     }
                 }
 
-                if (data == nullptr) {
-                    data = param.data;
-                }
-
                 if (param.type == Shader::SHADER_PARAMETER_TEXTURE) {
                     // TODO: Not reference assets and instead reference the underlying texture
-                    TextureAsset* texture = reinterpret_cast<TextureAsset*>(data);
+                    std::shared_ptr<TextureAsset> texture = std::reinterpret_pointer_cast<TextureAsset>(asset_ref);
                     VulkanTexture* vulkan_texture = reinterpret_cast<VulkanTexture*>(texture->texture);
 
                     ValDescriptorSetWriteInfo write_info {};

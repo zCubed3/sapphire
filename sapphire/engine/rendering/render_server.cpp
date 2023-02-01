@@ -50,4 +50,8 @@ void RenderServer::initialize_imgui(WindowRenderTarget *p_target) {
 
     ImGui::StyleColorsClassic(&style);
 }
+
+void RenderServer::release_imgui(WindowRenderTarget *p_target) {
+
+}
 #endif

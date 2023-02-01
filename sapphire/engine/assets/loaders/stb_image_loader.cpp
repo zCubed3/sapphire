@@ -12,7 +12,7 @@ std::vector<std::string> STBImageLoader::get_extensions() {
     return {"png", "jpg", "jpeg", "bmp", "tga"};
 }
 
-Asset *STBImageLoader::load_from_path(const std::string &path, const std::string &extension) {
+std::shared_ptr<Asset> STBImageLoader::load_from_path(const std::string &path, const std::string &extension) {
     if (!Platform::get_singleton()->file_exists(path)) {
         return nullptr;
     }
@@ -34,5 +34,5 @@ Asset *STBImageLoader::load_from_path(const std::string &path, const std::string
 
     delete[] bytes;
 
-    return asset;
+    return cache_asset(path, asset);
 }

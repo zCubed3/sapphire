@@ -4,6 +4,12 @@
 
 std::unordered_map<std::string, Shader*> Shader::shader_cache = {};
 
+void Shader::release_cache() {
+    for (auto pair: shader_cache) {
+        delete pair.second;
+    }
+}
+
 Shader *Shader::get_cached_shader(const std::string &name) {
     auto iter = shader_cache.find(name);
 
@@ -18,6 +24,8 @@ void Shader::cache_shader(Shader *shader) {
     if (shader == nullptr) {
         return;
     }
+
+    shader_cache.emplace(shader->name, shader);
 }
 
 bool Shader::make_from_sesd(ConfigFile *p_sesd_file) {

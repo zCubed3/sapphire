@@ -17,8 +17,9 @@ bool Material::make_from_semd(ConfigFile *p_semd_file) {
             if (param.name == entry.name) {
                 Shader::ShaderParameter param_override = param;
 
+                // TODO: Actually abide by smart pointers
                 if (param_override.type == Shader::SHADER_PARAMETER_TEXTURE) {
-                    param_override.data = reinterpret_cast<TextureAsset *>(AssetLoader::load_asset(entry.string_value));
+                    param_override.asset_ref = AssetLoader::load_asset(entry.string_value);
                 }
 
                 parameter_overrides.push_back(param_override);

@@ -74,6 +74,7 @@ public:
     void initialize_imgui(WindowRenderTarget *p_target) override;
     bool begin_imgui(WindowRenderTarget *p_target) override;
     bool end_imgui(WindowRenderTarget *p_target) override;
+    void release_imgui(WindowRenderTarget *p_target) override;
 #endif
 
     // TODO: Make this more abstract?

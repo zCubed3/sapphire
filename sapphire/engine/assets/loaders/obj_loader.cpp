@@ -17,7 +17,7 @@ std::vector<std::string> OBJLoader::get_extensions() {
     return {"obj"};
 }
 
-Asset *OBJLoader::load_from_path(const std::string &path, const std::string& extension) {
+std::shared_ptr<Asset> OBJLoader::load_from_path(const std::string &path, const std::string& extension) {
     std::ifstream file(path);
 
     if (file.is_open()) {
@@ -25,6 +25,7 @@ Asset *OBJLoader::load_from_path(const std::string &path, const std::string& ext
         std::vector<glm::vec3> unweld_normals;
         std::vector<glm::vec2> unweld_tex_coords;
         std::vector<OBJTriangle> unweld_triangles;
+        std::string name = "";
 
         std::string line;
         while (std::getline(file, line)) {
@@ -96,6 +97,10 @@ Asset *OBJLoader::load_from_path(const std::string &path, const std::string& ext
                     if (pos == std::string::npos)
                         break;
                 }
+            }
+
+            if (id[0] == 'o') {
+                name = contents;
             }
         }
 
@@ -170,7 +175,7 @@ Asset *OBJLoader::load_from_path(const std::string &path, const std::string& ext
 
         RenderServer::get_singleton()->populate_mesh_buffer(mesh);
 
-        return mesh;
+        return cache_asset(name, mesh);
     }
 
     return nullptr;

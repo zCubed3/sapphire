@@ -3,13 +3,21 @@
 
 #include <string>
 #include <unordered_map>
+#include <memory>
 
 class ConfigFile;
 class TextureAsset;
+class Asset;
+class SEMDLoader;
 
 class Shader {
+    // TODO: Not use friends?
+    friend SEMDLoader;
+
 protected:
     static std::unordered_map<std::string, Shader*> shader_cache;
+
+    static void release_cache();
 
     enum CullMode {
         CULL_MODE_BACK,
@@ -41,6 +49,7 @@ public:
         std::string name;
         uint32_t location;
         void* data;
+        std::shared_ptr<Asset> asset_ref;
     };
 
     std::string name;

@@ -13,9 +13,11 @@ OpenGL4Texture::~OpenGL4Texture() {
     }
 }
 
+#if defined(IMGUI_SUPPORT)
 void *OpenGL4Texture::get_imgui_handle() {
     return (void*)handle;
 }
+#endif
 
 // TODO: Support more complex textures
 void OpenGL4Texture::load_bytes(unsigned char *bytes, int width, int height, int channels) {

@@ -15,6 +15,8 @@ class MaterialAsset : public Asset {
 
 public:
     Material* material = nullptr;
+
+    ~MaterialAsset() override;
 };
 
 #endif
