@@ -19,14 +19,9 @@ class ValWindowRenderTarget : public ValRenderTarget {
 protected:
     VkExtent2D get_extent(ValInstance *p_val_instance) override;
     VkFramebuffer get_framebuffer(ValInstance *p_val_instance) override;
+    bool get_wait_for_image() override;
 
 public:
-    struct PresentInfo {
-        VkSurfaceFormatKHR vk_color_format;
-        VkSurfaceFormatKHR vk_depth_format;
-        VkPresentModeKHR vk_mode;
-    };
-
     VkSurfaceKHR vk_surface = nullptr;
     VkSwapchainKHR vk_swapchain = nullptr;
     VkSurfaceCapabilitiesKHR vk_capabilities;

@@ -8,10 +8,11 @@ class ValImageRenderTarget : public ValRenderTarget {
 protected:
     VkFramebuffer get_framebuffer(ValInstance *p_val_instance) override;
 
-    VkFramebuffer vk_framebuffer = nullptr;
-    ValImage* val_image = nullptr;
-
 public:
+    VkFramebuffer vk_framebuffer = nullptr;
+    ValImage* val_color_image = nullptr;
+    ValImage* val_depth_image = nullptr;
+
     ValImageRenderTarget(ValRenderTargetCreateInfo *p_create_info, ValInstance *p_val_instance);
 };
 

@@ -21,6 +21,9 @@ struct ValRenderTargetCreateInfo {
 
     RenderTargetType type = RenderTargetType::RENDER_TARGET_TYPE_IMAGE;
 
+    // If type is RENDER_TARGET_TYPE_WINDOW, format is ignored!
+    VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
+
     // If type is RENDER_TARGET_TYPE_IMAGE, extent is ignored!
     VkExtent2D extent;
 
@@ -41,6 +44,7 @@ protected:
     // TODO: Expose this?
     virtual VkFramebuffer get_framebuffer(ValInstance *p_val_instance) = 0;
     virtual VkExtent2D get_extent(ValInstance *p_val_instance);
+    virtual bool get_wait_for_image();
 
     VkExtent2D creation_extent {};
 

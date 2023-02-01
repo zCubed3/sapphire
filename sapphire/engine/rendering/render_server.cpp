@@ -2,8 +2,13 @@
 
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_target.h>
+#include <engine/rendering/sdl_window_render_target.h>
 #include <engine/rendering/buffers/mesh_buffer.h>
 #include <engine/rendering/buffers/object_buffer.h>
+
+#if defined(IMGUI_SUPPORT)
+#include <imgui.h>
+#endif
 
 RenderServer *RenderServer::singleton = nullptr;
 
@@ -33,3 +38,15 @@ void RenderServer::populate_render_target_data(RenderTarget *p_render_target) co
         p_render_target->view_buffer = new ViewBuffer(buffer);
     }
 }
+
+#if defined(IMGUI_SUPPORT)
+void RenderServer::initialize_imgui(SDLWindowRenderTarget *p_target) {
+    p_target->imgui_context = ImGui::CreateContext();
+    ImGui::SetCurrentContext(p_target->imgui_context);
+
+    ImGuiStyle &style = ImGui::GetStyle();
+    ImGuiIO& io = ImGui::GetIO();
+
+    ImGui::StyleColorsClassic(&style);
+}
+#endif

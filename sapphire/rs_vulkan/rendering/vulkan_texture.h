@@ -4,13 +4,23 @@
 #include <engine/rendering/texture.h>
 
 class ValImage;
+class ValDescriptorSet;
 
 class VulkanTexture : public Texture {
+protected:
+#if defined(IMGUI_SUPPORT)
+    ValDescriptorSet *val_imgui_descriptor_set = nullptr;
+#endif
+    bool owns_image = true;
+
 public:
     ValImage *val_image = nullptr;
 
+    VulkanTexture() = default;
+    VulkanTexture(ValImage *val_image, bool owns_image = true);
     ~VulkanTexture() override;
 
+    void * get_imgui_handle() override;
     void load_bytes(unsigned char *bytes, int width, int height, int channels) override;
 };
 

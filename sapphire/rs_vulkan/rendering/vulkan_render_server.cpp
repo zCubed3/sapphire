@@ -1,5 +1,4 @@
 #include "vulkan_render_server.h"
-
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -10,24 +9,26 @@
 #include <SDL_vulkan.h>
 
 #include <engine/assets/mesh_asset.h>
+#include <engine/rendering/buffers/view_buffer.h>
 #include <engine/rendering/render_target.h>
 #include <engine/rendering/sdl_window_render_target.h>
-#include <engine/rendering/buffers/view_buffer.h>
+#include <engine/rendering/texture_render_target.h>
 #include <engine/scene/world.h>
 
+#include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
+#include <rs_vulkan/rendering/vulkan_material.h>
 #include <rs_vulkan/rendering/vulkan_mesh_buffer.h>
 #include <rs_vulkan/rendering/vulkan_render_target_data.h>
-#include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
 #include <rs_vulkan/rendering/vulkan_shader.h>
 #include <rs_vulkan/rendering/vulkan_texture.h>
-#include <rs_vulkan/rendering/vulkan_material.h>
 
 #include <rs_vulkan/val/pipelines/val_pipeline.h>
+#include <rs_vulkan/val/render_targets/val_image_render_target.h>
 
 #if defined(IMGUI_SUPPORT)
-#include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_vulkan.h>
+#include <imgui.h>
 #endif
 
 #define RS_VULKAN_DEBUG
@@ -53,10 +54,9 @@ VulkanRenderServer::~VulkanRenderServer() {
 }
 
 void VulkanRenderServer::register_rs_asset_loaders() {
-
 }
 
-const char* VulkanRenderServer::get_name() const {
+const char *VulkanRenderServer::get_name() const {
     // TODO: Include API version?
     return "Vulkan";
 }
@@ -88,14 +88,14 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     // Vulkan is so fun! :(
 
-    ValInstanceCreateInfo val_create_info {};
+    ValInstanceCreateInfo val_create_info{};
 
     val_create_info.engine_name = "Sapphire Engine";
     val_create_info.application_name = "Sapphire Application";
 
     // TODO: Optional SDL?
     // TODO: Allow switching between sRGB and Linear
-    ValInstancePresentPreferences present_preferences {};
+    ValInstancePresentPreferences present_preferences{};
     present_preferences.use_vsync = true;
 
     val_create_info.p_present_preferences = &present_preferences;
@@ -106,8 +106,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
 #ifdef RS_VULKAN_DEBUG
     val_create_info.validation_layers = {
-        {"VK_LAYER_KHRONOS_validation", 0}
-    };
+            {"VK_LAYER_KHRONOS_validation", 0}};
 #endif
 
     val_create_info.requested_queues = {
@@ -120,22 +119,30 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     // Val creates a render target for our main window
     // The surface is created but that's it, we need to initialize the rest
-    ValRenderPassBuilder render_pass_builder {};
+    ValRenderPassBuilder window_render_pass_builder{};
 
-    ValRenderPassColorAttachmentInfo present_color_info {};
-    present_color_info.format = val_instance->present_info->vk_color_format;
-    present_color_info.final_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    present_color_info.ref_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    ValRenderPassColorAttachmentInfo color_info{};
+    color_info.format = val_instance->present_info->vk_color_format;
+    color_info.final_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    color_info.ref_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    ValRenderPassDepthStencilAttachmentInfo depth_stencil_color_info {};
-    depth_stencil_color_info.format = val_instance->present_info->vk_depth_format;
-    depth_stencil_color_info.final_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    depth_stencil_color_info.ref_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    ValRenderPassDepthStencilAttachmentInfo depth_stencil_info{};
+    depth_stencil_info.format = val_instance->present_info->vk_depth_format;
+    depth_stencil_info.final_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    depth_stencil_info.ref_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    render_pass_builder.push_color_attachment(&present_color_info);
-    render_pass_builder.push_depth_attachment(&depth_stencil_color_info);
+    window_render_pass_builder.push_color_attachment(&color_info);
+    window_render_pass_builder.push_depth_attachment(&depth_stencil_info);
 
-    val_window_render_pass = render_pass_builder.build(val_instance);
+    val_window_render_pass = window_render_pass_builder.build(val_instance);
+
+    ValRenderPassBuilder target_render_pass_builder{};
+
+    color_info.final_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    target_render_pass_builder.push_color_attachment(&color_info);
+    target_render_pass_builder.push_depth_attachment(&depth_stencil_info);
+
+    val_target_render_pass = target_render_pass_builder.build(val_instance);
 
     val_instance->val_main_window->create_swapchain(val_window_render_pass, val_instance);
 
@@ -145,6 +152,15 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
     val_descriptor_info = val_set_builder.build(val_instance)[0];
+
+#if defined(IMGUI_SUPPORT)
+    ValDescriptorSetBuilder val_imgui_set_builder;
+
+    val_imgui_set_builder.push_pre_allocate(false);
+    val_imgui_set_builder.push_binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    val_imgui_descriptor_info = val_imgui_set_builder.build(val_instance)[0];
+#endif
 
     // TODO: Allow the user to create their own vertex types
     val_default_vertex_input = {};
@@ -169,10 +185,10 @@ bool VulkanRenderServer::present(SDL_Window *p_window) {
 
 void VulkanRenderServer::on_window_resized(SDL_Window *p_window) {
     if (p_window != nullptr) {
-        SDLWindowRenderTarget* rt = reinterpret_cast<SDLWindowRenderTarget*>(SDL_GetWindowData(p_window, "RT"));
-        VulkanRenderTargetData* data = reinterpret_cast<VulkanRenderTargetData*>(rt->data);
+        SDLWindowRenderTarget *rt = reinterpret_cast<SDLWindowRenderTarget *>(SDL_GetWindowData(p_window, "RT"));
+        VulkanRenderTargetData *data = reinterpret_cast<VulkanRenderTargetData *>(rt->data);
 
-        ValWindowRenderTarget* val_rt = reinterpret_cast<ValWindowRenderTarget*>(data->val_render_target);
+        ValWindowRenderTarget *val_rt = reinterpret_cast<ValWindowRenderTarget *>(data->val_render_target);
         val_rt->create_swapchain(val_window_render_pass, val_instance);
     }
 }
@@ -197,7 +213,7 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
 
     // Our camera and world data is already updated by this moment
     // We just have to update the binding
-    VulkanGraphicsBuffer* view_buffer = reinterpret_cast<VulkanGraphicsBuffer*>(p_target->view_buffer->buffer);
+    VulkanGraphicsBuffer *view_buffer = reinterpret_cast<VulkanGraphicsBuffer *>(p_target->view_buffer->buffer);
     //VulkanGraphicsBuffer* world_buffer = reinterpret_cast<VulkanGraphicsBuffer*>(p_target->view_buffer->buffer);
 
     ValDescriptorSetWriteInfo view_write_info{};
@@ -206,14 +222,19 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     val_descriptor_info->write_binding(&view_write_info);
     val_descriptor_info->update_set(val_instance);
 
-    VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData*>(p_target->data);
+    VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData *>(p_target->data);
 
     if (target_data != nullptr) {
         if (target_data->val_render_target != nullptr) {
             val_active_render_target = target_data->val_render_target;
 
-            val_active_render_target->clear_color = { p_target->clear_color[0], p_target->clear_color[1], p_target->clear_color[2], p_target->clear_color[3] };
-            val_active_render_target->begin_render(val_window_render_pass, val_instance);
+            ValRenderPass* pass = val_window_render_pass;
+            if (p_target->get_type() == RenderTarget::TARGET_TYPE_TEXTURE) {
+                pass = val_target_render_pass;
+            }
+
+            val_active_render_target->clear_color = {p_target->clear_color[0], p_target->clear_color[1], p_target->clear_color[2], p_target->clear_color[3]};
+            val_active_render_target->begin_render(pass, val_instance);
 
             // TODO: Make a dummy shader?
             vkCmdBindDescriptorSets(
@@ -232,19 +253,21 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
 }
 
 bool VulkanRenderServer::end_target(RenderTarget *p_target) {
-    VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData*>(p_target->data);
+    VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData *>(p_target->data);
 
     if (target_data != nullptr) {
         if (target_data->val_render_target != nullptr) {
             target_data->val_render_target->end_render(val_instance);
 
             // TODO: Not immediately submit
+
             if (target_data->val_render_target != val_instance->val_main_window) {
-                // TODO: Not always assume this is a window
                 val_instance->await_frame();
 
-                ValWindowRenderTarget *window_rt = reinterpret_cast<ValWindowRenderTarget *>(target_data->val_render_target);
-                window_rt->present_queue(val_instance);
+                if (p_target->get_type() == RenderTarget::TARGET_TYPE_WINDOW) {
+                    ValWindowRenderTarget *window_rt = reinterpret_cast<ValWindowRenderTarget *>(target_data->val_render_target);
+                    window_rt->present_queue(val_instance);
+                }
 
                 vkResetFences(val_instance->vk_device, 1, &val_instance->vk_render_fence);
             }
@@ -294,14 +317,14 @@ void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_targ
                 break;
         }
 
-        ValRenderTargetCreateInfo create_info {};
+        ValRenderTargetCreateInfo create_info{};
 
         create_info.initialize_swapchain = true;
         create_info.type = type;
 
         // TODO: Not always assume RENDER_TARGET_TYPE_WINDOW means we can get an SDL window?
         if (type == ValRenderTargetCreateInfo::RENDER_TARGET_TYPE_WINDOW) {
-            SDLWindowRenderTarget *sdl_target = static_cast<SDLWindowRenderTarget*>(p_render_target);
+            SDLWindowRenderTarget *sdl_target = reinterpret_cast<SDLWindowRenderTarget *>(p_render_target);
             create_info.p_window = sdl_target->window;
             create_info.val_render_pass = val_window_render_pass;
 
@@ -312,15 +335,33 @@ void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_targ
             }
         }
 
-        ValRenderTarget* val_target = ValRenderTarget::create_render_target(&create_info, val_instance);
-        p_render_target->data = new VulkanRenderTargetData(val_target);
+        if (type == ValRenderTargetCreateInfo::RENDER_TARGET_TYPE_IMAGE) {
+            TextureRenderTarget *texture_target = reinterpret_cast<TextureRenderTarget *>(p_render_target);
+
+            Rect rect = texture_target->get_rect();
+
+            create_info.extent.width = rect.width;
+            create_info.extent.height = rect.height;
+            create_info.val_render_pass = val_target_render_pass;
+        }
+
+        ValRenderTarget *val_target = ValRenderTarget::create_render_target(&create_info, val_instance);
+
+        VulkanRenderTargetData *vulkan_data = new VulkanRenderTargetData(val_target);
+        p_render_target->data = vulkan_data;
+
+        if (type == ValRenderTargetCreateInfo::RENDER_TARGET_TYPE_IMAGE) {
+            TextureRenderTarget *texture_target = reinterpret_cast<TextureRenderTarget *>(p_render_target);
+            ValImageRenderTarget *image_target = reinterpret_cast<ValImageRenderTarget*>(val_target);
+
+            texture_target->texture = new VulkanTexture(image_target->val_color_image);
+        }
     }
 }
 
 #if defined(IMGUI_SUPPORT)
 void VulkanRenderServer::initialize_imgui(SDLWindowRenderTarget *p_target) {
-    p_target->imgui_context = ImGui::CreateContext();
-    ImGui::SetCurrentContext(p_target->imgui_context);
+    RenderServer::initialize_imgui(p_target);
 
     ImGui_ImplSDL2_InitForVulkan(p_target->window);
 
@@ -336,8 +377,7 @@ void VulkanRenderServer::initialize_imgui(SDLWindowRenderTarget *p_target) {
                     {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
                     {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
                     {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
-                    {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}
-            };
+                    {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}};
 
     VkDescriptorPoolCreateInfo pool_info = {};
     pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

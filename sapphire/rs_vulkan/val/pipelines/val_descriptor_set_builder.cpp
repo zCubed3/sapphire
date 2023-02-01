@@ -114,5 +114,9 @@ std::vector<ValDescriptorSetInfo *> ValDescriptorSetBuilder::build(ValInstance *
     return val_descriptor_sets;
 }
 void ValDescriptorSetBuilder::push_pre_allocate(bool pre_allocate) {
+    if (sets.empty()) {
+        push_set();
+    }
+
     sets.back().pre_allocate = pre_allocate;
 }

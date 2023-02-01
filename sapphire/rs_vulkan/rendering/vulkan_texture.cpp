@@ -4,6 +4,10 @@
 #include <rs_vulkan/val/data/val_buffer.h>
 #include <rs_vulkan/val/images/val_image.h>
 
+#if defined(IMGUI_SUPPORT)
+#include <backends/imgui_impl_vulkan.h>
+#endif
+
 VulkanTexture::~VulkanTexture() {
     const VulkanRenderServer *rs_instance = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
 
@@ -12,6 +16,30 @@ VulkanTexture::~VulkanTexture() {
         delete val_image;
     }
 }
+
+VulkanTexture::VulkanTexture(ValImage *val_image, bool owns_image) {
+    this->val_image = val_image;
+    this->owns_image = owns_image;
+}
+
+#if defined(IMGUI_SUPPORT)
+void *VulkanTexture::get_imgui_handle() {
+    const VulkanRenderServer *rs_instance = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
+
+    if (val_imgui_descriptor_set == nullptr) {
+        val_imgui_descriptor_set = rs_instance->val_imgui_descriptor_info->allocate_set(rs_instance->val_instance);
+    }
+
+    ValDescriptorSetWriteInfo write_info {};
+    write_info.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    write_info.val_image = val_image;
+
+    val_imgui_descriptor_set->write_binding(&write_info);
+    val_imgui_descriptor_set->update_set(rs_instance->val_instance);
+
+    return (void*)val_imgui_descriptor_set->vk_descriptor_set;
+}
+#endif
 
 void VulkanTexture::load_bytes(unsigned char *bytes, int width, int height, int channels) {
     // We need to create 2 parts a staging buffer and an image

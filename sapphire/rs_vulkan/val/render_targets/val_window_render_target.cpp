@@ -23,6 +23,10 @@ VkFramebuffer ValWindowRenderTarget::get_framebuffer(ValInstance* p_val_instance
     return vk_swapchain_framebuffers[vk_frame_index];
 }
 
+bool ValWindowRenderTarget::get_wait_for_image() {
+    return true;
+}
+
 ValWindowRenderTarget::ValWindowRenderTarget(ValRenderTargetCreateInfo *p_create_info, ValInstance *p_val_instance) {
     SDL_Vulkan_CreateSurface(p_create_info->p_window, p_val_instance->vk_instance, &vk_surface);
     sdl_window = p_create_info->p_window;

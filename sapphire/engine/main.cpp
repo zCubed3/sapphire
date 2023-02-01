@@ -11,8 +11,10 @@
 #include <engine/assets/static_mesh_asset.h>
 #include <engine/assets/texture_asset.h>
 #include <engine/rendering/render_server.h>
+#include <engine/rendering/texture_render_target.h>
 #include <engine/rendering/sdl_window_render_target.h>
 #include <engine/rendering/shader.h>
+#include <engine/rendering/texture.h>
 #include <engine/scene/mesh_actor.h>
 #include <engine/scene/world.h>
 #include <engine/typing/class_registry.h>
@@ -123,7 +125,10 @@ int main(int argc, char **argv) {
     actor->material_asset = material;
 
     // TODO: Temp and jank
-    //shader->shader->texture_asset = texture;
+    TextureRenderTarget* rt_texture = new TextureRenderTarget(256, 256);
+    rt_texture->transform.position = {1, 0, 2};
+
+    render_server->populate_render_target_data(rt_texture);
 
     world->add_actor(actor);
 
@@ -146,9 +151,6 @@ int main(int argc, char **argv) {
     // ImGui my beloved :)
 #if defined(IMGUI_SUPPORT)
     render_server->initialize_imgui(rt_window);
-
-    ImGuiStyle &style = ImGui::GetStyle();
-    ImGuiIO& io = ImGui::GetIO();
 
     std::vector<double> fps_stack;
 
@@ -177,6 +179,8 @@ int main(int argc, char **argv) {
     SDL_SetWindowData(sub_window, "RT", rt_sub_window);
 
     render_server->initialize_imgui(rt_sub_window);
+
+    rt_sub_window->transform.position = {1, 0, 2};
 #endif
 
     // We don't have a camera, so we need to move our render target initially
@@ -191,10 +195,12 @@ int main(int argc, char **argv) {
                 ImGui_ImplSDL2_ProcessEvent(&event);
             }
 
+#if defined(TEST_SECOND_WINDOW)
             if (SDL_GetWindowFlags(sub_window) & SDL_WINDOW_INPUT_FOCUS) {
                 ImGui::SetCurrentContext(rt_sub_window->imgui_context);
                 ImGui_ImplSDL2_ProcessEvent(&event);
             }
+#endif
 #endif
 
             if (event.type == SDL_QUIT) {
@@ -232,16 +238,23 @@ int main(int argc, char **argv) {
         render_server->begin_target(rt_sub_window);
         render_server->begin_imgui(rt_sub_window);
 
-        rt_sub_window->transform.position = {1, 0, 2};
         world->draw();
 
-        ImGui::Begin("Renderer Info 2");
-        ImGui::Text("Rendering API: %s", render_server->get_name());
+        ImGui::Begin("Camera");
+        ImGui::DragFloat3("Position", glm::value_ptr(rt_sub_window->transform.position), 0.01F);
+        ImGui::DragFloat4("Quaternion", glm::value_ptr(rt_sub_window->transform.quaternion), 0.01F);
+        ImGui::DragFloat3("Scale", glm::value_ptr(rt_sub_window->transform.scale), 0.01F);
         ImGui::End();
 
         render_server->end_imgui(rt_sub_window);
         render_server->end_target(rt_sub_window);
 #endif
+
+        render_server->begin_target(rt_texture);
+
+        world->draw();
+
+        render_server->end_target(rt_texture);
 
         render_server->begin_target(rt_window);
 
@@ -269,15 +282,22 @@ int main(int argc, char **argv) {
 
         double average = floor(sum / count);
 
+        ImGui::Begin("Render Target");
+        ImGui::DragFloat3("Position", glm::value_ptr(rt_texture->transform.position), 0.01F);
+        ImGui::DragFloat4("Quaternion", glm::value_ptr(rt_texture->transform.quaternion), 0.01F);
+        ImGui::DragFloat3("Scale", glm::value_ptr(rt_texture->transform.scale), 0.01F);
+        ImGui::Image(rt_texture->texture->get_imgui_handle(), {256, 256});
+        ImGui::End();
+
         ImGui::Begin("Renderer Info");
         ImGui::Text("Rendering API: %s", render_server->get_name());
         ImGui::Text("FPS: %f", average);
         ImGui::End();
 
         ImGui::Begin("Camera");
-        ImGui::DragFloat3("Position", glm::value_ptr(rt_window->transform.position), 0.001F);
-        ImGui::DragFloat4("Quaternion", glm::value_ptr(rt_window->transform.quaternion), 0.001F);
-        ImGui::DragFloat3("Scale", glm::value_ptr(rt_window->transform.scale), 0.001F);
+        ImGui::DragFloat3("Position", glm::value_ptr(rt_window->transform.position), 0.01F);
+        ImGui::DragFloat4("Quaternion", glm::value_ptr(rt_window->transform.quaternion), 0.01F);
+        ImGui::DragFloat3("Scale", glm::value_ptr(rt_window->transform.scale), 0.01F);
         ImGui::End();
 
         ImGui::Begin("SEMD Debugger");

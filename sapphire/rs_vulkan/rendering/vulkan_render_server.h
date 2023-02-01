@@ -27,10 +27,15 @@ protected:
 public:
     SDL_Window* window;
 
+#if defined(IMGUI_SUPPORT)
+    ValDescriptorSetInfo *val_imgui_descriptor_info = nullptr;
+#endif
+
     ValInstance* val_instance = nullptr;
 
     ValDescriptorSetInfo *val_descriptor_info = nullptr;
     ValRenderPass* val_window_render_pass;
+    ValRenderPass* val_target_render_pass;
 
     ValVertexInputBuilder val_default_vertex_input;
     ValRenderTarget *val_active_render_target = nullptr;

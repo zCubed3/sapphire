@@ -9,6 +9,10 @@ VkExtent2D ValRenderTarget::get_extent(ValInstance *p_val_instance) {
     return creation_extent;
 }
 
+bool ValRenderTarget::get_wait_for_image() {
+    return false;
+}
+
 bool ValRenderTarget::begin_render(ValRenderPass *p_val_render_pass, ValInstance *p_val_instance) {
     if (vk_command_buffer == nullptr) {
         vk_command_buffer = p_val_instance->get_queue(ValQueue::QUEUE_TYPE_GRAPHICS).allocate_buffer(p_val_instance);
@@ -61,18 +65,28 @@ bool ValRenderTarget::end_render(ValInstance *p_val_instance) {
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
     VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submit_info.waitSemaphoreCount = 1;
-    submit_info.pWaitSemaphores = &p_val_instance->vk_image_available_semaphore;
-    submit_info.pWaitDstStageMask = wait_stages;
 
-    submit_info.signalSemaphoreCount = 1;
-    submit_info.pSignalSemaphores = &p_val_instance->vk_render_finished_semaphore;
+    if (get_wait_for_image()) {
+        submit_info.waitSemaphoreCount = 1;
+        submit_info.pWaitSemaphores = &p_val_instance->vk_image_available_semaphore;
+        submit_info.pWaitDstStageMask = wait_stages;
+
+        submit_info.signalSemaphoreCount = 1;
+        submit_info.pSignalSemaphores = &p_val_instance->vk_render_finished_semaphore;
+    } else {
+        submit_info.waitSemaphoreCount = 0;
+        submit_info.signalSemaphoreCount = 0;
+    }
 
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &vk_command_buffer;
 
     if (vkQueueSubmit(p_val_instance->get_queue(ValQueue::QUEUE_TYPE_GRAPHICS).vk_queue, 1, &submit_info, p_val_instance->vk_render_fence) != VK_SUCCESS) {
         return false;
+    }
+
+    if (!get_wait_for_image()) {
+        vkQueueWaitIdle(p_val_instance->get_queue(ValQueue::QUEUE_TYPE_GRAPHICS).vk_queue);
     }
 
     return true;

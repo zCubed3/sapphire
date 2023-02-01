@@ -77,7 +77,7 @@ public:
     virtual void populate_render_target_data(RenderTarget *p_render_target) const;
 
 #if defined(IMGUI_SUPPORT)
-    virtual void initialize_imgui(SDLWindowRenderTarget *p_target) = 0;
+    virtual void initialize_imgui(SDLWindowRenderTarget *p_target);
     virtual bool begin_imgui(SDLWindowRenderTarget *p_target) = 0;
     virtual bool end_imgui(SDLWindowRenderTarget *p_target) = 0;
 #endif

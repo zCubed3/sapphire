@@ -33,8 +33,9 @@ set(SAPPHIRE_ENGINE_SOURCES
         "data/rect.cpp"
 
         "rendering/render_target.cpp"
-        "rendering/render_target_data.cpp"
+        "rendering/texture_render_target.cpp"
         "rendering/sdl_window_render_target.cpp"
+        "rendering/render_target_data.cpp"
         "rendering/render_server.cpp"
         "rendering/shader.cpp"
         "rendering/material.cpp"

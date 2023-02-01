@@ -36,12 +36,12 @@ public:
     float near_clip = 0.01F;
     float far_clip = 100.0F;
 
-    ViewBufferData view_data;
+    ViewBufferData view_data {};
     ViewBuffer *view_buffer = nullptr;
 
     RenderTargetData *data = nullptr;
 
-    // The world we render
+
     World *world = nullptr;
 
     virtual ~RenderTarget();
