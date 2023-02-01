@@ -167,8 +167,14 @@ bool VulkanRenderServer::present(SDL_Window *p_window) {
     return true;
 }
 
-void VulkanRenderServer::on_window_resized() {
-    val_instance->val_main_window->create_swapchain(val_window_render_pass, val_instance);
+void VulkanRenderServer::on_window_resized(SDL_Window *p_window) {
+    if (p_window != nullptr) {
+        SDLWindowRenderTarget* rt = reinterpret_cast<SDLWindowRenderTarget*>(SDL_GetWindowData(p_window, "RT"));
+        VulkanRenderTargetData* data = reinterpret_cast<VulkanRenderTargetData*>(rt->data);
+
+        ValWindowRenderTarget* val_rt = reinterpret_cast<ValWindowRenderTarget*>(data->val_render_target);
+        val_rt->create_swapchain(val_window_render_pass, val_instance);
+    }
 }
 
 bool VulkanRenderServer::begin_frame() {
@@ -239,6 +245,8 @@ bool VulkanRenderServer::end_target(RenderTarget *p_target) {
 
                 ValWindowRenderTarget *window_rt = reinterpret_cast<ValWindowRenderTarget *>(target_data->val_render_target);
                 window_rt->present_queue(val_instance);
+
+                vkResetFences(val_instance->vk_device, 1, &val_instance->vk_render_fence);
             }
         }
     }
@@ -310,8 +318,11 @@ void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_targ
 }
 
 #if defined(IMGUI_SUPPORT)
-void VulkanRenderServer::initialize_imgui() {
-    ImGui_ImplSDL2_InitForVulkan(window);
+void VulkanRenderServer::initialize_imgui(SDLWindowRenderTarget *p_target) {
+    p_target->imgui_context = ImGui::CreateContext();
+    ImGui::SetCurrentContext(p_target->imgui_context);
+
+    ImGui_ImplSDL2_InitForVulkan(p_target->window);
 
     VkDescriptorPoolSize pool_sizes[] =
             {
@@ -361,15 +372,16 @@ void VulkanRenderServer::initialize_imgui() {
     imgui_initalized = true;
 }
 
-bool VulkanRenderServer::begin_imgui() {
+bool VulkanRenderServer::begin_imgui(SDLWindowRenderTarget *p_target) {
+    ImGui::SetCurrentContext(p_target->imgui_context);
     ImGui_ImplVulkan_NewFrame();
-    ImGui_ImplSDL2_NewFrame(window);
+    ImGui_ImplSDL2_NewFrame(p_target->window);
     ImGui::NewFrame();
 
     return true;
 }
 
-bool VulkanRenderServer::end_imgui() {
+bool VulkanRenderServer::end_imgui(SDLWindowRenderTarget *p_target) {
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), val_active_render_target->vk_command_buffer);
 

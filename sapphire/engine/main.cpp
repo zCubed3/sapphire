@@ -25,7 +25,7 @@
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #endif
 
-//#define TEST_SECOND_WINDOW
+#define TEST_SECOND_WINDOW
 
 #if defined(IMGUI_SUPPORT)
 #include <imgui.h>
@@ -104,6 +104,7 @@ int main(int argc, char **argv) {
     );
 
     SDLWindowRenderTarget* rt_window = new SDLWindowRenderTarget(main_window);
+    SDL_SetWindowData(main_window, "RT", rt_window);
 
     if (!render_server->initialize(main_window)) {
         std::cout << render_server->get_error() << std::endl;
@@ -144,8 +145,7 @@ int main(int argc, char **argv) {
 
     // ImGui my beloved :)
 #if defined(IMGUI_SUPPORT)
-    ImGuiContext* imgui_context = ImGui::CreateContext();
-    render_server->initialize_imgui();
+    render_server->initialize_imgui(rt_window);
 
     ImGuiStyle &style = ImGui::GetStyle();
     ImGuiIO& io = ImGui::GetIO();
@@ -158,6 +158,10 @@ int main(int argc, char **argv) {
 #endif
 
 #ifdef TEST_SECOND_WINDOW
+    window_name = "Sapphire Sub Window (";
+    window_name += render_server->get_name();
+    window_name += ")";
+
     SDL_Window *sub_window = SDL_CreateWindow(
             window_name.c_str(),
             SDL_WINDOWPOS_UNDEFINED,
@@ -169,6 +173,10 @@ int main(int argc, char **argv) {
 
     SDLWindowRenderTarget* rt_sub_window = new SDLWindowRenderTarget(sub_window);
     render_server->populate_render_target_data(rt_sub_window);
+
+    SDL_SetWindowData(sub_window, "RT", rt_sub_window);
+
+    render_server->initialize_imgui(rt_sub_window);
 #endif
 
     // We don't have a camera, so we need to move our render target initially
@@ -178,7 +186,15 @@ int main(int argc, char **argv) {
     while (keep_running) {
         while (SDL_PollEvent(&event) != 0) {
 #if defined(IMGUI_SUPPORT)
-            ImGui_ImplSDL2_ProcessEvent(&event);
+            if (SDL_GetWindowFlags(main_window) & SDL_WINDOW_INPUT_FOCUS) {
+                ImGui::SetCurrentContext(rt_window->imgui_context);
+                ImGui_ImplSDL2_ProcessEvent(&event);
+            }
+
+            if (SDL_GetWindowFlags(sub_window) & SDL_WINDOW_INPUT_FOCUS) {
+                ImGui::SetCurrentContext(rt_sub_window->imgui_context);
+                ImGui_ImplSDL2_ProcessEvent(&event);
+            }
 #endif
 
             if (event.type == SDL_QUIT) {
@@ -187,14 +203,9 @@ int main(int argc, char **argv) {
 
             if (event.type == SDL_WINDOWEVENT) {
                 if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-                    resized = true;
+                    render_server->on_window_resized(SDL_GetWindowFromID(event.window.windowID));
                 }
             }
-        }
-
-        if (resized) {
-            render_server->on_window_resized();
-            resized = false;
         }
 
         // TODO: Update the world properly
@@ -216,10 +227,26 @@ int main(int argc, char **argv) {
         //rt_window.clear_color = Color(abs(sin(world->elapsed_time)), 0, 0, 1);
 
         render_server->begin_frame();
+
+#ifdef TEST_SECOND_WINDOW
+        render_server->begin_target(rt_sub_window);
+        render_server->begin_imgui(rt_sub_window);
+
+        rt_sub_window->transform.position = {1, 0, 2};
+        world->draw();
+
+        ImGui::Begin("Renderer Info 2");
+        ImGui::Text("Rendering API: %s", render_server->get_name());
+        ImGui::End();
+
+        render_server->end_imgui(rt_sub_window);
+        render_server->end_target(rt_sub_window);
+#endif
+
         render_server->begin_target(rt_window);
 
 #if defined(IMGUI_SUPPORT)
-        render_server->begin_imgui();
+        render_server->begin_imgui(rt_window);
 #endif
 
         world->draw();
@@ -277,16 +304,10 @@ int main(int argc, char **argv) {
 #endif
 
 #if defined(IMGUI_SUPPORT)
-        render_server->end_imgui();
+        render_server->end_imgui(rt_window);
 #endif
 
         render_server->end_target(rt_window);
-
-#ifdef TEST_SECOND_WINDOW
-        render_server->begin_target(rt_sub_window);
-
-        render_server->end_target(rt_sub_window);
-#endif
 
         render_server->end_frame();
 
@@ -303,10 +324,6 @@ int main(int argc, char **argv) {
     delete rt_window;
 
     delete render_server;
-
-#if defined(IMGUI_SUPPORT)
-    ImGui::DestroyContext(imgui_context);
-#endif
 
     return 0;
 }

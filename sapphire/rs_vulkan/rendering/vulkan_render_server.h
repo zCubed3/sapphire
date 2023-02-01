@@ -49,7 +49,7 @@ public:
 
     bool present(SDL_Window *p_window) override;
 
-    void on_window_resized() override;
+    void on_window_resized(SDL_Window *p_window) override;
 
     bool begin_frame() override;
     bool end_frame() override;
@@ -66,9 +66,9 @@ public:
     void populate_render_target_data(RenderTarget *p_render_target) const override;
 
 #if defined(IMGUI_SUPPORT)
-    bool begin_imgui() override;
-    bool end_imgui() override;
-    void initialize_imgui() override;
+    void initialize_imgui(SDLWindowRenderTarget *p_target) override;
+    bool begin_imgui(SDLWindowRenderTarget *p_target) override;
+    bool end_imgui(SDLWindowRenderTarget *p_target) override;
 #endif
 
     // TODO: Make this more abstract?

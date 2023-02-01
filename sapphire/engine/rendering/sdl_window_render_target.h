@@ -3,11 +3,19 @@
 
 #include "render_target.h"
 
+#if defined(IMGUI_SUPPORT)
+#include <imgui.h>
+#endif
+
 typedef struct SDL_Window SDL_Window;
 
 class SDLWindowRenderTarget : public RenderTarget {
 public:
     SDL_Window *window;
+
+#if defined(IMGUI_SUPPORT)
+    ImGuiContext* imgui_context;
+#endif
 
     SDLWindowRenderTarget() = delete;
     SDLWindowRenderTarget(const SDLWindowRenderTarget &) = delete;

@@ -23,7 +23,7 @@ glm::vec3 RenderServer::get_coordinate_correction() const {
     return {1, 1, 1};
 }
 
-void RenderServer::on_window_resized() {
+void RenderServer::on_window_resized(SDL_Window *p_window) {
 
 }
 

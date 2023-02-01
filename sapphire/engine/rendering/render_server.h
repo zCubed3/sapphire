@@ -18,6 +18,8 @@ class Texture;
 class Material;
 class DrawCall;
 
+class SDLWindowRenderTarget;
+
 // Abstraction over various rendering APIs
 class RenderServer {
 protected:
@@ -45,7 +47,7 @@ public:
 
     virtual bool present(SDL_Window *p_window) = 0;
 
-    virtual void on_window_resized();
+    virtual void on_window_resized(SDL_Window *p_window);
 
     virtual bool begin_frame() = 0;
     virtual bool end_frame() = 0;
@@ -75,9 +77,9 @@ public:
     virtual void populate_render_target_data(RenderTarget *p_render_target) const;
 
 #if defined(IMGUI_SUPPORT)
-    virtual void initialize_imgui() = 0;
-    virtual bool begin_imgui() = 0;
-    virtual bool end_imgui() = 0;
+    virtual void initialize_imgui(SDLWindowRenderTarget *p_target) = 0;
+    virtual bool begin_imgui(SDLWindowRenderTarget *p_target) = 0;
+    virtual bool end_imgui(SDLWindowRenderTarget *p_target) = 0;
 #endif
 };
 
