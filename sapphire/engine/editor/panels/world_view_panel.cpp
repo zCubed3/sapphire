@@ -9,7 +9,7 @@
 
 #include <gtc/type_ptr.hpp>
 
-WorldViewPanel::WorldViewPanel() {
+WorldViewPanel::WorldViewPanel() : Panel() {
     const RenderServer* rs_instance = RenderServer::get_singleton();
 
     target = new TextureRenderTarget(256, 256);
@@ -24,6 +24,10 @@ const char *WorldViewPanel::get_title() {
 }
 
 bool WorldViewPanel::has_menu_bar() {
+    return true;
+}
+
+bool WorldViewPanel::is_unique() {
     return true;
 }
 
@@ -65,40 +69,42 @@ void WorldViewPanel::draw_contents() {
 
     ImVec2 content_size = ImGui::GetContentRegionAvail();
 
-    ImGui::Image(target->get_texture()->get_imgui_handle(), content_size, {0, 0}, {1, correction});
+    if (content_size.x >= 1 && content_size.y >= 1) {
+        ImGui::Image(target->get_texture()->get_imgui_handle(), content_size, {0, 0}, {1, correction});
 
-    ImGui::SetItemAllowOverlap();
-    ImGui::SetCursorPos({0, 0});
+        ImGui::SetItemAllowOverlap();
+        ImGui::SetCursorPos({0, 0});
 
-    ImGuiIO& io = ImGui::GetIO();
-    int flags = ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle;
+        ImGuiIO &io = ImGui::GetIO();
+        int flags = ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle;
 
-    if (ImGui::InvisibleButton("RT_WINDOW", content_size, flags)) {
-    }
-
-    glm::vec3 pan = glm::vec3(0, 0, 0);
-
-    // TODO: User configurable speeds
-    if (ImGui::IsItemHovered()) {
-        pan += glm::vec3(0, 0, io.MouseWheel * io.DeltaTime * 5);
-    }
-
-    if (ImGui::IsItemActive()) {
-        float horizontal = io.MouseDelta.x * io.DeltaTime;
-        float vertical = io.MouseDelta.y * io.DeltaTime;
-
-        if (ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
-            euler += glm::vec3(vertical, horizontal, 0);
-            target->transform.set_euler(euler);
+        if (ImGui::InvisibleButton("RT_WINDOW", content_size, flags)) {
         }
 
-        if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle)) {
-            pan += glm::vec3(horizontal, -vertical, 0);
-        }
-    }
+        glm::vec3 pan = glm::vec3(0, 0, 0);
 
-    target->transform.position += target->transform.quaternion * pan;
-    width = content_size.x;
-    height = content_size.y;
+        // TODO: User configurable speeds
+        if (ImGui::IsItemHovered()) {
+            pan += glm::vec3(0, 0, io.MouseWheel * io.DeltaTime * 5);
+        }
+
+        if (ImGui::IsItemActive()) {
+            float horizontal = io.MouseDelta.x * io.DeltaTime;
+            float vertical = io.MouseDelta.y * io.DeltaTime;
+
+            if (ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
+                euler += glm::vec3(vertical, horizontal, 0);
+                target->transform.set_euler(euler);
+            }
+
+            if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle)) {
+                pan += glm::vec3(horizontal, -vertical, 0);
+            }
+        }
+
+        target->transform.position += target->transform.quaternion * pan;
+        width = content_size.x;
+        height = content_size.y;
+    }
 }
 

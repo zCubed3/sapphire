@@ -8,10 +8,15 @@ class Panel {
     REFLECT_BASE_CLASS(Panel);
 
 public:
+    int id;
     bool open = true;
+
+    Panel();
 
     virtual bool can_close();
     virtual bool has_menu_bar();
+    virtual bool is_unique();
+
     virtual const char* get_title() = 0;
 
     virtual void draw_panel();

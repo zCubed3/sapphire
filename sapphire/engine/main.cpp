@@ -185,8 +185,7 @@ int main(int argc, char **argv) {
 
     RendererPanel *renderer_panel = new RendererPanel();
 
-    WorldViewPanel *view_panel = new WorldViewPanel();
-    view_panel->world = world;
+    std::vector<WorldViewPanel*> world_panels;
 #endif
 
 #ifdef TEST_MULTI_WINDOW
@@ -288,7 +287,9 @@ int main(int argc, char **argv) {
         }
 #endif
 
-        view_panel->draw_world(render_server);
+        for (WorldViewPanel* panel: world_panels) {
+            panel->draw_world(render_server);
+        }
 
         render_server->begin_target(rt_texture);
 
@@ -369,6 +370,13 @@ int main(int argc, char **argv) {
             ImGui::Checkbox("Actor", &actor_panel->open);
             ImGui::Checkbox("Renderer", &renderer_panel->open);
 
+            if (ImGui::Button("Create WorldViewPanel")) {
+                WorldViewPanel *view_panel = new WorldViewPanel();
+                view_panel->world = world;
+
+                world_panels.push_back(view_panel);
+            }
+
             ImGui::EndMenu();
         }
 
@@ -398,7 +406,10 @@ int main(int argc, char **argv) {
         world_actor_panel->draw_panel();
         actor_panel->draw_panel();
         renderer_panel->draw_panel();
-        view_panel->draw_panel();
+
+        for (WorldViewPanel* panel: world_panels) {
+            panel->draw_panel();
+        }
 
         actor_panel->target = world_actor_panel->selected;
 

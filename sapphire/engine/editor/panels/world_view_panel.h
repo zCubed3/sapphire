@@ -24,6 +24,7 @@ public:
 
     const char * get_title() override;
     bool has_menu_bar() override;
+    bool is_unique() override;
 
     void draw_world(RenderServer *p_render_server);
 
