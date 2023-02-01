@@ -37,11 +37,12 @@ public:
     GraphicsBuffer *create_graphics_buffer(size_t size) const override;
     Shader *create_shader() const override;
     Texture * create_texture() const override;
+    Material *create_material() const override;
 
 #if defined(IMGUI_SUPPORT)
-    void initialize_imgui() override;
-    bool begin_imgui() override;
-    bool end_imgui() override;
+    void initialize_imgui(SDLWindowRenderTarget *p_target) override;
+    bool begin_imgui(SDLWindowRenderTarget *p_target) override;
+    bool end_imgui(SDLWindowRenderTarget *p_target) override;
 #endif
 
     void populate_mesh_buffer(MeshAsset *p_mesh_asset) const override;

@@ -2,6 +2,14 @@
 
 #include <glad/glad.h>
 
+OpenGL4Texture::OpenGL4Texture(uint32_t handle) {
+    this->handle = handle;
+}
+
+void *OpenGL4Texture::get_imgui_handle() {
+    return (void*)handle;
+}
+
 // TODO: Support more complex textures
 void OpenGL4Texture::load_bytes(unsigned char *bytes, int width, int height, int channels) {
     glGenTextures(1, &handle);

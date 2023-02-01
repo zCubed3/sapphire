@@ -51,8 +51,8 @@ Asset *SEMDLoader::load_from_path(const std::string &path, const std::string& ex
         }
 
         Material* material = rs_instance->create_material();
-        material->shader = shader;
-        material->make_from_semd(&semd_file);
+        //material->shader = shader;
+        //material->make_from_semd(&semd_file);
 
         MaterialAsset *asset = new MaterialAsset();
         asset->material = material;

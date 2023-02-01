@@ -6,11 +6,14 @@
 #include <engine/assets/asset_loader.h>
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/render_target.h>
+#include <engine/rendering/texture_render_target.h>
+#include <engine/rendering/sdl_window_render_target.h>
 
 #include <rs_opengl4/rendering/opengl4_mesh_buffer.h>
 #include <rs_opengl4/rendering/opengl4_graphics_buffer.h>
 #include <rs_opengl4/rendering/opengl4_shader.h>
 #include <rs_opengl4/rendering/opengl4_texture.h>
+#include <rs_opengl4/rendering/opengl4_render_target_data.h>
 
 #if defined(IMGUI_SUPPORT)
 #include <imgui.h>
@@ -98,8 +101,6 @@ bool OpenGL4RenderServer::present(SDL_Window *p_window) {
         return false;
     }
 
-    SDL_GL_SwapWindow(p_window);
-
     return true;
 }
 
@@ -115,6 +116,26 @@ bool OpenGL4RenderServer::begin_target(RenderTarget *p_target) {
     if (p_target == nullptr) {
         error = ERR_TARGET_NULLPTR;
         return false;
+    }
+
+    if (p_target->get_type() == RenderTarget::TARGET_TYPE_WINDOW) {
+        SDLWindowRenderTarget *sdl_target = reinterpret_cast<SDLWindowRenderTarget *>(p_target);
+
+        SDL_GL_MakeCurrent(sdl_target->window, gl_context);
+    }
+
+    if (p_target->get_type() == RenderTarget::TARGET_TYPE_TEXTURE) {
+        TextureRenderTarget *texture_target = reinterpret_cast<TextureRenderTarget *>(p_target);
+        OpenGL4RenderTargetData* data = reinterpret_cast<OpenGL4RenderTargetData*>(texture_target->data);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, data->framebuffer_handle);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, data->texture_handle, 0);
+
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, data->depthbuffer_handle);
+
+        uint32_t attachments[] = {GL_COLOR_ATTACHMENT0};
+        glDrawBuffers(1, attachments);
     }
 
     // TODO: Not set this per frame?
@@ -151,6 +172,16 @@ bool OpenGL4RenderServer::end_target(RenderTarget *p_target) {
         return false;
     }
 
+    if (p_target->get_type() == RenderTarget::TARGET_TYPE_WINDOW) {
+        SDLWindowRenderTarget *sdl_target = reinterpret_cast<SDLWindowRenderTarget *>(p_target);
+
+        SDL_GL_SwapWindow(sdl_target->window);
+    }
+
+    if (p_target->get_type() == RenderTarget::TARGET_TYPE_TEXTURE) {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
     current_target = nullptr;
 
     return true;
@@ -178,6 +209,10 @@ Texture *OpenGL4RenderServer::create_texture() const {
     return new OpenGL4Texture();
 }
 
+Material *OpenGL4RenderServer::create_material() const {
+    return nullptr;
+}
+
 void OpenGL4RenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
     if (p_mesh_asset != nullptr) {
         p_mesh_asset->buffer = new OpenGL4MeshBuffer(p_mesh_asset);
@@ -187,24 +222,56 @@ void OpenGL4RenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
 void OpenGL4RenderServer::populate_render_target_data(RenderTarget *p_render_target) const {
     if (p_render_target != nullptr) {
         RenderServer::populate_render_target_data(p_render_target);
+
+        if (p_render_target->get_type() == RenderTarget::TARGET_TYPE_TEXTURE) {
+            TextureRenderTarget *image_target = reinterpret_cast<TextureRenderTarget*>(p_render_target);
+
+            // TODO: Abstract opengl framebuffers?
+            OpenGL4RenderTargetData* data = new OpenGL4RenderTargetData();
+            glGenFramebuffers(1, &data->framebuffer_handle);
+
+            Rect rect = image_target->get_rect();
+
+            glGenRenderbuffers(1, &data->depthbuffer_handle);
+            glBindRenderbuffer(GL_RENDERBUFFER, data->depthbuffer_handle);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, rect.width, rect.height);
+
+            glGenTextures(1, &data->texture_handle);
+            glBindTexture(GL_TEXTURE_2D, data->texture_handle);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rect.width, rect.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+            // TODO: RenderTarget sampling
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+            image_target->texture = new OpenGL4Texture(data->texture_handle);
+            image_target->data = data;
+        }
     }
 }
 
 #if defined(IMGUI_SUPPORT)
-void OpenGL4RenderServer::initialize_imgui() {
-    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+void OpenGL4RenderServer::initialize_imgui(SDLWindowRenderTarget *p_target) {
+    ImGuiContext* old_context = ImGui::GetCurrentContext();
+
+    RenderServer::initialize_imgui(p_target);
+
+    ImGui_ImplSDL2_InitForOpenGL(p_target->window, gl_context);
     ImGui_ImplOpenGL3_Init("#version 330");
+
+    ImGui::SetCurrentContext(old_context);
 }
 
-bool OpenGL4RenderServer::begin_imgui() {
+bool OpenGL4RenderServer::begin_imgui(SDLWindowRenderTarget *p_target) {
+    ImGui::SetCurrentContext(p_target->imgui_context);
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(window);
+    ImGui_ImplSDL2_NewFrame(p_target->window);
     ImGui::NewFrame();
 
     return true;
 }
 
-bool OpenGL4RenderServer::end_imgui() {
+bool OpenGL4RenderServer::end_imgui(SDLWindowRenderTarget *p_target) {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

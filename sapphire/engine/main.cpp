@@ -134,6 +134,7 @@ int main(int argc, char **argv) {
     // TODO: Temp and jank
     TextureRenderTarget* rt_texture = new TextureRenderTarget(256, 256);
     rt_texture->transform.position = {1, 0, 2};
+    rt_texture->world = world;
 
     render_server->populate_render_target_data(rt_texture);
 
@@ -324,17 +325,20 @@ int main(int argc, char **argv) {
             render_server->initialize_imgui(rt_sub_window);
 
             rt_sub_window->transform.position = {1, 0, 2};
+            rt_sub_window->world = world;
 
             child_windows.push_back({sub_window, rt_sub_window});
         }
 
         ImGui::End();
 
+        float correction = -render_server->get_coordinate_correction().y;
+
         ImGui::Begin("Render Target");
         ImGui::DragFloat3("Position", glm::value_ptr(rt_texture->transform.position), 0.01F);
         ImGui::DragFloat4("Quaternion", glm::value_ptr(rt_texture->transform.quaternion), 0.01F);
         ImGui::DragFloat3("Scale", glm::value_ptr(rt_texture->transform.scale), 0.01F);
-        ImGui::Image(rt_texture->texture->get_imgui_handle(), {256, 256});
+        ImGui::Image(rt_texture->texture->get_imgui_handle(), {256, 256}, {0, 0}, {1, correction});
         ImGui::End();
 
         ImGui::Begin("Renderer Info");
