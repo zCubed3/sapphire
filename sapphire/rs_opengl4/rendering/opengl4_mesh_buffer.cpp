@@ -73,6 +73,7 @@ void OpenGL4MeshBuffer::render(ObjectBuffer *p_object_buffer, Material *p_materi
     OpenGL4Shader *gl_shader = nullptr;
 
     if (p_material != nullptr) {
+        p_material->bind();
         gl_shader = reinterpret_cast<OpenGL4Shader *>(p_material->shader);
     }
 

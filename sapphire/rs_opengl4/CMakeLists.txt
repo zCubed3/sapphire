@@ -6,6 +6,7 @@ set(SAPPHIRE_RS_OPENGL4_SOURCES
         "rendering/opengl4_graphics_buffer.cpp"
         "rendering/opengl4_shader.cpp"
         "rendering/opengl4_texture.cpp"
+        "rendering/opengl4_material.cpp"
         )
 
 set(SAPPHIRE_RS_OPENGL4_INCLUDE_DIRS

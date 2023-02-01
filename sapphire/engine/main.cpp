@@ -130,7 +130,6 @@ int main(int argc, char **argv) {
 
     MeshAsset* mesh = reinterpret_cast<MeshAsset*>(AssetLoader::load_asset("test.obj"));
     MaterialAsset *material = reinterpret_cast<MaterialAsset *>(AssetLoader::load_asset("test.semd"));
-    TextureAsset *texture = reinterpret_cast<TextureAsset*>(AssetLoader::load_asset("test.png"));
 
     MeshActor* actor = new MeshActor();
     actor->mesh_asset = mesh;
@@ -405,7 +404,6 @@ int main(int argc, char **argv) {
     AssetLoader::unload_all_placeholders();
 
     delete actor;
-    delete texture;
     delete mesh;
     delete material;
 

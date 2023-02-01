@@ -13,6 +13,7 @@
 #include <rs_opengl4/rendering/opengl4_graphics_buffer.h>
 #include <rs_opengl4/rendering/opengl4_shader.h>
 #include <rs_opengl4/rendering/opengl4_texture.h>
+#include <rs_opengl4/rendering/opengl4_material.h>
 #include <rs_opengl4/rendering/opengl4_render_target_data.h>
 
 #if defined(IMGUI_SUPPORT)
@@ -210,7 +211,7 @@ Texture *OpenGL4RenderServer::create_texture() const {
 }
 
 Material *OpenGL4RenderServer::create_material() const {
-    return nullptr;
+    return new OpenGL4Material();
 }
 
 void OpenGL4RenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {

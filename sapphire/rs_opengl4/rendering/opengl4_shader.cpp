@@ -124,6 +124,8 @@ bool OpenGL4Shader::make_from_sesd(ConfigFile *p_sesd_file) {
         return false;
     }
 
+    Shader::make_from_sesd(p_sesd_file);
+
     // We load all the sources provided by the semd
     std::vector<std::string> vert_source_paths = p_sesd_file->try_get_string_list("sVertSources", "OpenGL4Shader");
     std::vector<std::string> frag_source_paths = p_sesd_file->try_get_string_list("sFragSources", "OpenGL4Shader");
