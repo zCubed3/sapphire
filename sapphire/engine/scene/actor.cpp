@@ -1,5 +1,11 @@
 #include "actor.h"
 
+#include <gtc/type_ptr.hpp>
+
+#if defined(IMGUI_SUPPORT)
+#include <imgui.h>
+#endif
+
 Actor::~Actor() {
 
 }
@@ -14,6 +20,14 @@ void Actor::draw(World *p_world) {
 
 #if defined(IMGUI_SUPPORT)
 void Actor::draw_imgui(World *p_world) {
+    if (ImGui::CollapsingHeader("Transform")) {
+        glm::vec3 euler = glm::degrees(glm::eulerAngles(transform.quaternion));
 
+        ImGui::DragFloat3("Position", glm::value_ptr(transform.position), 0.02F);
+        ImGui::DragFloat3("Euler", glm::value_ptr(euler), 0.02F);
+        ImGui::DragFloat3("Scale", glm::value_ptr(transform.scale), 0.02F);
+
+        transform.quaternion = glm::quat(glm::radians(euler));
+    }
 }
 #endif

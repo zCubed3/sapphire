@@ -1,16 +1,15 @@
 #ifndef SAPPHIRE_PANEL_H
 #define SAPPHIRE_PANEL_H
 
-#ifdef IMGUI_SUPPORT
+#if defined(IMGUI_SUPPORT)
 #include <engine/typing/class_registry.h>
 
 class Panel {
     REFLECT_BASE_CLASS(Panel);
 
-protected:
+public:
     bool open = true;
 
-public:
     virtual bool can_close();
     virtual const char* get_title() = 0;
 

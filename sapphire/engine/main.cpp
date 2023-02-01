@@ -18,6 +18,7 @@
 #include <engine/scene/mesh_actor.h>
 #include <engine/scene/world.h>
 #include <engine/typing/class_registry.h>
+#include <engine/timing/timing.h>
 
 #ifdef RS_OPENGL4_SUPPORT
 #include <rs_opengl4/rendering/opengl4_render_server.h>
@@ -33,6 +34,10 @@
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <backends/imgui_impl_sdl.h>
+
+#include <engine/editor/panels/actor_panel.h>
+#include <engine/editor/panels/renderer_panel.h>
+#include <engine/editor/panels/world_actor_panel.h>
 #endif
 
 #include <config/config_file.h>
@@ -156,6 +161,8 @@ int main(int argc, char **argv) {
 
     bool resized = false;
 
+    Timing *timing = Timing::get_singleton();
+
     // ImGui my beloved :)
 #if defined(IMGUI_SUPPORT)
     render_server->initialize_imgui(rt_window);
@@ -165,6 +172,15 @@ int main(int argc, char **argv) {
     std::string test_obj_path;
     std::string test_semd_path;
     glm::vec3 test_position = {1, 0, 0};
+
+    WorldActorPanel* world_actor_panel = new WorldActorPanel();
+    world_actor_panel->target = world;
+
+    ActorPanel* actor_panel = new ActorPanel();
+    actor_panel->target = nullptr;
+    actor_panel->world = world;
+
+    RendererPanel *renderer_panel = new RendererPanel();
 #endif
 
 #ifdef TEST_MULTI_WINDOW
@@ -231,18 +247,16 @@ int main(int argc, char **argv) {
         }
 
         // TODO: Update the world properly
-        uint32_t tick = SDL_GetTicks();
-        float delta = (tick - last_tick) / 1000.0F;
+        timing->new_frame();
+        float delta = static_cast<float>(timing->get_delta());
 
         glm::vec3 euler {};
         euler.x = sin(world->elapsed_time) * 10;
         euler.y = cos(world->elapsed_time) * 10;
 
-        last_tick = tick;
-
         world->delta_time = delta;
 
-        actor->transform.quaternion = glm::quat(glm::radians(euler));
+        //actor->transform.quaternion = glm::quat(glm::radians(euler));
 
         world->elapsed_time += delta;
 
@@ -341,16 +355,12 @@ int main(int argc, char **argv) {
         ImGui::Image(rt_texture->texture->get_imgui_handle(), {256, 256}, {0, 0}, {1, correction});
         ImGui::End();
 
-        ImGui::Begin("Renderer Info");
-        ImGui::Text("Rendering API: %s", render_server->get_name());
-        ImGui::Text("FPS: %f", average);
+        ImGui::Begin("Panels");
+        ImGui::Checkbox("World", &world_actor_panel->open);
+        ImGui::Checkbox("Actor", &actor_panel->open);
+        ImGui::Checkbox("Renderer", &renderer_panel->open);
         ImGui::End();
 
-        ImGui::Begin("Camera");
-        ImGui::DragFloat3("Position", glm::value_ptr(rt_window->transform.position), 0.01F);
-        ImGui::DragFloat4("Quaternion", glm::value_ptr(rt_window->transform.quaternion), 0.01F);
-        ImGui::DragFloat3("Scale", glm::value_ptr(rt_window->transform.scale), 0.01F);
-        ImGui::End();
 
         ImGui::Begin("SEMD Debugger");
         ImGui::InputText("OBJ Path", &test_obj_path);
@@ -371,6 +381,12 @@ int main(int argc, char **argv) {
         }
 
         ImGui::End();
+
+        world_actor_panel->draw_panel();
+        actor_panel->draw_panel();
+        renderer_panel->draw_panel();
+
+        actor_panel->target = world_actor_panel->selected;
 
         //ImGui::ShowDemoWindow();
 #endif

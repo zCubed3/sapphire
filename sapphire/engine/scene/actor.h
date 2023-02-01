@@ -10,6 +10,7 @@ class Actor {
     REFLECT_BASE_CLASS(Actor)
 
 public:
+    std::string name = "Actor";
     Transform transform;
 
     virtual ~Actor();

@@ -28,7 +28,6 @@ set(SAPPHIRE_ENGINE_SOURCES
 
         "typing/class_registry.cpp"
 
-        "data/aabb.cpp"
         "data/color.cpp"
         "data/rect.cpp"
 
@@ -46,7 +45,12 @@ set(SAPPHIRE_ENGINE_SOURCES
         "rendering/draw_calls/draw_call.cpp"
         "rendering/draw_calls/mesh_draw_call.cpp"
 
-        "panels/panel.cpp"
+        "timing/timing.cpp"
+
+        "editor/panels/panel.cpp"
+        "editor/panels/actor_panel.cpp"
+        "editor/panels/renderer_panel.cpp"
+        "editor/panels/world_actor_panel.cpp"
 
         "main.cpp"
 

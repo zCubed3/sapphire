@@ -46,6 +46,7 @@ void RenderServer::initialize_imgui(SDLWindowRenderTarget *p_target) {
 
     ImGuiStyle &style = ImGui::GetStyle();
     ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     ImGui::StyleColorsClassic(&style);
 }

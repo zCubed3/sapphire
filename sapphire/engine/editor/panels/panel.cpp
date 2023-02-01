@@ -11,11 +11,13 @@ bool Panel::can_close() {
 void Panel::draw_panel() {
     bool *p_open = can_close() ? &open : nullptr;
 
-    ImGui::Begin(get_title(), p_open);
+    if (open) {
+        ImGui::Begin(get_title(), p_open);
 
-    draw_contents();
+        draw_contents();
 
-    ImGui::End();
+        ImGui::End();
+    }
 }
 
 #endif
