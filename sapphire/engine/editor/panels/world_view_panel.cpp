@@ -28,8 +28,8 @@ const char *WorldViewPanel::get_title() {
     return "World View";
 }
 
-bool WorldViewPanel::has_menu_bar() {
-    return true;
+int WorldViewPanel::get_imgui_flags() {
+    return ImGuiWindowFlags_MenuBar;
 }
 
 bool WorldViewPanel::is_unique() {
@@ -44,6 +44,19 @@ void WorldViewPanel::draw_world(RenderServer *p_render_server) {
     world->draw();
 
     p_render_server->end_target(target);
+}
+
+const char *WorldViewPanel::get_view_mode_name(ViewMode mode) {
+    switch (mode) {
+        default:
+            return nullptr;
+
+        case VIEW_MODE_COLOR:
+            return "Color View";
+
+        case VIEW_MODE_DEPTH:
+            return "Depth View";
+    }
 }
 
 void WorldViewPanel::draw_contents() {
@@ -66,6 +79,16 @@ void WorldViewPanel::draw_contents() {
         ImGui::DragFloat("FOV", &target->fov, 0.01F, 0.01F, 180.0F);
         ImGui::ColorEdit4("Clear Color", target->clear_color.backing);
 
+        if (ImGui::BeginCombo("View Modes", get_view_mode_name(view_mode))) {
+            for (int mode = VIEW_MODE_COLOR; mode <= VIEW_MODE_ENUM_MAX; mode++) {
+                if (ImGui::Selectable(get_view_mode_name((ViewMode)mode), view_mode == mode)) {
+                    view_mode = (ViewMode)mode;
+                }
+            }
+
+            ImGui::EndCombo();
+        }
+
         ImGui::Spacing();
         ImGui::Checkbox("Auto View Resolution", &automatic_size);
 
@@ -83,16 +106,29 @@ void WorldViewPanel::draw_contents() {
     ImVec2 content_size = ImGui::GetContentRegionAvail();
 
     if (content_size.x >= 1 && content_size.y >= 1) {
-        ImGui::Image(target->get_texture()->get_imgui_handle(), content_size, {0, 0}, {1, correction});
+        Texture* texture = nullptr;
+
+        switch (view_mode) {
+            case VIEW_MODE_COLOR:
+                texture = target->get_color_texture();
+                break;
+
+            case VIEW_MODE_DEPTH:
+                texture = target->get_depth_texture();
+                break;
+        }
+
+        if (texture != nullptr) {
+            ImGui::Image(texture->get_imgui_handle(), content_size, {0, 0}, {1, correction});
+        }
 
         ImGui::SetItemAllowOverlap();
         ImGui::SetCursorPos({0, 0});
 
         ImGuiIO &io = ImGui::GetIO();
-        int flags = ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle;
 
-        if (ImGui::InvisibleButton("RT_WINDOW", content_size, flags)) {
-        }
+        int flags = ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle;
+        ImGui::InvisibleButton("RT_WINDOW", content_size, flags);
 
         glm::vec3 pan = glm::vec3(0, 0, 0);
 
@@ -118,8 +154,8 @@ void WorldViewPanel::draw_contents() {
         target->transform.position += target->transform.quaternion * pan;
 
         if (automatic_size) {
-            width = std::floor(content_size.x);
-            height = std::floor(content_size.y);
+            width = static_cast<int>(std::floor(content_size.x));
+            height = static_cast<int>(std::floor(content_size.y));
         }
     }
 }

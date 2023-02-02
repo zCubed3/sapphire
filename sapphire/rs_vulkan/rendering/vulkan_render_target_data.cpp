@@ -29,11 +29,18 @@ void VulkanRenderTargetData::resize(int width, int height, RenderTarget* p_targe
 
         val_render_target->resize(width, height, rs_instance->val_instance);
 
-        delete texture;
-        texture = new VulkanTexture(image_target->val_color_image, false);
+        delete color_texture;
+        delete depth_texture;
+
+        color_texture = new VulkanTexture(image_target->val_color_image, false);
+        depth_texture = new VulkanTexture(image_target->val_depth_image, false);
     }
 }
 
-Texture *VulkanRenderTargetData::get_texture() {
-    return texture;
+Texture *VulkanRenderTargetData::get_color_texture() {
+    return color_texture;
+}
+
+Texture *VulkanRenderTargetData::get_depth_texture() {
+    return depth_texture;
 }

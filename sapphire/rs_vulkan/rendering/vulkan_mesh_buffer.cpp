@@ -86,8 +86,8 @@ void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Material *p_materia
     }
 
     if (vk_shader == nullptr) {
-        //vk_shader = VulkanShader::error_shader;
-        vk_shader = VulkanShader::depth_only_shader;
+        vk_shader = VulkanShader::error_shader;
+        //vk_shader = VulkanShader::depth_only_shader;
     }
 
     const VulkanRenderServer *render_server = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());

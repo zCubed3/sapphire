@@ -15,9 +15,9 @@ public:
     virtual ~Panel() = default;
 
     virtual bool can_close();
-    virtual bool has_menu_bar();
     virtual bool is_unique();
 
+    virtual int get_imgui_flags();
     virtual const char* get_title() = 0;
 
     virtual void draw_panel();

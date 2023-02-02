@@ -12,14 +12,17 @@ class VulkanTexture;
 
 class VulkanRenderTargetData : public RenderTargetData {
 public:
-    VulkanTexture *texture = nullptr;
+    VulkanTexture *color_texture = nullptr;
+    VulkanTexture *depth_texture = nullptr;
+
     ValRenderTarget *val_render_target = nullptr;
 
     VulkanRenderTargetData(ValRenderTarget *p_val_render_target);
     ~VulkanRenderTargetData() override;
 
     void resize(int width, int height, RenderTarget* p_target) override;
-    Texture * get_texture() override;
+    Texture *get_color_texture() override;
+    Texture *get_depth_texture() override;
 };
 
 #endif

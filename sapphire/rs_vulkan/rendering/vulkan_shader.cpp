@@ -152,7 +152,7 @@ void VulkanShader::create_vert_frag(const std::vector<char> &vert_code, const st
     builder.val_render_pass = render_server->val_window_render_pass;
 
     // Our first set is the engine's "view" descriptor set
-    builder.vk_descriptor_set_layouts.push_back(render_server->val_descriptor_info->vk_descriptor_set_layout);
+    builder.vk_descriptor_set_layouts.push_back(render_server->val_view_descriptor_info->vk_descriptor_set_layout);
 
     // The second set is unique to material instances
     // The third set is unique to object instances

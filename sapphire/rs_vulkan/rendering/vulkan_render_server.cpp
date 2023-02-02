@@ -52,8 +52,8 @@ VulkanRenderServer::~VulkanRenderServer() {
     //VulkanMeshBuffer::transform_ubo->release(val_instance);
     //delete VulkanMeshBuffer::transform_ubo;
 
-    val_descriptor_info->release(val_instance);
-    delete val_descriptor_info;
+    val_view_descriptor_info->release(val_instance);
+    delete val_view_descriptor_info;
 
     delete val_instance;
 }
@@ -143,6 +143,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     ValRenderPassBuilder target_render_pass_builder{};
 
+    depth_stencil_info.final_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     color_info.final_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     target_render_pass_builder.push_color_attachment(&color_info);
     target_render_pass_builder.push_depth_attachment(&depth_stencil_info);
@@ -151,12 +152,12 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     val_instance->val_main_window->create_swapchain(val_window_render_pass, val_instance);
 
-    // TODO: User defined layouts
+    // TODO: User defined layouts?
     ValDescriptorSetBuilder val_set_builder;
 
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    val_descriptor_info = val_set_builder.build(val_instance)[0];
+    val_view_descriptor_info = val_set_builder.build(val_instance)[0];
 
 #if defined(IMGUI_SUPPORT)
     ValDescriptorSetBuilder val_imgui_set_builder;
@@ -224,8 +225,8 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     ValDescriptorSetWriteInfo view_write_info{};
     view_write_info.val_buffer = view_buffer->val_buffer;
 
-    val_descriptor_info->write_binding(&view_write_info);
-    val_descriptor_info->update_set(val_instance);
+    val_view_descriptor_info->write_binding(&view_write_info);
+    val_view_descriptor_info->update_set(val_instance);
 
     VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData *>(p_target->data);
 
@@ -248,7 +249,7 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
                     VulkanShader::error_shader->val_pipeline->vk_pipeline_layout,
                     0,
                     1,
-                    &val_descriptor_info->val_descriptor_set->vk_descriptor_set,
+                    &val_view_descriptor_info->val_descriptor_set->vk_descriptor_set,
                     0,
                     nullptr);
         }
@@ -357,7 +358,8 @@ void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_targ
 
         if (type == ValRenderTargetCreateInfo::RENDER_TARGET_TYPE_IMAGE) {
             ValImageRenderTarget *image_target = reinterpret_cast<ValImageRenderTarget*>(val_target);
-            vulkan_data->texture = new VulkanTexture(image_target->val_color_image, false);
+            vulkan_data->color_texture = new VulkanTexture(image_target->val_color_image, false);
+            vulkan_data->depth_texture = new VulkanTexture(image_target->val_depth_image, false);
         }
     }
 }

@@ -12,6 +12,14 @@ class WorldViewPanel : public Panel {
     REFLECT_CLASS(WorldViewPanel, Panel)
 
 public:
+    enum ViewMode {
+        VIEW_MODE_COLOR,
+        VIEW_MODE_DEPTH,
+
+        VIEW_MODE_ENUM_MAX = VIEW_MODE_DEPTH
+    };
+
+    ViewMode view_mode = VIEW_MODE_COLOR;
     TextureRenderTarget* target = nullptr;
     World* world = nullptr;
 
@@ -25,11 +33,14 @@ public:
     WorldViewPanel();
     ~WorldViewPanel() override;
 
-    const char * get_title() override;
-    bool has_menu_bar() override;
     bool is_unique() override;
 
+    int get_imgui_flags() override;
+    const char * get_title() override;
+
     void draw_world(RenderServer *p_render_server);
+
+    static const char* get_view_mode_name(ViewMode mode);
 
 protected:
     void draw_contents() override;

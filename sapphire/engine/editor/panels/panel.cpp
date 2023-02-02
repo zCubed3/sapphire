@@ -18,23 +18,19 @@ bool Panel::can_close() {
     return true;
 }
 
-bool Panel::has_menu_bar() {
+bool Panel::is_unique() {
     return false;
 }
 
-bool Panel::is_unique() {
-    return false;
+int Panel::get_imgui_flags() {
+    return 0;
 }
 
 void Panel::draw_panel() {
     bool *p_open = can_close() ? &open : nullptr;
 
     if (open) {
-        int flags = 0;
-
-        if (has_menu_bar()) {
-            flags |= ImGuiWindowFlags_MenuBar;
-        }
+        int flags = get_imgui_flags();
 
         std::string combo_id = get_title();
 

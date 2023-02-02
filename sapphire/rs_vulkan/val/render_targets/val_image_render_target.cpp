@@ -51,7 +51,7 @@ void ValImageRenderTarget::recreate_target(ValInstance *p_val_instance) {
     depth_create_info.extent.width = vk_extent.width;
     depth_create_info.extent.height = vk_extent.height;
     depth_create_info.format = p_val_instance->present_info->vk_depth_format;
-    depth_create_info.usage_flags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    depth_create_info.usage_flags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     depth_create_info.aspect_flags = VK_IMAGE_ASPECT_DEPTH_BIT;
 
     val_color_image = ValImage::create(&color_create_info, p_val_instance);

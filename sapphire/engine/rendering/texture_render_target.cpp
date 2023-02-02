@@ -19,8 +19,12 @@ void TextureRenderTarget::resize(int width, int height) {
     }
 }
 
-Texture *TextureRenderTarget::get_texture() {
-    return data->get_texture();
+Texture *TextureRenderTarget::get_color_texture() {
+    return data->get_color_texture();
+}
+
+Texture *TextureRenderTarget::get_depth_texture() {
+    return data->get_depth_texture();
 }
 
 Rect TextureRenderTarget::get_rect() {

@@ -33,7 +33,7 @@ public:
 
     ValInstance* val_instance = nullptr;
 
-    ValDescriptorSetInfo *val_descriptor_info = nullptr;
+    ValDescriptorSetInfo *val_view_descriptor_info = nullptr;
     ValRenderPass* val_window_render_pass;
     ValRenderPass* val_target_render_pass;
 

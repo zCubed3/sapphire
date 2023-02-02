@@ -133,14 +133,9 @@ int main(int argc, char **argv) {
 
     MeshActor *actor = new MeshActor();
     actor->mesh_asset = mesh;
-    //actor->material_asset = material;
-
-    MeshActor *actor2 = new MeshActor();
-    actor2->mesh_asset = mesh;
-    actor2->material_asset = material;
+    actor->material_asset = material;
 
     world->add_actor(actor);
-    world->add_actor(actor2);
 
     AssetLoader::load_all_placeholders();
 

@@ -13,7 +13,8 @@ public:
     TextureRenderTarget(int width, int height);
 
     void resize(int width, int height);
-    Texture *get_texture();
+    Texture *get_color_texture();
+    Texture *get_depth_texture();
 
     TargetType get_type() override;
     Rect get_rect() override;
