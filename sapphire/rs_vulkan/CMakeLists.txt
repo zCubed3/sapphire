@@ -72,7 +72,12 @@ add_custom_target(SAPPHIRE_RS_VULKAN_GEN_HEADERS
         py ${COMPILE_SCRIPT} ${SHADER_DIR}/error.vert.spv vert ${PRELUDE_DIR}/vert_prelude.glsl ${SHADER_DIR}/error.glsl &&
         py ${COMPILE_SCRIPT} ${SHADER_DIR}/error.frag.spv frag ${PRELUDE_DIR}/frag_prelude.glsl ${SHADER_DIR}/error.glsl &&
         py ${GEN_SCRIPT} ${SHADER_DIR}/error.vert.spv ${SHADER_DIR}/error.spv.vert.gen.h &&
-        py ${GEN_SCRIPT} ${SHADER_DIR}/error.frag.spv ${SHADER_DIR}/error.spv.frag.gen.h
+        py ${GEN_SCRIPT} ${SHADER_DIR}/error.frag.spv ${SHADER_DIR}/error.spv.frag.gen.h &&
+
+        py ${COMPILE_SCRIPT} ${SHADER_DIR}/depth_pass.vert.spv vert ${PRELUDE_DIR}/vert_prelude.glsl ${SHADER_DIR}/depth_pass.glsl &&
+        py ${COMPILE_SCRIPT} ${SHADER_DIR}/depth_pass.frag.spv frag ${PRELUDE_DIR}/frag_prelude.glsl ${SHADER_DIR}/depth_pass.glsl &&
+        py ${GEN_SCRIPT} ${SHADER_DIR}/depth_pass.vert.spv ${SHADER_DIR}/depth_pass.spv.vert.gen.h &&
+        py ${GEN_SCRIPT} ${SHADER_DIR}/depth_pass.frag.spv ${SHADER_DIR}/depth_pass.spv.frag.gen.h
         )
 
 add_dependencies(SAPPHIRE_RS_VULKAN SAPPHIRE_RS_VULKAN_GEN_HEADERS)

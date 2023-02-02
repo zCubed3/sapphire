@@ -34,7 +34,7 @@ bool Shader::make_from_sesd(ConfigFile *p_sesd_file) {
     }
 
     // TODO: Caseless comparisons
-    write_depth = p_sesd_file->try_get_int("bWriteDepth", "Material", 1);
+    write_depth = p_sesd_file->try_get_int("bWriteDepth", "Shader", 1);
 
     std::string cull_string = p_sesd_file->try_get_string("sCullMode", "Material", "Back");
 
@@ -46,7 +46,7 @@ bool Shader::make_from_sesd(ConfigFile *p_sesd_file) {
         cull_mode = CULL_MODE_NONE;
     }
 
-    std::string depth_string = p_sesd_file->try_get_string("sDepthOp", "Material", "Less");
+    std::string depth_string = p_sesd_file->try_get_string("sDepthOp", "Shader", "Less");
 
     if (depth_string == "Less") {
         depth_op = DEPTH_OP_LESS;

@@ -21,7 +21,7 @@ set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 option(RS_OPENGL4_SUPPORT "Compiles and links OpenGL4 Render Server support into the engine" ON)
 option(RS_VULKAN_SUPPORT "Compiles and links Vulkan Render Server support into the engine" ON)
 
-#set(RS_OPENGL4_SUPPORT OFF)
+set(RS_OPENGL4_SUPPORT OFF)
 #set(RS_VULKAN_SUPPORT OFF)
 
 option(IMGUI_SUPPORT "Compiles ImGui support into the engine" ON)

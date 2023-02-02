@@ -12,6 +12,9 @@
 #include <rs_vulkan/shaders/error.spv.vert.gen.h>
 #include <rs_vulkan/shaders/error.spv.frag.gen.h>
 
+#include <rs_vulkan/shaders/depth_pass.spv.vert.gen.h>
+#include <rs_vulkan/shaders/depth_pass.spv.frag.gen.h>
+
 std::vector<char> read_file(const std::string& path) {
     std::vector<char> code;
     std::ifstream file(path, std::ios::binary | std::ios::ate);
@@ -28,6 +31,7 @@ std::vector<char> read_file(const std::string& path) {
 }
 
 VulkanShader *VulkanShader::error_shader = nullptr;
+VulkanShader *VulkanShader::depth_only_shader = nullptr;
 
 VulkanShader::~VulkanShader() {
     const VulkanRenderServer* rs_instance = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
@@ -193,19 +197,34 @@ void VulkanShader::create_vert_frag(const std::vector<char> &vert_code, const st
     delete frag_module;
 }
 
-void VulkanShader::create_error_shader() {
+void VulkanShader::create_default_shaders() {
     std::vector<char> vert_code;
     std::vector<char> frag_code;
 
-    vert_code.resize(sizeof(ERROR_VERT_CONTENTS));
-    frag_code.resize(sizeof(ERROR_FRAG_CONTENTS));
+    {
+        vert_code.resize(sizeof(ERROR_VERT_CONTENTS));
+        frag_code.resize(sizeof(ERROR_FRAG_CONTENTS));
 
-    memcpy(vert_code.data(), ERROR_VERT_CONTENTS, sizeof(ERROR_VERT_CONTENTS));
-    memcpy(frag_code.data(), ERROR_FRAG_CONTENTS, sizeof(ERROR_FRAG_CONTENTS));
+        memcpy(vert_code.data(), ERROR_VERT_CONTENTS, sizeof(ERROR_VERT_CONTENTS));
+        memcpy(frag_code.data(), ERROR_FRAG_CONTENTS, sizeof(ERROR_FRAG_CONTENTS));
 
-    VulkanShader* shader = new VulkanShader();
-    shader->create_vert_frag(vert_code, frag_code);
+        VulkanShader *shader = new VulkanShader();
+        shader->create_vert_frag(vert_code, frag_code);
 
-    VulkanShader::error_shader = shader;
+        VulkanShader::error_shader = shader;
+    }
+
+    {
+        vert_code.resize(sizeof(DEPTH_PASS_VERT_CONTENTS));
+        frag_code.resize(sizeof(DEPTH_PASS_FRAG_CONTENTS));
+
+        memcpy(vert_code.data(), DEPTH_PASS_VERT_CONTENTS, sizeof(DEPTH_PASS_VERT_CONTENTS));
+        memcpy(frag_code.data(), DEPTH_PASS_FRAG_CONTENTS, sizeof(DEPTH_PASS_FRAG_CONTENTS));
+
+        VulkanShader *shader = new VulkanShader();
+        shader->create_vert_frag(vert_code, frag_code);
+
+        VulkanShader::depth_only_shader = shader;
+    }
 }
 

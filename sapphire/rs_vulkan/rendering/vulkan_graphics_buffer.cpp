@@ -19,6 +19,11 @@ VulkanGraphicsBuffer::~VulkanGraphicsBuffer() {
         val_buffer->release(vulkan_rs->val_instance);
         delete val_buffer;
     }
+
+    if (val_descriptor_set != nullptr) {
+        val_descriptor_set->release(vulkan_rs->val_instance);
+        delete val_descriptor_set;
+    }
 }
 
 void VulkanGraphicsBuffer::write(void *data, size_t size) {

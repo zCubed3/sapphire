@@ -86,7 +86,8 @@ void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Material *p_materia
     }
 
     if (vk_shader == nullptr) {
-        vk_shader = VulkanShader::error_shader;
+        //vk_shader = VulkanShader::error_shader;
+        vk_shader = VulkanShader::depth_only_shader;
     }
 
     const VulkanRenderServer *render_server = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
@@ -94,19 +95,20 @@ void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Material *p_materia
 
     RenderTarget *current_target = render_server->get_current_target();
 
-    // If we don't have an instance of the per-object data we must allocate one
-    if (val_object_descriptor_info == nullptr) {
-        val_object_descriptor_info = vk_shader->val_object_descriptor_set->allocate_set(val_instance);
-    }
     // Our object data is already updated by this moment
     // We just have to update the binding
     VulkanGraphicsBuffer *object_ubo = reinterpret_cast<VulkanGraphicsBuffer *>(p_object_buffer->buffer);
 
+    // If we don't have an instance of the per-object descriptor we must allocate one
+    if (object_ubo->val_descriptor_set == nullptr) {
+        object_ubo->val_descriptor_set = vk_shader->val_object_descriptor_set->allocate_set(val_instance);
+    }
+
     ValDescriptorSetWriteInfo object_write_info{};
     object_write_info.val_buffer = object_ubo->val_buffer;
 
-    val_object_descriptor_info->write_binding(&object_write_info);
-    val_object_descriptor_info->update_set(val_instance);
+    object_ubo->val_descriptor_set->write_binding(&object_write_info);
+    object_ubo->val_descriptor_set->update_set(val_instance);
 
     Rect rect = current_target->get_rect();
 
@@ -141,7 +143,7 @@ void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Material *p_materia
             vk_shader->val_pipeline->vk_pipeline_layout,
             2,
             1,
-            &val_object_descriptor_info->vk_descriptor_set,
+            &object_ubo->val_descriptor_set->vk_descriptor_set,
             0,
             nullptr);
 
@@ -152,8 +154,8 @@ VulkanMeshBuffer::~VulkanMeshBuffer() {
     const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
     ValInstance* val_instance = render_server->val_instance;
 
-    val_object_descriptor_info->release(val_instance);
-    delete val_object_descriptor_info;
+    //val_object_descriptor_info->release(val_instance);
+    //delete val_object_descriptor_info;
 
     val_mbo->release(val_instance);
     delete val_mbo;

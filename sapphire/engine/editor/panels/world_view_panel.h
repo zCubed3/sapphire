@@ -18,6 +18,8 @@ public:
     int width;
     int height;
 
+    bool automatic_size = true;
+
     glm::vec3 euler {};
 
     WorldViewPanel();

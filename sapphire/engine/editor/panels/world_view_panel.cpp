@@ -66,6 +66,14 @@ void WorldViewPanel::draw_contents() {
         ImGui::DragFloat("FOV", &target->fov, 0.01F, 0.01F, 180.0F);
         ImGui::ColorEdit4("Clear Color", target->clear_color.backing);
 
+        ImGui::Spacing();
+        ImGui::Checkbox("Auto View Resolution", &automatic_size);
+
+        ImGui::BeginDisabled(automatic_size);
+        ImGui::DragInt("Width", &width, 1.0F, 1, 4096);
+        ImGui::DragInt("Height", &height, 1.0F, 1, 4096);
+        ImGui::EndDisabled();
+
         ImGui::EndMenu();
     }
 
@@ -108,8 +116,11 @@ void WorldViewPanel::draw_contents() {
         }
 
         target->transform.position += target->transform.quaternion * pan;
-        width = std::floor(content_size.x);
-        height = std::floor(content_size.y);
+
+        if (automatic_size) {
+            width = std::floor(content_size.x);
+            height = std::floor(content_size.y);
+        }
     }
 }
 #endif

@@ -20,6 +20,7 @@ protected:
 
 public:
     static VulkanShader *error_shader;
+    static VulkanShader *depth_only_shader;
 
     ValPipeline* val_pipeline = nullptr;
     ValDescriptorSetInfo * val_material_descriptor_set = nullptr;
@@ -31,7 +32,7 @@ public:
 
     void create_vert_frag(const std::vector<char>& vert_code, const std::vector<char>& frag_code);
 
-    static void create_error_shader();
+    static void create_default_shaders();
 };
 
 

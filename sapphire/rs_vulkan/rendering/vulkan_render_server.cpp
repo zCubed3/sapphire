@@ -178,7 +178,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     //
     // Placeholders
     //
-    VulkanShader::create_error_shader();
+    VulkanShader::create_default_shaders();
 
     return true;
 }

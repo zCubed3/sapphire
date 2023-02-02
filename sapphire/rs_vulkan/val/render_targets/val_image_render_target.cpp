@@ -44,6 +44,8 @@ void ValImageRenderTarget::recreate_target(ValInstance *p_val_instance) {
     color_create_info.extent.height = vk_extent.height;
     color_create_info.usage_flags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     color_create_info.aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT;
+    color_create_info.sampler_info.mode_u = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    color_create_info.sampler_info.mode_v = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 
     ValImageCreateInfo depth_create_info {};
     depth_create_info.extent.width = vk_extent.width;

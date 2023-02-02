@@ -16,8 +16,6 @@ protected:
     uint32_t sub_ibo_offset = 0;
 
     ValBuffer *val_mbo = nullptr;
-    ValDescriptorSet *val_object_descriptor_info = nullptr;
-
     // TODO: Temp
 
 

@@ -13,7 +13,7 @@ public:
     std::string name = "Actor";
     Transform transform;
 
-    size_t id; // TODO: Non-randomized IDs?
+    int id; // TODO: Non-randomized IDs?
 
     std::vector<Actor*> children;
 

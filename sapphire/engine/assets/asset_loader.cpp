@@ -34,7 +34,7 @@ void AssetLoader::release_cache() {
     for (auto& pair: asset_cache) {
         if (pair.second.unique()) {
             pair.second.reset();
-        } else { // Yes I am aware this isn't good to do but I have no other option
+        } else { // Yes I am aware this isn't good to do, but I have no other option
             delete pair.second.get();
         }
     }

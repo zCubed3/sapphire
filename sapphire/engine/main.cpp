@@ -133,9 +133,14 @@ int main(int argc, char **argv) {
 
     MeshActor *actor = new MeshActor();
     actor->mesh_asset = mesh;
-    actor->material_asset = material;
+    //actor->material_asset = material;
+
+    MeshActor *actor2 = new MeshActor();
+    actor2->mesh_asset = mesh;
+    actor2->material_asset = material;
 
     world->add_actor(actor);
+    world->add_actor(actor2);
 
     AssetLoader::load_all_placeholders();
 
@@ -145,13 +150,6 @@ int main(int argc, char **argv) {
 
     SDL_Event event{};
     bool keep_running = true;
-
-    uint32_t last_tick = SDL_GetTicks();
-
-    Transform model;
-    Transform model2;
-
-    bool resized = false;
 
     Timing *timing = Timing::get_singleton();
 
@@ -175,6 +173,15 @@ int main(int argc, char **argv) {
     RendererPanel *renderer_panel = new RendererPanel();
 
     std::vector<WorldViewPanel*> world_panels;
+
+    {
+        WorldViewPanel *view_panel = new WorldViewPanel();
+        view_panel->world = world;
+
+        view_panel->target->transform.position = {0, 0, 2};
+
+        world_panels.push_back(view_panel);
+    }
 #endif
 
 #ifdef TEST_MULTI_WINDOW
@@ -182,7 +189,6 @@ int main(int argc, char **argv) {
 #endif
 
     // We don't have a camera, so we need to move our render target initially
-    rt_window->fov = 105;
     rt_window->transform.position = glm::vec3(0, 0, 2);
 
     while (keep_running) {
@@ -249,12 +255,7 @@ int main(int argc, char **argv) {
         euler.y = cos(world->elapsed_time) * 10;
 
         world->delta_time = delta;
-
-        //actor->transform.quaternion = glm::quat(glm::radians(euler));
-
         world->elapsed_time += delta;
-
-        //rt_window.clear_color = Color(abs(sin(world->elapsed_time)), 0, 0, 1);
 
         render_server->begin_frame();
 
@@ -288,26 +289,11 @@ int main(int argc, char **argv) {
         render_server->begin_imgui(rt_window);
 #endif
 
-        world->draw();
+        //world->draw();
 
         //actor->transform.position = glm::vec3(0, sin(world->elapsed_time), 0);
 
 #if defined(IMGUI_SUPPORT)
-        fps_stack.push_back(floor(1.0 / delta));
-
-        while (fps_stack.size() > 10) {
-            fps_stack.erase(fps_stack.begin());
-        }
-
-        double sum = 0;
-        double count = 0;
-        for (double f: fps_stack) {
-            sum += f;
-            count += 1;
-        }
-
-        double average = floor(sum / count);
-
         ImGui::Begin("Child Window Test");
 
         if (ImGui::Button("Create Window")) {
