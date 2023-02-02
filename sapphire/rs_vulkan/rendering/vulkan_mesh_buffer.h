@@ -21,10 +21,9 @@ protected:
 
 public:
     VulkanMeshBuffer(MeshAsset* p_mesh_asset);
+    ~VulkanMeshBuffer() override;
 
     void render(ObjectBuffer* p_object_buffer, Material *p_material) override;
-
-    ~VulkanMeshBuffer() override;
 };
 
 

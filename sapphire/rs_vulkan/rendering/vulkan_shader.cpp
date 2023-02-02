@@ -15,6 +15,10 @@
 #include <rs_vulkan/shaders/depth_pass.spv.vert.gen.h>
 #include <rs_vulkan/shaders/depth_pass.spv.frag.gen.h>
 
+#ifdef DEBUG
+#include <iostream>
+#endif
+
 std::vector<char> read_file(const std::string& path) {
     std::vector<char> code;
     std::ifstream file(path, std::ios::binary | std::ios::ate);
@@ -40,16 +44,28 @@ VulkanShader::~VulkanShader() {
     if (val_material_descriptor_set != nullptr) {
         val_material_descriptor_set->release(val_instance);
         delete val_material_descriptor_set;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released VulkanShader::val_material_descriptor_set" << std::endl;
+#endif
     }
 
     if (val_object_descriptor_set != nullptr) {
         val_object_descriptor_set->release(val_instance);
         delete val_object_descriptor_set;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released VulkanShader::val_object_descriptor_set" << std::endl;
+#endif
     }
 
     if (val_pipeline != nullptr) {
         val_pipeline->release(val_instance);
         delete val_pipeline;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released VulkanShader::val_pipeline" << std::endl;
+#endif
     }
 }
 

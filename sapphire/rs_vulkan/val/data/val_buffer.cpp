@@ -2,6 +2,10 @@
 
 #include <rs_vulkan/val/val_instance.h>
 
+#ifdef DEBUG
+#include <iostream>
+#endif
+
 ValBuffer::ValBuffer(size_t size, uint32_t usage, uint32_t flags, ValInstance *p_val_instance) {
     VkBufferCreateInfo buffer_info = {};
     buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -14,6 +18,11 @@ ValBuffer::ValBuffer(size_t size, uint32_t usage, uint32_t flags, ValInstance *p
 
     VmaAllocationInfo allocation_info {};
     vmaCreateBuffer(p_val_instance->vma_allocator, &buffer_info, &alloc_info, &vk_buffer, &vma_allocation, &allocation_info);
+
+#ifdef DEBUG
+    std::cout << "Vulkan: 0x" << this << " created ValBuffer::vk_buffer" << std::endl;
+    std::cout << "Vulkan: 0x" << this << " created ValBuffer::vma_allocation" << std::endl;
+#endif
 
     this->size = size;
 }
@@ -43,5 +52,10 @@ void ValBuffer::release(ValInstance *p_val_instance) {
         vmaDestroyBuffer(p_val_instance->vma_allocator, vk_buffer, vma_allocation);
         vk_buffer = nullptr;
         vma_allocation = nullptr;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released ValBuffer::vk_buffer" << std::endl;
+        std::cout << "Vulkan: 0x" << this << " released ValBuffer::vma_allocation" << std::endl;
+#endif
     }
 }

@@ -28,6 +28,8 @@ public:
     void recreate_target(ValInstance *p_val_instance);
 
     void resize(int width, int height, ValInstance *p_val_instance) override;
+
+    void release(ValInstance *p_val_instance) override;
 };
 
 

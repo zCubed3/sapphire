@@ -22,6 +22,7 @@ public:
     TextureRenderTarget* shadow = nullptr;
 
     Light();
+    ~Light();
 
     void render_shadows(RenderServer *p_render_server, World *p_world);
 };

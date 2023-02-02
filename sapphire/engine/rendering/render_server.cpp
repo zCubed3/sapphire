@@ -34,7 +34,7 @@ void RenderServer::on_window_resized(SDL_Window *p_window) {
 
 void RenderServer::populate_render_target_data(RenderTarget *p_render_target) const {
     if (p_render_target->view_buffer == nullptr) {
-        GraphicsBuffer* buffer = create_graphics_buffer(sizeof(ViewBufferData));
+        GraphicsBuffer* buffer = create_graphics_buffer(sizeof(ViewBufferData), GraphicsBuffer::UsageIntent::USAGE_INTENT_DEFAULT);
         p_render_target->view_buffer = new ViewBuffer(buffer);
     }
 }

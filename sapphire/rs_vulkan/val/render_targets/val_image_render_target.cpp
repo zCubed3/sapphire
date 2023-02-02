@@ -96,3 +96,24 @@ void ValImageRenderTarget::resize(int width, int height, ValInstance *p_val_inst
 
     recreate_target(p_val_instance);
 }
+
+void ValImageRenderTarget::release(ValInstance *p_val_instance) {
+    ValReleasable::release(p_val_instance);
+
+    if (val_color_image != nullptr) {
+        val_color_image->release(p_val_instance);
+        delete val_color_image;
+        val_color_image = nullptr;
+    }
+
+    if (val_depth_image != nullptr) {
+        val_depth_image->release(p_val_instance);
+        delete val_depth_image;
+        val_depth_image = nullptr;
+    }
+
+    if (vk_framebuffer != nullptr) {
+        vkDestroyFramebuffer(p_val_instance->vk_device, vk_framebuffer, nullptr);
+        vk_framebuffer = nullptr;
+    }
+}

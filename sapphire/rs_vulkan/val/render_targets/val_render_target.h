@@ -59,6 +59,8 @@ public:
     VkClearColorValue clear_color = {0, 0, 0, 1};
     VkClearDepthStencilValue clear_depth_stencil = {1.0F, 0};
 
+    ~ValRenderTarget() = default;
+
     virtual bool begin_render(ValRenderPass *p_val_render_pass, ValInstance *p_val_instance);
     virtual bool end_render(ValInstance *p_val_instance);
 

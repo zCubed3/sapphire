@@ -14,9 +14,9 @@ protected:
     uint8_t *mapped = nullptr;
 
 public:
-    VmaAllocation vma_allocation;
-    VkBuffer vk_buffer;
-    size_t size;
+    VmaAllocation vma_allocation = nullptr;
+    VkBuffer vk_buffer = nullptr;
+    size_t size = 0;
 
     ValBuffer() = default;
     ValBuffer(size_t size, uint32_t usage, uint32_t flags, ValInstance *p_val_instance);

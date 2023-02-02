@@ -425,8 +425,19 @@ int main(int argc, char **argv) {
     AssetLoader::unload_all_assets();
 
     delete actor;
+    delete actor2;
+    delete shadow_actor;
+    delete shadow_actor2;
+
+#if defined(IMGUI_SUPPORT)
+    for (WorldViewPanel* panel: world_panels) {
+        delete panel;
+    }
 
     render_server->release_imgui(rt_window);
+#endif
+
+    delete light;
     delete rt_window;
 
     delete render_server;

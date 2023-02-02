@@ -9,12 +9,20 @@
 #include <rs_vulkan/val/pipelines/val_pipeline.h>
 #include <rs_vulkan/val/images/val_image.h>
 
+#ifdef DEBUG
+#include <iostream>
+#endif
+
 VulkanMaterial::~VulkanMaterial() {
     const VulkanRenderServer *rs_instance = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
 
     if (val_material_descriptor_info != nullptr) {
         val_material_descriptor_info->release(rs_instance->val_instance);
         delete val_material_descriptor_info;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released VulkanMaterial::val_material_descriptor_info" << std::endl;
+#endif
     }
 }
 

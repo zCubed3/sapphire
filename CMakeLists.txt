@@ -48,6 +48,10 @@ endif()
 #
 # Projects
 #
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    message("Debug build!")
+    list(APPEND SAPPHIRE_DEFINITIONS "DEBUG")
+endif()
 
 # TODO: Null driver to remove SDL dependency?
 add_subdirectory(${THIRD_PARTY_DIR}/SDL)

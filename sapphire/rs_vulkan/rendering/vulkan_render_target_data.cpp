@@ -7,6 +7,10 @@
 #include <rs_vulkan/rendering/vulkan_texture.h>
 #include <rs_vulkan/val/render_targets/val_image_render_target.h>
 
+#ifdef DEBUG
+#include <iostream>
+#endif
+
 VulkanRenderTargetData::VulkanRenderTargetData(ValRenderTarget *p_val_render_target) {
     val_render_target = p_val_render_target;
 }
@@ -20,6 +24,10 @@ VulkanRenderTargetData::~VulkanRenderTargetData() {
 
         val_render_target->release(val_instance);
         delete val_render_target;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released VulkanRenderTarget::val_render_target" << std::endl;
+#endif
     }
 }
 
@@ -38,12 +46,18 @@ void VulkanRenderTargetData::setup_texture_rt(TextureRenderTarget *p_target, Val
     if (p_target->usage_intent == TextureRenderTarget::USAGE_INTENT_SHADOW) {
         color_texture = nullptr;
     } else {
-        delete color_texture;
-        color_texture = new VulkanTexture(p_val_target->val_color_image, false);
+        if (color_texture == nullptr) {
+            color_texture = new VulkanTexture(p_val_target->val_color_image, false);
+        } else {
+            color_texture->val_image = p_val_target->val_color_image;
+        }
     }
 
-    delete depth_texture;
-    depth_texture = new VulkanTexture(p_val_target->val_depth_image, false);
+    if (depth_texture == nullptr) {
+        depth_texture = new VulkanTexture(p_val_target->val_depth_image, false);
+    } else {
+        depth_texture->val_image = p_val_target->val_depth_image;
+    }
 }
 
 Texture *VulkanRenderTargetData::get_color_texture() {

@@ -19,6 +19,10 @@
 
 #include <vk_mem_alloc.h>
 
+#ifdef DEBUG
+#include <iostream>
+#endif
+
 //ValBuffer *VulkanMeshBuffer::transform_ubo = nullptr;
 
 VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
@@ -72,6 +76,23 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
     delete mbo_staging;
     
     delete[] vertices;
+}
+
+VulkanMeshBuffer::~VulkanMeshBuffer() {
+    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+    ValInstance* val_instance = render_server->val_instance;
+
+    //val_object_descriptor_info->release(val_instance);
+    //delete val_object_descriptor_info;
+
+    if (val_mbo != nullptr) {
+        val_mbo->release(val_instance);
+        delete val_mbo;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released VulkanMeshBuffer::val_mbo" << std::endl;
+#endif
+    }
 }
 
 // TODO: Instancing
@@ -131,15 +152,4 @@ void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Material *p_materia
             nullptr);
 
     vkCmdDrawIndexed(active_command_buffer, tri_count, 1, 0, 0, 0);
-}
-
-VulkanMeshBuffer::~VulkanMeshBuffer() {
-    const VulkanRenderServer* render_server = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
-    ValInstance* val_instance = render_server->val_instance;
-
-    //val_object_descriptor_info->release(val_instance);
-    //delete val_object_descriptor_info;
-
-    val_mbo->release(val_instance);
-    delete val_mbo;
 }

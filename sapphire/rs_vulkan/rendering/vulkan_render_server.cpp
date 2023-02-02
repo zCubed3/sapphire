@@ -32,7 +32,10 @@
 #include <imgui.h>
 #endif
 
+#ifdef DEBUG
+#include <iostream>
 #define RS_VULKAN_DEBUG
+#endif
 
 // TODO: Wait for rendering to finish
 VulkanRenderServer::~VulkanRenderServer() {
@@ -42,6 +45,10 @@ VulkanRenderServer::~VulkanRenderServer() {
     }
 #endif
 
+#ifdef DEBUG
+    std::cout << "Vulkan: Shutting down render server..." << std::endl;
+#endif
+
     val_window_render_pass->release(val_instance);
     delete val_window_render_pass;
 
@@ -49,9 +56,7 @@ VulkanRenderServer::~VulkanRenderServer() {
     delete val_target_render_pass;
 
     delete VulkanShader::error_shader;
-
-    //VulkanMeshBuffer::transform_ubo->release(val_instance);
-    //delete VulkanMeshBuffer::transform_ubo;
+    delete VulkanShader::depth_only_shader;
 
     val_view_descriptor_info->release(val_instance);
     delete val_view_descriptor_info;
@@ -335,8 +340,8 @@ bool VulkanRenderServer::end_target(RenderTarget *p_target) {
     return true;
 }
 
-GraphicsBuffer *VulkanRenderServer::create_graphics_buffer(size_t size) const {
-    return new VulkanGraphicsBuffer(size);
+GraphicsBuffer *VulkanRenderServer::create_graphics_buffer(size_t size, GraphicsBuffer::UsageIntent usage) const {
+    return new VulkanGraphicsBuffer(size, usage);
 }
 
 Shader *VulkanRenderServer::create_shader() const {

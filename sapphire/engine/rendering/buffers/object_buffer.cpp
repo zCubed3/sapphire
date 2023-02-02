@@ -6,7 +6,7 @@ ObjectBuffer::ObjectBuffer() {
     const RenderServer* rs_instance = RenderServer::get_singleton();
 
     if (rs_instance != nullptr) {
-        buffer = rs_instance->create_graphics_buffer(sizeof(ObjectBufferData));
+        buffer = rs_instance->create_graphics_buffer(sizeof(ObjectBufferData), GraphicsBuffer::UsageIntent::USAGE_INTENT_DEFAULT);
     }
 }
 

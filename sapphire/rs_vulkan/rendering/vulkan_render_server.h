@@ -63,7 +63,7 @@ public:
     bool begin_target(RenderTarget *p_target) override;
     bool end_target(RenderTarget *p_target) override;
 
-    GraphicsBuffer *create_graphics_buffer(size_t size) const override;
+    GraphicsBuffer *create_graphics_buffer(size_t size, GraphicsBuffer::UsageIntent usage) const override;
     Shader *create_shader() const override;
     Texture * create_texture() const override;
     Material *create_material() const override;

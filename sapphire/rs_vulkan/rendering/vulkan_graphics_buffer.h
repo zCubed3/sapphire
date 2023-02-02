@@ -11,7 +11,7 @@ public:
     ValBuffer *val_buffer = nullptr;
     ValDescriptorSet *val_descriptor_set = nullptr;
 
-    VulkanGraphicsBuffer(size_t size);
+    VulkanGraphicsBuffer(size_t size, UsageIntent usage);
     ~VulkanGraphicsBuffer() override;
 
     void write(void *data, size_t size) override;

@@ -5,6 +5,10 @@
 
 #include <rs_vulkan/val/val_instance.h>
 
+#ifdef DEBUG
+#include <iostream>
+#endif
+
 ValImage *ValImage::create(ValImageCreateInfo *p_create_info, ValInstance *p_val_instance) {
     if (p_create_info == nullptr) {
         return nullptr;
@@ -147,6 +151,13 @@ ValImage *ValImage::create(ValImageCreateInfo *p_create_info, ValInstance *p_val
     image->vk_aspect_flags = p_create_info->aspect_flags;
     image->autogen_mips = true;
     image->mip_levels = mip_levels;
+
+#ifdef DEBUG
+    std::cout << "Vulkan: 0x" << image << " created ValImage::vk_image" << std::endl;
+    std::cout << "Vulkan: 0x" << image << " created ValImage::vk_image_view" << std::endl;
+    std::cout << "Vulkan: 0x" << image << " created ValImage::vk_sampler" << std::endl;
+    std::cout << "Vulkan: 0x" << image << " created ValImage::vma_allocation" << std::endl;
+#endif
 
     return image;
 }
@@ -346,20 +357,36 @@ void ValImage::release(ValInstance *p_val_instance) {
     if (vk_image != nullptr) {
         vkDestroyImage(p_val_instance->vk_device, vk_image, nullptr);
         vk_image = nullptr;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released ValImage::vk_image" << std::endl;
+#endif
     }
 
     if (vk_sampler != nullptr) {
         vkDestroySampler(p_val_instance->vk_device, vk_sampler, nullptr);
         vk_sampler = nullptr;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released ValImage::vk_sampler" << std::endl;
+#endif
     }
 
     if (vk_image_view != nullptr) {
         vkDestroyImageView(p_val_instance->vk_device, vk_image_view, nullptr);
         vk_image_view = nullptr;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released ValImage::vk_image_view" << std::endl;
+#endif
     }
 
     if (vma_allocation != nullptr) {
         vmaFreeMemory(p_val_instance->vma_allocator, vma_allocation);
         vma_allocation = nullptr;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released ValImage::vma_allocation" << std::endl;
+#endif
     }
 }

@@ -2,9 +2,11 @@
 #define SAPPHIRE_RENDER_SERVER_H
 
 #include <cstdint>
-#include <string>
 #include <queue>
+#include <string>
 #include <unordered_map>
+
+#include <engine/rendering/buffers/graphics_buffer.h>
 
 #include <glm.hpp>
 
@@ -12,7 +14,6 @@ typedef struct SDL_Window SDL_Window;
 
 class MeshAsset;
 class RenderTarget;
-class GraphicsBuffer;
 class Shader;
 class Texture;
 class Material;
@@ -35,7 +36,7 @@ public:
     virtual void register_rs_asset_loaders() = 0;
 
     virtual RenderTarget *get_current_target() const;
-    virtual const char* get_name() const = 0;
+    virtual const char *get_name() const = 0;
     virtual std::string get_error() const = 0;
     virtual uint32_t get_sdl_window_flags() const = 0;
 
@@ -59,7 +60,7 @@ public:
     virtual bool end_target(RenderTarget *p_target) = 0;
 
     // Creates a graphics buffer for generic usage within the render pipeline
-    virtual GraphicsBuffer *create_graphics_buffer(size_t size) const = 0;
+    virtual GraphicsBuffer *create_graphics_buffer(size_t size, GraphicsBuffer::UsageIntent usage) const = 0;
 
     // Creates a shader that will be setup via a SESD
     virtual Shader *create_shader() const = 0;

@@ -7,7 +7,7 @@ class RenderTarget;
 
 class RenderTargetData {
 public:
-    virtual ~RenderTargetData();
+    virtual ~RenderTargetData() = default;
 
     virtual void resize(int width, int height, RenderTarget* p_target) = 0;
     virtual Texture *get_color_texture() = 0;

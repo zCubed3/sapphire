@@ -2,12 +2,28 @@
 
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 
-VulkanGraphicsBuffer::VulkanGraphicsBuffer(size_t size) {
+#ifdef DEBUG
+#include <iostream>
+#endif
+
+VulkanGraphicsBuffer::VulkanGraphicsBuffer(size_t size, UsageIntent usage) {
     const VulkanRenderServer *vulkan_rs = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+
+    VkBufferUsageFlags usage_flags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+    switch (usage) {
+        default:
+            usage_flags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+            break;
+
+        case GraphicsBuffer::USAGE_INTENT_LARGE_BUFFER:
+            usage_flags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+            break;
+    }
 
     val_buffer = new ValBuffer(
             size,
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            usage_flags,
             VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
             vulkan_rs->val_instance);
 }
@@ -18,11 +34,19 @@ VulkanGraphicsBuffer::~VulkanGraphicsBuffer() {
     if (val_buffer != nullptr) {
         val_buffer->release(vulkan_rs->val_instance);
         delete val_buffer;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released VulkanGraphicsBuffer::val_buffer" << std::endl;
+#endif
     }
 
     if (val_descriptor_set != nullptr) {
         val_descriptor_set->release(vulkan_rs->val_instance);
         delete val_descriptor_set;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released VulkanGraphicsBuffer::val_descriptor_set" << std::endl;
+#endif
     }
 }
 

@@ -21,13 +21,18 @@ Light::Light() {
 
     rs_instance->populate_render_target_data(shadow);
 
-    buffer = rs_instance->create_graphics_buffer(sizeof(LightShadowData));
+    buffer = rs_instance->create_graphics_buffer(sizeof(LightShadowData), GraphicsBuffer::UsageIntent::USAGE_INTENT_DEFAULT);
 
     LightShadowData data {};
     data.light_matrix = shadow->view_data.view_projection;
     data.light_position = glm::vec4(sun_pos, 0.0F);
 
     buffer->write(&data, sizeof(LightShadowData));
+}
+
+Light::~Light() {
+    delete shadow;
+    delete buffer;
 }
 
 void Light::render_shadows(RenderServer *p_render_server, World *p_world) {
