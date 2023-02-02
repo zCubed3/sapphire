@@ -87,6 +87,17 @@ void ConfigFile::ConfigSection::push_entry(const std::string &name, const std::s
     entries.push_back({name, string_value});
 }
 
+void ConfigFile::ConfigSection::set_string(const std::string &name, const std::string &value) {
+    for (ConfigEntry &entry: entries) {
+        if (entry.name == name) {
+            entry.string_value = value;
+            return;
+        }
+    }
+
+    push_entry(name, value);
+}
+
 std::string ConfigFile::ConfigSection::try_get_string(const std::string &name, const std::string &fallback) {
     for (ConfigEntry &entry: entries) {
         if (entry.name == name) {
@@ -163,9 +174,6 @@ bool ConfigFile::read_from_path(const std::string &path) {
 }
 
 bool ConfigFile::read(const std::string &contents) {
-    global_section.clear();
-    sections.clear();
-
     std::stringstream stream(contents);
 
     std::string line;
@@ -241,7 +249,7 @@ bool ConfigFile::read(const std::string &contents) {
                 val.pop_back();
             }
 
-            top_section->push_entry(var, val);
+            top_section->set_string(var, val);
         }
     }
 
@@ -254,10 +262,30 @@ bool ConfigFile::write_to_path(const std::string &path) {
     file << "# Warning, your changes may be overwritten!\n" << std::endl;
     file << "# Global Entries" << std::endl;
     for (ConfigEntry& entry: global_section.entries) {
-        file << entry.name << " = " << entry.string_value;
+        file << entry.name << " = " << entry.string_value << std::endl;
     }
 
+    file << "\n# Scoped Entries" << std::endl;
+    for (ConfigSection& section: sections) {
+        file << "\n[" << section.name << "]" << std::endl;
+        for (ConfigEntry &entry: section.entries) {
+            file << entry.name << " = " << entry.string_value << std::endl;
+        }
+    }
+
+    file.close();
+
     return true;
+}
+
+ConfigFile::ConfigSection& ConfigFile::get_section(const std::string &name) {
+    for (ConfigSection& section: sections) {
+        if (section.name == name) {
+            return section;
+        }
+    }
+
+    return global_section;
 }
 
 std::string ConfigFile::try_get_string(const std::string &name, const std::string &section, const std::string &fallback) {
@@ -344,12 +372,16 @@ float ConfigFile::try_get_float(const std::string &name, const std::string &sect
     return fallback;
 }
 
-ConfigFile::ConfigSection& ConfigFile::get_section(const std::string &name) {
-    for (ConfigSection& section: sections) {
-        if (section.name == name) {
-            return section;
-        }
-    }
+void ConfigFile::set_string(const std::string &name, const std::string &section, const std::string &value) {
+    ConfigSection& found_section = get_section(section);
 
-    return global_section;
+    if (found_section.name == global_section.name && !section.empty()) {
+        ConfigSection new_section{};
+        new_section.name = section;
+
+        new_section.set_string(name, value);
+        sections.push_back(new_section);
+    } else {
+        found_section.set_string(name, value);
+    }
 }

@@ -12,8 +12,17 @@ public:
 
     static bool is_whitespace(char c);
     static bool is_number(char c);
+    static bool is_letter(char c);
+
+    static char to_lower(char c);
+    static char to_upper(char c);
 
     static std::string trim(const std::string& string);
+
+    static std::string to_lower(const std::string& string);
+    static std::string to_upper(const std::string& string);
+
+    static bool compare(const std::string& lhs, const std::string& rhs, bool caseless = true);
 };
 
 #endif

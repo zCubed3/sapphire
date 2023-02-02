@@ -30,6 +30,8 @@ public:
         std::vector<float> try_get_float_list(const std::string &name, const std::vector<float> &fallback = {});
         int try_get_int(const std::string &name, int fallback = 0);
         float try_get_float(const std::string &name, float fallback = 0.0F);
+
+        void set_string(const std::string &name, const std::string &value);
     };
 
     ConfigSection global_section;
@@ -48,6 +50,8 @@ public:
     std::vector<float> try_get_float_list(const std::string &name, const std::string &section, const std::vector<float> &fallback = {});
     int try_get_int(const std::string &name, const std::string &section = "", int fallback = 0);
     float try_get_float(const std::string &name, const std::string &section = "", float fallback = 0);
+
+    void set_string(const std::string &name, const std::string &section, const std::string &value);
 };
 
 

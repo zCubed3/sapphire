@@ -74,6 +74,10 @@ int main(int argc, char **argv) {
     // Load the engine config file (if it exists)
     // We write the config back to validate new settings
     ConfigFile engine_config;
+
+    // Defaults
+    engine_config.set_string("sRenderServer", "Rendering", "Vulkan");
+
     engine_config.read_from_path("engine.secf");
 
     engine_config.write_to_path("engine.secf");
@@ -84,7 +88,7 @@ int main(int argc, char **argv) {
     std::string user_render_server = engine_config.try_get_string("sRenderServer", "Rendering", "Vulkan");
 
     RenderServer *render_server = nullptr;
-    if (user_render_server == "Vulkan") {
+    if (StringTools::compare(user_render_server, "vulkan")) {
 #ifdef RS_VULKAN_SUPPORT
         render_server = new VulkanRenderServer();
 #else
@@ -93,7 +97,7 @@ int main(int argc, char **argv) {
 #endif
     }
 
-    if (user_render_server == "OpenGL4") {
+    if (StringTools::compare(user_render_server, "opengl4")) {
 #ifdef RS_OPENGL4_SUPPORT
         render_server = new OpenGL4RenderServer();
 #else
@@ -121,10 +125,10 @@ int main(int argc, char **argv) {
     // TODO: Abstract window class?
     SDL_Window *main_window = SDL_CreateWindow(
             window_name.c_str(),
-            SDL_WINDOWPOS_UNDEFINED,
-            SDL_WINDOWPOS_UNDEFINED,
-            1280,
-            720,
+            engine_config.try_get_int("iMainWindowX", "MainWindow", SDL_WINDOWPOS_UNDEFINED),
+            engine_config.try_get_int("iMainWindowY", "MainWindow", SDL_WINDOWPOS_UNDEFINED),
+            engine_config.try_get_int("iMainWindowWidth", "MainWindow", 1280),
+            engine_config.try_get_int("iMainWindowHeight", "MainWindow", 720),
             window_flags | SDL_WINDOW_RESIZABLE);
 
     WindowRenderTarget *rt_window = new WindowRenderTarget(main_window);
@@ -453,6 +457,22 @@ int main(int argc, char **argv) {
     delete rt_window;
 
     delete render_server;
+
+    // To keep the user happy we store the last state of the window
+    int width;
+    int height;
+    SDL_GetWindowSize(main_window, &width, &height);
+
+    int x;
+    int y;
+    SDL_GetWindowPosition(main_window, &x, &y);
+
+    engine_config.set_string("iMainWindowWidth", "MainWindow", std::to_string(width));
+    engine_config.set_string("iMainWindowHeight", "MainWindow", std::to_string(height));
+    engine_config.set_string("iMainWindowX", "MainWindow", std::to_string(x));
+    engine_config.set_string("iMainWindowY", "MainWindow", std::to_string(y));
+
+    engine_config.write_to_path("engine.secf");
 
     return 0;
 }
