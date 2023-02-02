@@ -26,6 +26,9 @@ public:
     ValDescriptorSetInfo * val_material_descriptor_set = nullptr;
     ValDescriptorSetInfo * val_object_descriptor_set = nullptr;
 
+    // TODO: Temp
+    bool is_shadow = false;
+
     ~VulkanShader() override;
 
     bool make_from_sesd(ConfigFile *p_sesd_file) override;

@@ -10,7 +10,14 @@ protected:
     Rect rect = {};
 
 public:
-    TextureRenderTarget(int width, int height);
+    enum UsageIntent {
+        USAGE_INTENT_GENERAL,
+        USAGE_INTENT_SHADOW
+    };
+
+    UsageIntent usage_intent = USAGE_INTENT_GENERAL;
+
+    TextureRenderTarget(int width, int height, UsageIntent usage = USAGE_INTENT_GENERAL);
 
     void resize(int width, int height);
     Texture *get_color_texture();

@@ -1,6 +1,7 @@
 #include "vulkan_render_target_data.h"
 
 #include <engine/rendering/render_target.h>
+#include <engine/rendering/texture_render_target.h>
 
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #include <rs_vulkan/rendering/vulkan_texture.h>
@@ -25,16 +26,24 @@ VulkanRenderTargetData::~VulkanRenderTargetData() {
 void VulkanRenderTargetData::resize(int width, int height, RenderTarget* p_target) {
     if (p_target->get_type() == RenderTarget::TARGET_TYPE_TEXTURE) {
         const VulkanRenderServer* rs_instance = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+        TextureRenderTarget *texture_rt = reinterpret_cast<TextureRenderTarget*>(p_target);
         ValImageRenderTarget *image_target = reinterpret_cast<ValImageRenderTarget*>(val_render_target);
 
         val_render_target->resize(width, height, rs_instance->val_instance);
-
-        delete color_texture;
-        delete depth_texture;
-
-        color_texture = new VulkanTexture(image_target->val_color_image, false);
-        depth_texture = new VulkanTexture(image_target->val_depth_image, false);
+        setup_texture_rt(texture_rt, image_target);
     }
+}
+
+void VulkanRenderTargetData::setup_texture_rt(TextureRenderTarget *p_target, ValImageRenderTarget *p_val_target) {
+    if (p_target->usage_intent == TextureRenderTarget::USAGE_INTENT_SHADOW) {
+        color_texture = nullptr;
+    } else {
+        delete color_texture;
+        color_texture = new VulkanTexture(p_val_target->val_color_image, false);
+    }
+
+    delete depth_texture;
+    depth_texture = new VulkanTexture(p_val_target->val_depth_image, false);
 }
 
 Texture *VulkanRenderTargetData::get_color_texture() {

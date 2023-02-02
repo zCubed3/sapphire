@@ -15,6 +15,7 @@
 #include <engine/rendering/texture.h>
 #include <engine/rendering/texture_render_target.h>
 #include <engine/rendering/window_render_target.h>
+#include <engine/rendering/lighting/light.h>
 #include <engine/scene/mesh_actor.h>
 #include <engine/scene/world.h>
 #include <engine/timing/timing.h>
@@ -125,19 +126,40 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    AssetLoader::load_all_placeholders();
+
+    // Test assets
+    std::shared_ptr<MeshAsset> mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.obj"));
+    std::shared_ptr<MeshAsset> mesh2 = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test2.obj"));
+    std::shared_ptr<MaterialAsset> material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test.semd"));
+
+    // TODO: Temporary shadow test
+    Light *light = new Light();
+
+    World *shadow_world = new World();
+
+    MeshActor *shadow_actor = new MeshActor();
+    shadow_actor->mesh_asset = mesh;
+
+    MeshActor *shadow_actor2 = new MeshActor();
+    shadow_actor2->mesh_asset = mesh2;
+
+    shadow_world->add_actor(shadow_actor);
+    shadow_world->add_actor(shadow_actor2);
+
     // We need to load our model and our shader
     World *world = new World();
-
-    std::shared_ptr<MeshAsset> mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.obj"));
-    std::shared_ptr<MaterialAsset> material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test.semd"));
 
     MeshActor *actor = new MeshActor();
     actor->mesh_asset = mesh;
     actor->material_asset = material;
 
-    world->add_actor(actor);
+    MeshActor *actor2 = new MeshActor();
+    actor2->mesh_asset = mesh2;
+    actor2->material_asset = material;
 
-    AssetLoader::load_all_placeholders();
+    world->add_actor(actor);
+    world->add_actor(actor2);
 
     render_server->populate_render_target_data(rt_window);
 
@@ -172,8 +194,10 @@ int main(int argc, char **argv) {
     {
         WorldViewPanel *view_panel = new WorldViewPanel();
         view_panel->world = world;
+        view_panel->id = 0;
 
         view_panel->target->transform.position = {0, 0, 2};
+        view_panel->target->light = light;
 
         world_panels.push_back(view_panel);
     }
@@ -253,6 +277,8 @@ int main(int argc, char **argv) {
         world->elapsed_time += delta;
 
         render_server->begin_frame();
+
+        light->render_shadows(render_server, shadow_world);
 
 #ifdef TEST_MULTI_WINDOW
         for (ChildWindow &window: child_windows) {
@@ -380,6 +406,9 @@ int main(int argc, char **argv) {
         }
 
         actor_panel->target = world_actor_panel->selected;
+
+        shadow_actor->transform = actor->transform;
+        shadow_actor2->transform = actor2->transform;
 #endif
 
 #if defined(IMGUI_SUPPORT)

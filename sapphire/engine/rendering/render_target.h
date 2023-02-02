@@ -12,6 +12,8 @@
 class World;
 class RenderTargetData;
 
+class Light;
+
 // Abstraction over windows and various other type of 2D attachments
 // TODO: 1D / 3D render targets?
 class RenderTarget {
@@ -26,6 +28,14 @@ public:
         CLEAR_FLAG_COLOR = 2
     };
 
+    enum ViewMatrixMode {
+        VIEW_MATRIX_MODE_AUTOMATIC,
+        VIEW_MATRIX_MODE_MANUAL
+    };
+
+    // TODO: Temp
+    Light* light = nullptr;
+
     int clear_flags = ClearFlags::CLEAR_FLAG_COLOR | ClearFlags::CLEAR_FLAG_DEPTH;
     Color clear_color = Color(0.1F, 0.1F, 0.1F, 1.0F);
 
@@ -36,10 +46,12 @@ public:
     float near_clip = 0.01F;
     float far_clip = 100.0F;
 
+    ViewMatrixMode view_matrix_mode = ViewMatrixMode::VIEW_MATRIX_MODE_AUTOMATIC;
+
     ViewBufferData view_data {};
     ViewBuffer *view_buffer = nullptr;
 
-    RenderTargetData *data = nullptr;
+    RenderTargetData *rt_data = nullptr;
 
 
     World *world = nullptr;

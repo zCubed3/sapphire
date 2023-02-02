@@ -36,6 +36,7 @@ public:
     ValDescriptorSetInfo *val_view_descriptor_info = nullptr;
     ValRenderPass* val_window_render_pass;
     ValRenderPass* val_target_render_pass;
+    ValRenderPass* val_shadow_render_pass;
 
     ValVertexInputBuilder val_default_vertex_input;
     ValRenderTarget *val_active_render_target = nullptr;

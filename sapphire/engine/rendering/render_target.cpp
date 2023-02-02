@@ -4,11 +4,10 @@
 #include <engine/rendering/render_target_data.h>
 #include <engine/scene/world.h>
 
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <gtc/matrix_transform.hpp>
 
 RenderTarget::~RenderTarget() {
-    delete data;
+    delete rt_data;
     delete view_buffer;
 }
 
@@ -23,11 +22,13 @@ void RenderTarget::begin_attach() {
 
     transform.calculate_matrices();
 
-    view_data.camera_position = glm::vec4(transform.position, 1);
-    view_data.view = transform.trs_inverse;
-    view_data.projection = glm::perspective(glm::radians(fov), aspect, near_clip, far_clip);
-    view_data.projection[1][1] *= correction.y; // Correction for Vulkan
-    view_data.view_projection = view_data.projection * view_data.view;
+    if (view_matrix_mode == VIEW_MATRIX_MODE_AUTOMATIC) {
+        view_data.camera_position = glm::vec4(transform.position, 1);
+        view_data.view = transform.trs_inverse;
+        view_data.projection = glm::perspective(glm::radians(fov), aspect, near_clip, far_clip);
+        view_data.projection[1][1] *= correction.y;// Correction for Vulkan
+        view_data.view_projection = view_data.projection * view_data.view;
+    }
 
     if (world != nullptr) {
         view_data.time = glm::vec4(world->elapsed_time);

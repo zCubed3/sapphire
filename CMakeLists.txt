@@ -51,7 +51,7 @@ endif()
 
 # TODO: Null driver to remove SDL dependency?
 add_subdirectory(${THIRD_PARTY_DIR}/SDL)
-list(APPEND SAPPHIRE_DEFINITIONS "SDL_SUPPORT")
+list(APPEND SAPPHIRE_DEFINITIONS "SDL_SUPPORT" "GLM_FORCE_DEPTH_ZERO_TO_ONE")
 
 if (DISABLE_RTTI)
     if (WIN32)

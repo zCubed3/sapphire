@@ -149,7 +149,13 @@ void VulkanShader::create_vert_frag(const std::vector<char> &vert_code, const st
     builder.push_module(vert_module);
     builder.push_module(frag_module);
 
-    builder.val_render_pass = render_server->val_window_render_pass;
+    // TODO: Temp, create passes similar to rt intents
+    if (!is_shadow) {
+        builder.val_render_pass = render_server->val_window_render_pass;
+    } else {
+        builder.cull_mode = ValPipelineBuilder::CULL_MODE_OFF;
+        builder.val_render_pass = render_server->val_shadow_render_pass;
+    }
 
     // Our first set is the engine's "view" descriptor set
     builder.vk_descriptor_set_layouts.push_back(render_server->val_view_descriptor_info->vk_descriptor_set_layout);
@@ -222,6 +228,7 @@ void VulkanShader::create_default_shaders() {
         memcpy(frag_code.data(), DEPTH_PASS_FRAG_CONTENTS, sizeof(DEPTH_PASS_FRAG_CONTENTS));
 
         VulkanShader *shader = new VulkanShader();
+        shader->is_shadow = true;
         shader->create_vert_frag(vert_code, frag_code);
 
         VulkanShader::depth_only_shader = shader;

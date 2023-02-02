@@ -111,7 +111,7 @@ std::shared_ptr<Asset> OBJLoader::load_from_path(const std::string &path, const 
         std::vector<uint32_t> weld_triangles;
         uint32_t welded = 0;
 
-//#define NO_WELD
+#define NO_WELD
 
 #ifndef NO_WELD
         for (size_t t = 0; t < unweld_triangles.size(); t++) {

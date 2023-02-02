@@ -86,8 +86,8 @@ void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Material *p_materia
     }
 
     if (vk_shader == nullptr) {
-        vk_shader = VulkanShader::error_shader;
-        //vk_shader = VulkanShader::depth_only_shader;
+        //vk_shader = VulkanShader::error_shader;
+        vk_shader = VulkanShader::depth_only_shader;
     }
 
     const VulkanRenderServer *render_server = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
@@ -110,27 +110,10 @@ void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Material *p_materia
     object_ubo->val_descriptor_set->write_binding(&object_write_info);
     object_ubo->val_descriptor_set->update_set(val_instance);
 
-    Rect rect = current_target->get_rect();
-
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = (float) rect.width;
-    viewport.height = (float) rect.height;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-
-    VkRect2D scissor{};
-    scissor.offset = {0, 0};
-    scissor.extent = {static_cast<uint32_t>(rect.width), static_cast<uint32_t>(rect.height)};
-
     // We assume a command buffer is currently recording
     VkCommandBuffer active_command_buffer = render_server->val_active_render_target->vk_command_buffer;
 
     vkCmdBindPipeline(active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_shader->val_pipeline->vk_pipeline);
-
-    vkCmdSetViewport(active_command_buffer, 0, 1, &viewport);
-    vkCmdSetScissor(active_command_buffer, 0, 1, &scissor);
 
     VkDeviceSize offset = 0;
     vkCmdBindVertexBuffers(active_command_buffer, 0, 1, &val_mbo->vk_buffer, &offset);

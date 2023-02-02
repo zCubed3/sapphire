@@ -8,7 +8,9 @@
 
 #include <rs_vulkan/val/render_targets/val_render_target.h>
 
+class ValImageRenderTarget;
 class VulkanTexture;
+class TextureRenderTarget;
 
 class VulkanRenderTargetData : public RenderTargetData {
 public:
@@ -21,6 +23,8 @@ public:
     ~VulkanRenderTargetData() override;
 
     void resize(int width, int height, RenderTarget* p_target) override;
+    void setup_texture_rt(TextureRenderTarget *p_target, ValImageRenderTarget *p_val_target);
+
     Texture *get_color_texture() override;
     Texture *get_depth_texture() override;
 };

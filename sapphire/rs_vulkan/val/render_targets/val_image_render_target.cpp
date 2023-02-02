@@ -11,11 +11,18 @@ VkExtent2D ValImageRenderTarget::get_extent(ValInstance *p_val_instance) {
     return vk_extent;
 }
 
+bool ValImageRenderTarget::can_clear_color() {
+    return create_color;
+}
+
 // TODO: Not use a constructor (for error catching)
 ValImageRenderTarget::ValImageRenderTarget(ValRenderTargetCreateInfo *p_create_info, ValInstance *p_val_instance) {
     vk_extent = p_create_info->extent;
     vk_format = p_create_info->format;
     val_render_pass = p_create_info->val_render_pass;
+
+    create_color = p_create_info->create_color;
+    create_depth = p_create_info->create_depth;
 
     recreate_target(p_val_instance);
 }
@@ -38,31 +45,37 @@ void ValImageRenderTarget::recreate_target(ValInstance *p_val_instance) {
         vk_framebuffer = nullptr;
     }
 
-    ValImageCreateInfo color_create_info {};
-    color_create_info.format = vk_format;
-    color_create_info.extent.width = vk_extent.width;
-    color_create_info.extent.height = vk_extent.height;
-    color_create_info.usage_flags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    color_create_info.aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT;
-    color_create_info.sampler_info.mode_u = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    color_create_info.sampler_info.mode_v = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    std::vector<VkImageView> attachments;
 
-    ValImageCreateInfo depth_create_info {};
-    depth_create_info.extent.width = vk_extent.width;
-    depth_create_info.extent.height = vk_extent.height;
-    depth_create_info.format = p_val_instance->present_info->vk_depth_format;
-    depth_create_info.usage_flags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    depth_create_info.aspect_flags = VK_IMAGE_ASPECT_DEPTH_BIT;
+    if (create_color) {
+        ValImageCreateInfo color_create_info{};
+        color_create_info.format = vk_format;
+        color_create_info.extent.width = vk_extent.width;
+        color_create_info.extent.height = vk_extent.height;
+        color_create_info.usage_flags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        color_create_info.aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT;
+        color_create_info.sampler_info.mode_u = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        color_create_info.sampler_info.mode_v = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 
-    val_color_image = ValImage::create(&color_create_info, p_val_instance);
-    val_depth_image = ValImage::create(&depth_create_info, p_val_instance);
+        val_color_image = ValImage::create(&color_create_info, p_val_instance);
+
+        attachments.push_back(val_color_image->vk_image_view);
+    }
+
+    if (create_depth) {
+        ValImageCreateInfo depth_create_info{};
+        depth_create_info.extent.width = vk_extent.width;
+        depth_create_info.extent.height = vk_extent.height;
+        depth_create_info.format = p_val_instance->present_info->vk_depth_format;
+        depth_create_info.usage_flags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        depth_create_info.aspect_flags = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+        val_depth_image = ValImage::create(&depth_create_info, p_val_instance);
+
+        attachments.push_back(val_depth_image->vk_image_view);
+    }
 
     // We need to create just a single framebuffer
-    std::vector<VkImageView> attachments = {
-            val_color_image->vk_image_view,
-            val_depth_image->vk_image_view
-    };
-
     VkFramebufferCreateInfo framebuffer_create_info{};
     framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     framebuffer_create_info.renderPass = val_render_pass->vk_render_pass;

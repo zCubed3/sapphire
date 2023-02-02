@@ -28,9 +28,29 @@ struct ValRenderPassColorAttachmentInfo : ValRenderPassAttachmentInfo {};
 
 struct ValRenderPassDepthStencilAttachmentInfo : ValRenderPassAttachmentInfo {};
 
+struct ValSubpassInfo {
+    std::vector<uint32_t> attachment_indices;
+    bool attach_depth = true;
+};
+
+struct ValSubpassDependencyInfo {
+    uint32_t src_subpass = VK_SUBPASS_EXTERNAL;
+    uint32_t dst_subpass = VK_SUBPASS_EXTERNAL;
+
+    VkPipelineStageFlags src_stage_flags = 0;
+    VkPipelineStageFlags dst_stage_flags = 0;
+
+    VkAccessFlags src_access_flags = 0;
+    VkAccessFlags dst_access_flags = 0;
+
+    VkDependencyFlags dependency_flags = VK_DEPENDENCY_BY_REGION_BIT;
+};
+
 class ValRenderPassBuilder {
     std::vector<VkAttachmentDescription> vk_attachment_descriptions;
     std::vector<VkAttachmentReference> vk_attachment_refs;
+    std::vector<VkSubpassDescription> vk_subpasses;
+    std::vector<VkSubpassDependency> vk_subpass_dependencies;
 
     // We can only have 1 depth stencil!
     // For implementation purposes it is always last!
@@ -41,6 +61,9 @@ class ValRenderPassBuilder {
 public:
     void push_color_attachment(ValRenderPassColorAttachmentInfo *p_attachment_info);
     bool push_depth_attachment(ValRenderPassDepthStencilAttachmentInfo *p_attachment_info);
+
+    void push_subpass(ValSubpassInfo *p_subpass_info);
+    void push_subpass_dependency(ValSubpassDependencyInfo *p_dependency_info);
 
     ValRenderPass *build(ValInstance *p_val_instance);
 };

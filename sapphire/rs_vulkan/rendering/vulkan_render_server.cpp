@@ -13,6 +13,7 @@
 #include <engine/rendering/render_target.h>
 #include <engine/rendering/texture_render_target.h>
 #include <engine/rendering/window_render_target.h>
+#include <engine/rendering/lighting/light.h>
 #include <engine/scene/world.h>
 
 #include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
@@ -141,6 +142,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     val_window_render_pass = window_render_pass_builder.build(val_instance);
 
+    // TODO: Render to the window as well?
     ValRenderPassBuilder target_render_pass_builder{};
 
     depth_stencil_info.final_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -150,11 +152,20 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     val_target_render_pass = target_render_pass_builder.build(val_instance);
 
+    // Shadow render pass
+    ValRenderPassBuilder shadow_render_pass_builder {};
+
+    shadow_render_pass_builder.push_depth_attachment(&depth_stencil_info);
+
+    val_shadow_render_pass = shadow_render_pass_builder.build(val_instance);
+
     val_instance->val_main_window->create_swapchain(val_window_render_pass, val_instance);
 
     // TODO: User defined layouts?
     ValDescriptorSetBuilder val_set_builder;
 
+    val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+    val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
     val_view_descriptor_info = val_set_builder.build(val_instance)[0];
@@ -192,7 +203,7 @@ bool VulkanRenderServer::present(SDL_Window *p_window) {
 void VulkanRenderServer::on_window_resized(SDL_Window *p_window) {
     if (p_window != nullptr) {
         WindowRenderTarget *rt = reinterpret_cast<WindowRenderTarget *>(SDL_GetWindowData(p_window, "RT"));
-        VulkanRenderTargetData *data = reinterpret_cast<VulkanRenderTargetData *>(rt->data);
+        VulkanRenderTargetData *data = reinterpret_cast<VulkanRenderTargetData *>(rt->rt_data);
 
         ValWindowRenderTarget *val_rt = reinterpret_cast<ValWindowRenderTarget *>(data->val_render_target);
         val_rt->create_swapchain(val_window_render_pass, val_instance);
@@ -225,18 +236,39 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     ValDescriptorSetWriteInfo view_write_info{};
     view_write_info.val_buffer = view_buffer->val_buffer;
 
+    if (p_target->light != nullptr) {
+        ValDescriptorSetWriteInfo light_write_info{};
+        light_write_info.binding_index = 2;
+        light_write_info.val_buffer = ((VulkanGraphicsBuffer*)p_target->light->buffer)->val_buffer;
+
+        ValDescriptorSetWriteInfo light_texture_write_info{};
+        light_texture_write_info.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        light_texture_write_info.binding_index = 1;
+        light_texture_write_info.val_image = ((VulkanTexture*)p_target->light->shadow->get_depth_texture())->val_image;
+
+        val_view_descriptor_info->write_binding(&light_write_info);
+        val_view_descriptor_info->write_binding(&light_texture_write_info);
+    }
+
     val_view_descriptor_info->write_binding(&view_write_info);
     val_view_descriptor_info->update_set(val_instance);
 
-    VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData *>(p_target->data);
+    VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData *>(p_target->rt_data);
 
     if (target_data != nullptr) {
         if (target_data->val_render_target != nullptr) {
             val_active_render_target = target_data->val_render_target;
 
+            // TODO: Use the same render pass the target was created with
             ValRenderPass* pass = val_window_render_pass;
             if (p_target->get_type() == RenderTarget::TARGET_TYPE_TEXTURE) {
-                pass = val_target_render_pass;
+                TextureRenderTarget *texture_target = reinterpret_cast<TextureRenderTarget *>(p_target);
+
+                if (texture_target->usage_intent == TextureRenderTarget::USAGE_INTENT_GENERAL) {
+                    pass = val_target_render_pass;
+                } else {
+                    pass = val_shadow_render_pass;
+                }
             }
 
             val_active_render_target->clear_color = {p_target->clear_color[0], p_target->clear_color[1], p_target->clear_color[2], p_target->clear_color[3]};
@@ -252,6 +284,23 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
                     &val_view_descriptor_info->val_descriptor_set->vk_descriptor_set,
                     0,
                     nullptr);
+
+            Rect rect = current_target->get_rect();
+
+            VkViewport viewport{};
+            viewport.x = 0.0f;
+            viewport.y = 0.0f;
+            viewport.width = (float) rect.width;
+            viewport.height = (float) rect.height;
+            viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;
+
+            VkRect2D scissor{};
+            scissor.offset = {0, 0};
+            scissor.extent = {static_cast<uint32_t>(rect.width), static_cast<uint32_t>(rect.height)};
+
+            vkCmdSetViewport(val_active_render_target->vk_command_buffer, 0, 1, &viewport);
+            vkCmdSetScissor(val_active_render_target->vk_command_buffer, 0, 1, &scissor);
         }
     }
 
@@ -259,7 +308,7 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
 }
 
 bool VulkanRenderServer::end_target(RenderTarget *p_target) {
-    VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData *>(p_target->data);
+    VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData *>(p_target->rt_data);
 
     if (target_data != nullptr) {
         if (target_data->val_render_target != nullptr) {
@@ -336,7 +385,7 @@ void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_targ
 
             if (sdl_target->window == val_instance->val_main_window->sdl_window) {
                 // The main window for bootstrapping is already populated
-                p_render_target->data = new VulkanRenderTargetData(val_instance->val_main_window);
+                p_render_target->rt_data = new VulkanRenderTargetData(val_instance->val_main_window);
                 return;
             }
         }
@@ -348,18 +397,29 @@ void VulkanRenderServer::populate_render_target_data(RenderTarget *p_render_targ
 
             create_info.extent.width = rect.width;
             create_info.extent.height = rect.height;
-            create_info.val_render_pass = val_target_render_pass;
+
+            switch (texture_target->usage_intent) {
+                default:
+                    create_info.val_render_pass = val_target_render_pass;
+                    break;
+
+                case TextureRenderTarget::USAGE_INTENT_SHADOW:
+                    create_info.val_render_pass = val_shadow_render_pass;
+                    create_info.create_color = false;
+                    break;
+            }
         }
 
         ValRenderTarget *val_target = ValRenderTarget::create_render_target(&create_info, val_instance);
 
         VulkanRenderTargetData *vulkan_data = new VulkanRenderTargetData(val_target);
-        p_render_target->data = vulkan_data;
+        p_render_target->rt_data = vulkan_data;
 
         if (type == ValRenderTargetCreateInfo::RENDER_TARGET_TYPE_IMAGE) {
             ValImageRenderTarget *image_target = reinterpret_cast<ValImageRenderTarget*>(val_target);
-            vulkan_data->color_texture = new VulkanTexture(image_target->val_color_image, false);
-            vulkan_data->depth_texture = new VulkanTexture(image_target->val_depth_image, false);
+            TextureRenderTarget *texture_target = reinterpret_cast<TextureRenderTarget *>(p_render_target);
+
+            vulkan_data->setup_texture_rt(texture_target, image_target);
         }
     }
 }

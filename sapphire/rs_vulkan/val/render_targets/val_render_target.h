@@ -21,10 +21,12 @@ struct ValRenderTargetCreateInfo {
 
     RenderTargetType type = RenderTargetType::RENDER_TARGET_TYPE_IMAGE;
 
-    // If type is RENDER_TARGET_TYPE_WINDOW, format is ignored!
+    // If type is RENDER_TARGET_TYPE_WINDOW, these values are ignored!
     VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
+    bool create_depth = true;
+    bool create_color = true;
 
-    // If type is RENDER_TARGET_TYPE_IMAGE, extent is ignored!
+    // If type is RENDER_TARGET_TYPE_IMAGE, these values are ignored!
     VkExtent2D extent;
 
     ValRenderPass *val_render_pass = nullptr;
@@ -45,6 +47,9 @@ protected:
     virtual VkFramebuffer get_framebuffer(ValInstance *p_val_instance) = 0;
     virtual VkExtent2D get_extent(ValInstance *p_val_instance) = 0;
     virtual bool get_wait_for_image();
+
+    virtual bool can_clear_color();
+    virtual bool can_clear_depth();
 
 public:
     // Each render target has a command buffer

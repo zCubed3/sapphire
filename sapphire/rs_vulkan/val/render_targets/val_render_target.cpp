@@ -9,6 +9,14 @@ bool ValRenderTarget::get_wait_for_image() {
     return false;
 }
 
+bool ValRenderTarget::can_clear_color() {
+    return true;
+}
+
+bool ValRenderTarget::can_clear_depth() {
+    return true;
+}
+
 bool ValRenderTarget::begin_render(ValRenderPass *p_val_render_pass, ValInstance *p_val_instance) {
     if (vk_command_buffer == nullptr) {
         vk_command_buffer = p_val_instance->get_queue(ValQueue::QUEUE_TYPE_GRAPHICS).allocate_buffer(p_val_instance);
@@ -33,16 +41,20 @@ bool ValRenderTarget::begin_render(ValRenderPass *p_val_render_pass, ValInstance
 
     std::vector<VkClearValue> clear_values;
 
-    VkClearValue clear_value {};
-    clear_value.color = clear_color;
+    if (can_clear_color()) {
+        VkClearValue clear_value{};
+        clear_value.color = clear_color;
 
-    clear_values.push_back(clear_value);
+        clear_values.push_back(clear_value);
+    }
 
     // TODO: Optional depth buffering?
-    VkClearValue depth_clear_value {};
-    depth_clear_value.depthStencil = clear_depth_stencil;
+    if (can_clear_depth()) {
+        VkClearValue depth_clear_value{};
+        depth_clear_value.depthStencil = clear_depth_stencil;
 
-    clear_values.push_back(depth_clear_value);
+        clear_values.push_back(depth_clear_value);
+    }
 
     render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
     render_pass_info.pClearValues = clear_values.data();
