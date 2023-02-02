@@ -142,7 +142,7 @@ void WorldViewPanel::draw_contents() {
             float vertical = io.MouseDelta.y * io.DeltaTime;
 
             if (ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
-                euler += glm::vec3(vertical, horizontal, 0);
+                euler += glm::vec3(-vertical, -horizontal, 0);
                 target->transform.set_euler(euler);
             }
 

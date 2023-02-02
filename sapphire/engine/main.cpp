@@ -10,6 +10,8 @@
 #include <engine/assets/material_asset.h>
 #include <engine/assets/static_mesh_asset.h>
 #include <engine/assets/texture_asset.h>
+#include <engine/console/console.h>
+#include <engine/data/string_tools.h>
 #include <engine/rendering/render_server.h>
 #include <engine/rendering/shader.h>
 #include <engine/rendering/texture.h>
@@ -37,6 +39,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 #include <engine/editor/panels/actor_panel.h>
+#include <engine/editor/panels/console_panel.h>
 #include <engine/editor/panels/renderer_panel.h>
 #include <engine/editor/panels/world_actor_panel.h>
 #include <engine/editor/panels/world_view_panel.h>
@@ -66,10 +69,16 @@ int main(int argc, char **argv) {
 #endif
 
     AssetLoader::register_engine_asset_loaders();
+    Console::register_defaults();
 
     // Load the engine config file (if it exists)
+    // We write the config back to validate new settings
     ConfigFile engine_config;
     engine_config.read_from_path("engine.secf");
+
+    engine_config.write_to_path("engine.secf");
+
+    auto test = StringTools::split("test;test2;test3");
 
     // TODO: Not be case sensitive
     std::string user_render_server = engine_config.try_get_string("sRenderServer", "Rendering", "Vulkan");
@@ -188,6 +197,8 @@ int main(int argc, char **argv) {
     actor_panel->world = world;
 
     RendererPanel *renderer_panel = new RendererPanel();
+
+    ConsolePanel *console_panel = new ConsolePanel();
 
     std::vector<WorldViewPanel*> world_panels;
 
@@ -391,6 +402,7 @@ int main(int argc, char **argv) {
         world_actor_panel->draw_panel();
         actor_panel->draw_panel();
         renderer_panel->draw_panel();
+        console_panel->draw_panel();
 
         size_t index = 0;
         for (WorldViewPanel* panel: world_panels) {

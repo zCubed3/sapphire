@@ -35,8 +35,10 @@ public:
     ConfigSection global_section;
     std::vector<ConfigSection> sections;
 
-    void read_from_path(const std::string &path);
-    void read(const std::string &contents);
+    bool read_from_path(const std::string &path);
+    bool read(const std::string &contents);
+
+    bool write_to_path(const std::string &path);
 
     ConfigSection &get_section(const std::string &name);
 

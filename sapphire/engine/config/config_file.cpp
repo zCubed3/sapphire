@@ -1,35 +1,12 @@
 #include "config_file.h"
 
+#include <engine/data/string_tools.h>
+
 #include <fstream>
 #include <sstream>
 
-bool is_whitespace(char c) {
-    return c == '\t' || c == ' ';
-}
-
-bool is_number(char c) {
-    return c >= '0' && c <= '9';
-}
-
 std::vector<std::string> ConfigFile::ConfigEntry::get_string_list() {
-    // For each semicolon we create a new entry
-    std::string buffer;
-    std::vector<std::string> values{};
-
-    for (char c: string_value) {
-        if (c != ';') {
-            buffer += c;
-        } else {
-            values.push_back(buffer);
-            buffer.clear();
-        }
-    }
-
-    if (!buffer.empty()) {
-        values.push_back(buffer);
-    }
-
-    return values;
+    return StringTools::split(string_value);
 }
 
 std::vector<int> ConfigFile::ConfigEntry::get_int_list() {
@@ -75,7 +52,7 @@ std::vector<float> ConfigFile::ConfigEntry::get_float_list() {
 int ConfigFile::ConfigEntry::try_get_int(int fallback) {
     // TODO: Safety could be better
     for (char c: string_value) {
-        if (!is_number(c) && c != '.') {
+        if (!StringTools::is_number(c) && c != '.' && c != '-') {
             return fallback;
         }
     }
@@ -90,7 +67,7 @@ int ConfigFile::ConfigEntry::try_get_int(int fallback) {
 float ConfigFile::ConfigEntry::try_get_float(float fallback) {
     // TODO: Safety could be better
     for (char c: string_value) {
-        if (!is_number(c) && c != '.') {
+        if (!StringTools::is_number(c) && c != '.' && c != '-') {
             return fallback;
         }
     }
@@ -170,7 +147,7 @@ float ConfigFile::ConfigSection::try_get_float(const std::string &name, float fa
     return fallback;
 }
 
-void ConfigFile::read_from_path(const std::string &path) {
+bool ConfigFile::read_from_path(const std::string &path) {
     std::ifstream file(path);
 
     if (file.is_open()) {
@@ -179,10 +156,13 @@ void ConfigFile::read_from_path(const std::string &path) {
         file.close();
 
         read(contents.str());
+        return true;
     }
+
+    return false;
 }
 
-void ConfigFile::read(const std::string &contents) {
+bool ConfigFile::read(const std::string &contents) {
     global_section.clear();
     sections.clear();
 
@@ -194,7 +174,7 @@ void ConfigFile::read(const std::string &contents) {
     while (std::getline(stream, line)) {
         // If this line begins with a comment we skip it
         size_t begin = 0;
-        while (is_whitespace(line[begin])) {
+        while (StringTools::is_whitespace(line[begin]) && begin < line.size()) {
             begin++;
         }
 
@@ -249,21 +229,35 @@ void ConfigFile::read(const std::string &contents) {
             std::string val = line.substr(equals + 1);
 
             // Remove padding whitespace and quotes
-            while (is_whitespace(var.back())) {
+            while (StringTools::is_whitespace(var.back())) {
                 var.pop_back();
             }
 
-            while (is_whitespace(val.front()) || val.front() == '"') {
+            while (StringTools::is_whitespace(val.front()) || val.front() == '"') {
                 val = val.erase(0, 1);
             }
 
-            while (is_whitespace(val.back()) || val.back() == '"') {
+            while (StringTools::is_whitespace(val.back()) || val.back() == '"') {
                 val.pop_back();
             }
 
             top_section->push_entry(var, val);
         }
     }
+
+    return true;
+}
+
+bool ConfigFile::write_to_path(const std::string &path) {
+    std::ofstream file(path);
+
+    file << "# Warning, your changes may be overwritten!\n" << std::endl;
+    file << "# Global Entries" << std::endl;
+    for (ConfigEntry& entry: global_section.entries) {
+        file << entry.name << " = " << entry.string_value;
+    }
+
+    return true;
 }
 
 std::string ConfigFile::try_get_string(const std::string &name, const std::string &section, const std::string &fallback) {

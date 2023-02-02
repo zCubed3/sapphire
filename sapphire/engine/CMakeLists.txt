@@ -17,6 +17,8 @@ set(SAPPHIRE_ENGINE_SOURCES
         "assets/loaders/semd_loader.cpp"
         "assets/loaders/stb_image_loader.cpp"
 
+        "console/console.cpp"
+
         "platforms/platform.cpp"
 
         "config/config_file.cpp"
@@ -30,6 +32,7 @@ set(SAPPHIRE_ENGINE_SOURCES
 
         "data/color.cpp"
         "data/rect.cpp"
+        "data/string_tools.cpp"
 
         "math/angle_math.cpp"
 
@@ -50,8 +53,10 @@ set(SAPPHIRE_ENGINE_SOURCES
 
         "timing/timing.cpp"
 
+        # TODO: Move this under "if editor"
         "editor/panels/panel.cpp"
         "editor/panels/actor_panel.cpp"
+        "editor/panels/console_panel.cpp"
         "editor/panels/renderer_panel.cpp"
         "editor/panels/world_actor_panel.cpp"
         "editor/panels/world_view_panel.cpp"
