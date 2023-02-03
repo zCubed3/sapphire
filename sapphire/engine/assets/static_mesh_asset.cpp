@@ -107,7 +107,7 @@ uint32_t StaticMeshAsset::get_triangle_count() {
 
 void StaticMeshAsset::render(ObjectBuffer *p_object_buffer, Material *p_material) {
     if (buffer != nullptr) {
-        buffer->render(p_object_buffer, p_material);
+        //buffer->draw(p_object_buffer, p_material);
     }
 }
 

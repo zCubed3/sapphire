@@ -10,15 +10,8 @@ class TextureAsset;
 class Asset;
 class SEMDLoader;
 
-class Shader {
-    // TODO: Not use friends?
-    friend SEMDLoader;
-
-protected:
-    static std::unordered_map<std::string, Shader*> shader_cache;
-
-    static void release_cache();
-
+class ShaderPass {
+public:
     enum CullMode {
         CULL_MODE_BACK,
         CULL_MODE_FRONT,
@@ -39,6 +32,23 @@ protected:
     DepthOp depth_op = DepthOp::DEPTH_OP_LESS;
 
 public:
+    std::string name;
+
+    virtual ~ShaderPass() = default;
+
+    virtual bool make_from_sesd(ConfigFile *p_sesd_file);
+};
+
+class Shader {
+    // TODO: Not use friends?
+    friend SEMDLoader;
+
+protected:
+    static std::unordered_map<std::string, Shader*> shader_cache;
+
+    static void release_cache();
+
+public:
     enum ShaderParameterType {
         SHADER_PARAMETER_TEXTURE
     };
@@ -54,6 +64,7 @@ public:
 
     std::string name;
 
+    std::vector<ShaderPass*> passes {};
     std::vector<ShaderParameter> parameters {};
 
     static Shader* get_cached_shader(const std::string& name);
@@ -61,6 +72,8 @@ public:
 
     virtual ~Shader() = default;
 
+    virtual ShaderPass* create_shader_pass() = 0;
+    virtual ShaderPass* get_pass(const std::string& name);
     virtual bool make_from_sesd(ConfigFile *p_sesd_file);
 };
 

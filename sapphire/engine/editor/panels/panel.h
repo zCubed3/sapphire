@@ -19,6 +19,8 @@ public:
 
     virtual int get_imgui_flags();
     virtual const char* get_title() = 0;
+    virtual void push_style_vars();
+    virtual void pop_style_vars();
 
     virtual void draw_panel();
 

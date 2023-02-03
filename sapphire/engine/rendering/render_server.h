@@ -5,6 +5,7 @@
 #include <queue>
 #include <string>
 #include <unordered_map>
+#include <memory>
 
 #include <engine/rendering/buffers/graphics_buffer.h>
 
@@ -17,7 +18,8 @@ class RenderTarget;
 class Shader;
 class Texture;
 class Material;
-class DrawCall;
+class DrawObject;
+class MeshDrawObject;
 
 class WindowRenderTarget;
 
@@ -29,7 +31,17 @@ protected:
     RenderTarget *current_target = nullptr;
 
 public:
-    static const RenderServer *get_singleton();
+    enum DebugView {
+        DEBUG_VIEW_NONE,
+        DEBUG_VIEW_WIREFRAME
+    };
+
+    DebugView view = DEBUG_VIEW_NONE;
+
+    // TODO: Move this to worlds?
+    std::unordered_map<std::shared_ptr<Material>, std::vector<MeshDrawObject*>> mesh_draw_calls;
+
+    static RenderServer *get_singleton();
 
     virtual ~RenderServer();
 
@@ -58,6 +70,8 @@ public:
 
     // Called whenever rendering to a target is finished
     virtual bool end_target(RenderTarget *p_target) = 0;
+
+    virtual void enqueue_mesh_draw_object(MeshDrawObject* object);
 
     // Creates a graphics buffer for generic usage within the render pipeline
     virtual GraphicsBuffer *create_graphics_buffer(size_t size, GraphicsBuffer::UsageIntent usage) const = 0;

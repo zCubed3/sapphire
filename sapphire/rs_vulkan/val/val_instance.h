@@ -67,6 +67,8 @@ struct ValInstanceCreateInfo {
     std::vector<VkFormat> vk_depth_formats;
     std::vector<VkPresentModeKHR> vk_present_modes;
 
+    VkPhysicalDeviceFeatures vk_enabled_features;
+
 #ifdef SDL_SUPPORT
     // TODO: Multiple window support?
     SDL_Window* p_sdl_window = nullptr;
@@ -78,6 +80,7 @@ class ValInstance {
 protected:
     struct ChosenGPU {
         VkPhysicalDevice vk_device;
+        VkPhysicalDeviceFeatures vk_features;
         std::vector<ValQueue> queues;
     };
 
@@ -100,7 +103,7 @@ protected:
 
     static VkInstance create_vk_instance(ValInstanceCreateInfo* p_create_info);
     static ChosenGPU pick_gpu(VkInstance vk_instance, VkSurfaceKHR vk_surface, ValInstanceCreateInfo* p_create_info);
-    static VkDevice create_vk_device(VkPhysicalDevice vk_gpu, std::vector<ValQueue>& val_queues, ValInstanceCreateInfo* p_create_info);
+    static VkDevice create_vk_device(ChosenGPU& vk_gpu, std::vector<ValQueue>& val_queues, ValInstanceCreateInfo* p_create_info);
     static VmaAllocator create_vma_allocator(VkInstance vk_instance, VkDevice vk_device, VkPhysicalDevice vk_gpu);
     static VkDescriptorPool create_vk_descriptor_pool(VkDevice vk_device);
 

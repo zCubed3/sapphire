@@ -55,7 +55,7 @@ std::shared_ptr<Asset> SEMDLoader::load_from_path(const std::string &path, const
             Shader::cache_shader(shader);
         }
 
-        Material* material = rs_instance->create_material();
+        std::shared_ptr<Material> material = std::shared_ptr<Material>(rs_instance->create_material());
         material->shader = shader;
         material->make_from_semd(&semd_file);
 

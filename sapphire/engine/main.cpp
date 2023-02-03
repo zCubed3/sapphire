@@ -149,17 +149,6 @@ int main(int argc, char **argv) {
     // TODO: Temporary shadow test
     Light *light = new Light();
 
-    World *shadow_world = new World();
-
-    MeshActor *shadow_actor = new MeshActor();
-    shadow_actor->mesh_asset = mesh;
-
-    MeshActor *shadow_actor2 = new MeshActor();
-    shadow_actor2->mesh_asset = mesh2;
-
-    shadow_world->add_actor(shadow_actor);
-    shadow_world->add_actor(shadow_actor2);
-
     // We need to load our model and our shader
     World *world = new World();
 
@@ -169,7 +158,7 @@ int main(int argc, char **argv) {
 
     MeshActor *actor2 = new MeshActor();
     actor2->mesh_asset = mesh2;
-    actor2->material_asset = material;
+    //actor2->material_asset = material;
 
     world->add_actor(actor);
     world->add_actor(actor2);
@@ -293,7 +282,7 @@ int main(int argc, char **argv) {
 
         render_server->begin_frame();
 
-        light->render_shadows(render_server, shadow_world);
+        //light->render_shadows(render_server, shadow_world);
 
 #ifdef TEST_MULTI_WINDOW
         for (ChildWindow &window: child_windows) {
@@ -330,7 +319,46 @@ int main(int argc, char **argv) {
         //actor->transform.position = glm::vec3(0, sin(world->elapsed_time), 0);
 
 #if defined(IMGUI_SUPPORT)
-        ImGui::Begin("Child Window Test");
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+        ImGuiID dockspace_id = ImGui::GetID("EditorDockspace");
+
+        int window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+        ImGui::Begin("Editor", nullptr, window_flags);
+        ImGui::PopStyleVar(3);
+
+        ImGui::BeginMenuBar();
+
+        if (ImGui::BeginMenu("Panels")) {
+            ImGui::Checkbox("World", &world_actor_panel->open);
+            ImGui::Checkbox("Actor", &actor_panel->open);
+            ImGui::Checkbox("Renderer", &renderer_panel->open);
+
+            if (ImGui::Button("Create WorldViewPanel")) {
+                WorldViewPanel *view_panel = new WorldViewPanel();
+                view_panel->world = world;
+
+                world_panels.push_back(view_panel);
+            }
+
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMenuBar();
+
+        ImGui::DockSpace(dockspace_id);
+        ImGui::End();
+
+        ImGui::Begin("WindowTester");
 
         if (ImGui::Button("Create Window")) {
             window_name = "Sapphire Sub Window (";
@@ -361,26 +389,6 @@ int main(int argc, char **argv) {
 
         ImGui::End();
 
-        ImGui::BeginMainMenuBar();
-
-        if (ImGui::BeginMenu("Panels")) {
-            ImGui::Checkbox("World", &world_actor_panel->open);
-            ImGui::Checkbox("Actor", &actor_panel->open);
-            ImGui::Checkbox("Renderer", &renderer_panel->open);
-
-            if (ImGui::Button("Create WorldViewPanel")) {
-                WorldViewPanel *view_panel = new WorldViewPanel();
-                view_panel->world = world;
-
-                world_panels.push_back(view_panel);
-            }
-
-            ImGui::EndMenu();
-        }
-
-        ImGui::EndMainMenuBar();
-
-
         ImGui::Begin("SEMD Debugger");
         ImGui::InputText("OBJ Path", &test_obj_path);
         ImGui::InputText("SEMD Path", &test_semd_path);
@@ -401,7 +409,11 @@ int main(int argc, char **argv) {
 
         ImGui::End();
 
-        //ImGui::ShowDemoWindow();
+        ImGui::Begin("Light Debug");
+        ImGui::DragFloat3("Position", glm::value_ptr(light->sun_pos));
+        ImGui::End();
+
+        ImGui::ShowDemoWindow();
 
         world_actor_panel->draw_panel();
         actor_panel->draw_panel();
@@ -423,8 +435,8 @@ int main(int argc, char **argv) {
 
         actor_panel->target = world_actor_panel->selected;
 
-        shadow_actor->transform = actor->transform;
-        shadow_actor2->transform = actor2->transform;
+        //shadow_actor->transform = actor->transform;
+        //shadow_actor2->transform = actor2->transform;
 #endif
 
 #if defined(IMGUI_SUPPORT)
@@ -442,8 +454,8 @@ int main(int argc, char **argv) {
 
     delete actor;
     delete actor2;
-    delete shadow_actor;
-    delete shadow_actor2;
+    //delete shadow_actor;
+    //delete shadow_actor2;
 
 #if defined(IMGUI_SUPPORT)
     for (WorldViewPanel* panel: world_panels) {

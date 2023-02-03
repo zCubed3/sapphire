@@ -4,6 +4,8 @@
 #include <engine/assets/asset.h>
 #include <engine/scene/transform.h>
 
+#include <memory>
+
 #include <glm.hpp>
 
 class Material;
@@ -13,7 +15,7 @@ class ObjectBuffer;
 class MeshAsset : public Asset {
 public:
     // TODO: Asset safety so dangling pointers can't happen
-    MeshBuffer *buffer = nullptr;
+    std::shared_ptr<MeshBuffer> buffer = nullptr;
 
     ~MeshAsset() override;
 

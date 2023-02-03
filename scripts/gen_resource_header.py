@@ -5,6 +5,8 @@ import sys
 import os
 import hashlib
 
+verbose = False
+
 in_path = sys.argv[1]
 out_path = sys.argv[2]
 mode = "binary"
@@ -25,9 +27,11 @@ source_name = os.path.splitext(source_name)[0]
 source_name = source_name.replace(".", "_")
 
 print(f"Generating resource header '{out_name}'...")
-print(f"\tInput: {sys.argv[1]}")
-print(f"\tOutput: {sys.argv[2]}")
-print(f"\tMode: {mode}")
+
+if verbose:
+    print(f"\tInput: {sys.argv[1]}")
+    print(f"\tOutput: {sys.argv[2]}")
+    print(f"\tMode: {mode}")
 
 open_flags = "r"
 
@@ -39,7 +43,9 @@ with open(sys.argv[1], open_flags) as src_file:
 
 # Hash the source to make sure it has changed
 source_hash = hashlib.md5(source).hexdigest()
-print(f"\tHash: {source_hash}")
+
+if verbose:
+    print(f"\tHash: {source_hash}")
 
 matching = False
 if os.path.exists(sys.argv[2]):
@@ -79,4 +85,5 @@ if not matching:
 
             out_file.write(f"const char {source_name.upper()}_CONTENTS[] = \"{source_repr}\";")
 else:
-    print("\tHashes match! Not updating...")
+    if verbose:
+        print("\tHashes match! Not updating...")

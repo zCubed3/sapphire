@@ -47,8 +47,8 @@ set(SAPPHIRE_ENGINE_SOURCES
         "rendering/buffers/view_buffer.cpp"
         "rendering/buffers/object_buffer.cpp"
         "rendering/buffers/graphics_buffer.cpp"
-        "rendering/draw_calls/draw_call.cpp"
-        "rendering/draw_calls/mesh_draw_call.cpp"
+        "rendering/objects/draw_object.cpp"
+        "rendering/objects/mesh_draw_object.cpp"
         "rendering/lighting/light.cpp"
 
         "timing/timing.cpp"

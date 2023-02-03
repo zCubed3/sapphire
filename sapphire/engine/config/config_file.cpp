@@ -179,6 +179,11 @@ bool ConfigFile::read(const std::string &contents) {
     std::string line;
 
     ConfigSection *top_section = &global_section;
+
+    std::string array_name;
+    std::string array;
+    bool began_array = false;
+
     while (std::getline(stream, line)) {
         // If this line begins with a comment we skip it
         size_t begin = 0;
@@ -229,6 +234,11 @@ bool ConfigFile::read(const std::string &contents) {
             }
         }
 
+        if (line[begin] == '}' && began_array) {
+            began_array = false;
+            top_section->set_string(array_name, array);
+        }
+
         // Anything else counts as a variable (as long as there is an equals sign)
         size_t equals = line.find_first_of('=');
 
@@ -237,19 +247,22 @@ bool ConfigFile::read(const std::string &contents) {
             std::string val = line.substr(equals + 1);
 
             // Remove padding whitespace and quotes
-            while (StringTools::is_whitespace(var.back())) {
-                var.pop_back();
-            }
+            var = StringTools::strip(var);
+            val = StringTools::strip(val);
 
-            while (StringTools::is_whitespace(val.front()) || val.front() == '"') {
-                val = val.erase(0, 1);
-            }
+            // If our value is just a bracket we begin an array
+            if (val == "{") {
+                began_array = true;
 
-            while (StringTools::is_whitespace(val.back()) || val.back() == '"') {
-                val.pop_back();
+                array_name = var;
+                array.clear();
+            } else {
+                top_section->set_string(var, val);
             }
+        }
 
-            top_section->set_string(var, val);
+        if (began_array && equals == std::string::npos) {
+            array += StringTools::strip(line) + ";";
         }
     }
 

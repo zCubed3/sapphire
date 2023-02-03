@@ -2,6 +2,40 @@
 
 #include <engine/config/config_file.h>
 
+#include <engine/data/string_tools.h>
+
+bool ShaderPass::make_from_sesd(ConfigFile *p_sesd_file) {
+    write_depth = p_sesd_file->try_get_int("bWriteDepth", "Shader", 1);
+
+    std::string cull_string = p_sesd_file->try_get_string("sCullMode", "Material", "Back");
+
+    if (StringTools::compare(cull_string, "Back")) {
+        cull_mode = CULL_MODE_BACK;
+    } else if (StringTools::compare(cull_string, "Front")) {
+        cull_mode = CULL_MODE_FRONT;
+    } else {
+        cull_mode = CULL_MODE_NONE;
+    }
+
+    std::string depth_string = p_sesd_file->try_get_string("sDepthOp", "Shader", "Less");
+
+    if (StringTools::compare(depth_string, "Less")) {
+        depth_op = DEPTH_OP_LESS;
+    } else if (StringTools::compare(depth_string, "LessOrEqual")) {
+        depth_op = DEPTH_OP_LESS_OR_EQUAL;
+    } else if (StringTools::compare(depth_string, "Greater")) {
+        depth_op = DEPTH_OP_GREATER;
+    } else if (StringTools::compare(depth_string, "GreaterOrEqual")) {
+        depth_op = DEPTH_OP_GREATER_OR_EQUAL;
+    } else if (StringTools::compare(depth_string, "Equal")) {
+        depth_op = DEPTH_OP_EQUAL;
+    } else {
+        depth_op = DEPTH_OP_ALWAYS;
+    }
+
+    return true;
+}
+
 std::unordered_map<std::string, Shader*> Shader::shader_cache = {};
 
 void Shader::release_cache() {
@@ -28,40 +62,22 @@ void Shader::cache_shader(Shader *shader) {
     shader_cache.emplace(shader->name, shader);
 }
 
+ShaderPass *Shader::get_pass(const std::string &pass_name) {
+    for (ShaderPass* pass: passes) {
+        if (pass->name == pass_name) {
+            return pass;
+        }
+    }
+
+    return nullptr;
+}
+
 bool Shader::make_from_sesd(ConfigFile *p_sesd_file) {
     if (p_sesd_file == nullptr) {
         return false;
     }
 
-    // TODO: Caseless comparisons
-    write_depth = p_sesd_file->try_get_int("bWriteDepth", "Shader", 1);
-
-    std::string cull_string = p_sesd_file->try_get_string("sCullMode", "Material", "Back");
-
-    if (cull_string == "Back") {
-        cull_mode = CULL_MODE_BACK;
-    } else if (cull_string == "Front") {
-        cull_mode = CULL_MODE_FRONT;
-    } else {
-        cull_mode = CULL_MODE_NONE;
-    }
-
-    std::string depth_string = p_sesd_file->try_get_string("sDepthOp", "Shader", "Less");
-
-    if (depth_string == "Less") {
-        depth_op = DEPTH_OP_LESS;
-    } else if (depth_string == "LessOrEqual") {
-        depth_op = DEPTH_OP_LESS_OR_EQUAL;
-    } else if (depth_string == "Greater") {
-        depth_op = DEPTH_OP_GREATER;
-    } else if (depth_string == "GreaterOrEqual") {
-        depth_op = DEPTH_OP_GREATER_OR_EQUAL;
-    } else if (depth_string == "Equal") {
-        depth_op = DEPTH_OP_EQUAL;
-    } else {
-        depth_op = DEPTH_OP_ALWAYS;
-    }
-
+    // Parameters
     std::vector<std::string> texture_params = p_sesd_file->try_get_string_list("aTextureParameters", "Shader");
 
     if (!texture_params.empty() && texture_params.size() % 2 == 0) {
@@ -71,6 +87,18 @@ bool Shader::make_from_sesd(ConfigFile *p_sesd_file) {
             parameter.name = texture_params[t + 1];
 
             parameters.push_back(parameter);
+        }
+    }
+
+    // Passes
+    for (std::string pass: p_sesd_file->try_get_string_list("aPasses", "Shader")) {
+        ShaderPass* shader_pass = create_shader_pass();
+        shader_pass->name = pass;
+
+        if (shader_pass->make_from_sesd(p_sesd_file)) {
+            passes.push_back(shader_pass);
+        }  else {
+            delete shader_pass;
         }
     }
 

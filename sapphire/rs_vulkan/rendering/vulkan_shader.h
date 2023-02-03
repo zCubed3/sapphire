@@ -8,6 +8,25 @@
 class ValPipeline;
 class ValDescriptorSetInfo;
 
+class VulkanShader;
+
+class VulkanShaderPass : public ShaderPass {
+protected:
+    std::vector<char> vert_code;
+    std::vector<char> frag_code;
+
+public:
+    friend VulkanShader;
+
+    ValPipeline* val_pipeline = nullptr;
+
+    ~VulkanShaderPass() override;
+
+    bool make_from_sesd(ConfigFile *p_sesd_file) override;
+
+    void create_vert_frag(VulkanShader *p_shader);
+};
+
 class VulkanShader : public Shader {
 protected:
     struct VulkanParameter {
@@ -22,18 +41,13 @@ public:
     static VulkanShader *error_shader;
     static VulkanShader *depth_only_shader;
 
-    ValPipeline* val_pipeline = nullptr;
     ValDescriptorSetInfo * val_material_descriptor_set = nullptr;
-    ValDescriptorSetInfo * val_object_descriptor_set = nullptr;
-
-    // TODO: Temp
-    bool is_shadow = false;
 
     ~VulkanShader() override;
 
     bool make_from_sesd(ConfigFile *p_sesd_file) override;
 
-    void create_vert_frag(const std::vector<char>& vert_code, const std::vector<char>& frag_code);
+    ShaderPass * create_shader_pass() override;
 
     static void create_default_shaders();
 };

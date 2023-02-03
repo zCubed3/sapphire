@@ -5,6 +5,7 @@
 #include <engine/rendering/buffers/object_buffer.h>
 #include <engine/rendering/render_target.h>
 #include <engine/rendering/window_render_target.h>
+#include <engine/rendering/objects/mesh_draw_object.h>
 
 #if defined(IMGUI_SUPPORT)
 #include <imgui.h>
@@ -16,7 +17,7 @@ RenderServer::~RenderServer() {
 
 }
 
-const RenderServer *RenderServer::get_singleton() {
+RenderServer *RenderServer::get_singleton() {
     return singleton;
 }
 
@@ -30,6 +31,21 @@ glm::vec3 RenderServer::get_coordinate_correction() const {
 
 void RenderServer::on_window_resized(SDL_Window *p_window) {
 
+}
+
+void RenderServer::enqueue_mesh_draw_object(MeshDrawObject *object) {
+    if (object != nullptr) {
+        if (object->mesh_buffer != nullptr) {
+            auto iter = mesh_draw_calls.find(object->material);
+
+            if (iter == mesh_draw_calls.end()) {
+                std::vector<MeshDrawObject *> objects{object};
+                mesh_draw_calls.emplace(object->material, objects);
+            } else {
+                iter->second.push_back(object);
+            }
+        }
+    }
 }
 
 void RenderServer::populate_render_target_data(RenderTarget *p_render_target) const {

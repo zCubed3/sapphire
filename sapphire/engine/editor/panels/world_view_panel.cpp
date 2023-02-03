@@ -38,6 +38,7 @@ bool WorldViewPanel::is_unique() {
 
 void WorldViewPanel::draw_world(RenderServer *p_render_server) {
     target->resize(width, height);
+    target->world = world;
 
     p_render_server->begin_target(target);
 
@@ -59,7 +60,23 @@ const char *WorldViewPanel::get_view_mode_name(ViewMode mode) {
     }
 }
 
+void WorldViewPanel::push_style_vars() {
+    if (!enable_padding) {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    }
+}
+
+void WorldViewPanel::pop_style_vars() {
+    if (!enable_padding) {
+        ImGui::PopStyleVar();
+    }
+}
+
 void WorldViewPanel::draw_contents() {
+    if (!enable_padding) {
+        ImGui::PopStyleVar();
+    }
+
     const RenderServer* rs_instance = RenderServer::get_singleton();
     float correction = -rs_instance->get_coordinate_correction().y;
 
@@ -134,7 +151,7 @@ void WorldViewPanel::draw_contents() {
 
         // TODO: User configurable speeds
         if (ImGui::IsItemHovered()) {
-            pan += glm::vec3(0, 0, io.MouseWheel * io.DeltaTime * 5);
+            pan += glm::vec3(0, 0, io.MouseWheel * io.DeltaTime * -5);
         }
 
         if (ImGui::IsItemActive()) {

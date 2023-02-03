@@ -34,74 +34,43 @@ std::vector<char> read_file(const std::string& path) {
     return code;
 }
 
-VulkanShader *VulkanShader::error_shader = nullptr;
-VulkanShader *VulkanShader::depth_only_shader = nullptr;
-
-VulkanShader::~VulkanShader() {
-    const VulkanRenderServer* rs_instance = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
-    ValInstance* val_instance = rs_instance->val_instance;
-
-    if (val_material_descriptor_set != nullptr) {
-        val_material_descriptor_set->release(val_instance);
-        delete val_material_descriptor_set;
-
-#ifdef DEBUG
-        std::cout << "Vulkan: 0x" << this << " released VulkanShader::val_material_descriptor_set" << std::endl;
-#endif
-    }
-
-    if (val_object_descriptor_set != nullptr) {
-        val_object_descriptor_set->release(val_instance);
-        delete val_object_descriptor_set;
-
-#ifdef DEBUG
-        std::cout << "Vulkan: 0x" << this << " released VulkanShader::val_object_descriptor_set" << std::endl;
-#endif
-    }
+VulkanShaderPass::~VulkanShaderPass() {
+    const VulkanRenderServer *render_server = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
+    ValInstance *val_instance = render_server->val_instance;
 
     if (val_pipeline != nullptr) {
         val_pipeline->release(val_instance);
         delete val_pipeline;
 
 #ifdef DEBUG
-        std::cout << "Vulkan: 0x" << this << " released VulkanShader::val_pipeline" << std::endl;
+        std::cout << "Vulkan: 0x" << this << " released VulkanShaderPass::val_pipeline" << std::endl;
 #endif
     }
 }
 
-bool VulkanShader::make_from_sesd(ConfigFile *p_sesd_file) {
-    if (p_sesd_file == nullptr) {
-        return false;
-    }
+bool VulkanShaderPass::make_from_sesd(ConfigFile *p_sesd_file) {
+    ConfigFile::ConfigSection& section = p_sesd_file->get_section(name);
 
-    Shader::make_from_sesd(p_sesd_file);
+    if (section.name == name) {
+        ShaderPass::make_from_sesd(p_sesd_file);
 
-    for (ShaderParameter& parameter: parameters) {
-        if (parameter.type == Shader::SHADER_PARAMETER_TEXTURE) {
-            VulkanParameter vulkan_parameter {};
-            vulkan_parameter.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            vulkan_parameter.stage_flags = VK_SHADER_STAGE_FRAGMENT_BIT;
-            vulkan_parameter.location = parameter.location;
+        std::string vert_path = section.try_get_string("sVertSPV");
+        std::string frag_path = section.try_get_string("sFragSPV");
 
-            vulkan_parameters.push_back(vulkan_parameter);
+        if (vert_path.empty() || frag_path.empty()) {
+            return false;
         }
+
+        vert_code = read_file(vert_path);
+        frag_code = read_file(frag_path);
+
+        return true;
     }
 
-    std::string vert_path = p_sesd_file->try_get_string("sVertBin", "VulkanShader");
-    std::string frag_path = p_sesd_file->try_get_string("sFragBin", "VulkanShader");
-
-    if (vert_path.empty() || frag_path.empty()) {
-        return false;
-    }
-
-    std::vector<char> vert_code = read_file(vert_path);
-    std::vector<char> frag_code = read_file(frag_path);
-
-    create_vert_frag(vert_code, frag_code);
-    return true;
+    return false;
 }
 
-void VulkanShader::create_vert_frag(const std::vector<char> &vert_code, const std::vector<char> &frag_code) {
+void VulkanShaderPass::create_vert_frag(VulkanShader *p_shader) {
     const VulkanRenderServer *render_server = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
     ValInstance *val_instance = render_server->val_instance;
 
@@ -120,41 +89,41 @@ void VulkanShader::create_vert_frag(const std::vector<char> &vert_code, const st
 
     // OpenGL culling mode
     switch (cull_mode) {
-        case Shader::CULL_MODE_NONE:
+        case ShaderPass::CULL_MODE_NONE:
             builder.cull_mode = ValPipelineBuilder::CULL_MODE_OFF;
             break;
 
-        case Shader::CULL_MODE_BACK:
+        case ShaderPass::CULL_MODE_BACK:
             builder.cull_mode = ValPipelineBuilder::CULL_MODE_BACK;
             break;
 
-        case Shader::CULL_MODE_FRONT:
+        case ShaderPass::CULL_MODE_FRONT:
             builder.cull_mode = ValPipelineBuilder::CULL_MODE_FRONT;
             break;
     }
 
     switch (depth_op) {
-        case Shader::DEPTH_OP_LESS:
+        case ShaderPass::DEPTH_OP_LESS:
             builder.depth_compare_op = ValPipelineBuilder::DEPTH_COMPARE_LESS;
             break;
 
-        case Shader::DEPTH_OP_LESS_OR_EQUAL:
+        case ShaderPass::DEPTH_OP_LESS_OR_EQUAL:
             builder.depth_compare_op = ValPipelineBuilder::DEPTH_COMPARE_LESS_OR_EQUAL;
             break;
 
-        case Shader::DEPTH_OP_GREATER:
+        case ShaderPass::DEPTH_OP_GREATER:
             builder.depth_compare_op = ValPipelineBuilder::DEPTH_COMPARE_GREATER;
             break;
 
-        case Shader::DEPTH_OP_GREATER_OR_EQUAL:
+        case ShaderPass::DEPTH_OP_GREATER_OR_EQUAL:
             builder.depth_compare_op = ValPipelineBuilder::DEPTH_COMPARE_GREATER_OR_EQUAL;
             break;
 
-        case Shader::DEPTH_OP_EQUAL:
+        case ShaderPass::DEPTH_OP_EQUAL:
             builder.depth_compare_op = ValPipelineBuilder::DEPTH_COMPARE_EQUAL;
             break;
 
-        case Shader::DEPTH_OP_ALWAYS:
+        case ShaderPass::DEPTH_OP_ALWAYS:
             builder.depth_compare_op = ValPipelineBuilder::DEPTH_COMPARE_ALWAYS;
             break;
     }
@@ -166,15 +135,80 @@ void VulkanShader::create_vert_frag(const std::vector<char> &vert_code, const st
     builder.push_module(frag_module);
 
     // TODO: Temp, create passes similar to rt intents
-    if (!is_shadow) {
-        builder.val_render_pass = render_server->val_window_render_pass;
-    } else {
-        builder.cull_mode = ValPipelineBuilder::CULL_MODE_OFF;
-        builder.val_render_pass = render_server->val_shadow_render_pass;
-    }
+    builder.val_render_pass = render_server->val_window_render_pass;
 
     // Our first set is the engine's "view" descriptor set
     builder.vk_descriptor_set_layouts.push_back(render_server->val_view_descriptor_info->vk_descriptor_set_layout);
+    builder.vk_descriptor_set_layouts.push_back(p_shader->val_material_descriptor_set->vk_descriptor_set_layout);
+    builder.vk_descriptor_set_layouts.push_back(render_server->val_object_descriptor_info->vk_descriptor_set_layout);
+
+    val_pipeline = builder.build(render_server->val_default_vertex_input, val_instance);
+
+    vert_module->release(val_instance);
+    delete vert_module;
+
+    frag_module->release(val_instance);
+    delete frag_module;
+
+    vert_code.clear();
+    vert_code.resize(0);
+
+    frag_code.clear();
+    frag_code.resize(0);
+}
+
+VulkanShader *VulkanShader::error_shader = nullptr;
+VulkanShader *VulkanShader::depth_only_shader = nullptr;
+
+VulkanShader::~VulkanShader() {
+    const VulkanRenderServer* rs_instance = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+    ValInstance* val_instance = rs_instance->val_instance;
+
+    if (val_material_descriptor_set != nullptr) {
+        val_material_descriptor_set->release(val_instance);
+        delete val_material_descriptor_set;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released VulkanShader::val_material_descriptor_set" << std::endl;
+#endif
+    }
+
+    /*
+    if (val_object_descriptor_set != nullptr) {
+        val_object_descriptor_set->release(val_instance);
+        delete val_object_descriptor_set;
+
+#ifdef DEBUG
+        std::cout << "Vulkan: 0x" << this << " released VulkanShader::val_object_descriptor_set" << std::endl;
+#endif
+    }
+     */
+
+    for (ShaderPass* pass: passes) {
+        delete pass;
+    }
+}
+
+bool VulkanShader::make_from_sesd(ConfigFile *p_sesd_file) {
+    if (p_sesd_file == nullptr) {
+        return false;
+    }
+
+    const VulkanRenderServer* rs_instance = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+    ValInstance* val_instance = rs_instance->val_instance;
+
+    Shader::make_from_sesd(p_sesd_file);
+
+    for (ShaderParameter &parameter: parameters) {
+        if (parameter.type == Shader::SHADER_PARAMETER_TEXTURE) {
+            VulkanParameter vulkan_parameter{};
+            vulkan_parameter.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            vulkan_parameter.stage_flags = VK_SHADER_STAGE_FRAGMENT_BIT;
+            vulkan_parameter.location = parameter.location;
+
+            vulkan_parameters.push_back(vulkan_parameter);
+        }
+    }
 
     // The second set is unique to material instances
     // The third set is unique to object instances
@@ -195,33 +229,28 @@ void VulkanShader::create_vert_frag(const std::vector<char> &vert_code, const st
         set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
     }
 
-    set_builder.push_set();
-
-    set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+    set_builder.push_pre_allocate(false);
 
     std::vector<ValDescriptorSetInfo *> sets = set_builder.build(val_instance);
-
     val_material_descriptor_set = sets[0];
-    val_object_descriptor_set = sets[1];
 
-    // Since the object descriptor is unique per-object we can deallocate the set but keep the layout
-    val_object_descriptor_set->release_set(val_instance);
+    for (ShaderPass* pass: passes) {
+        reinterpret_cast<VulkanShaderPass*>(pass)->create_vert_frag(this);
+    }
 
-    builder.vk_descriptor_set_layouts.push_back(val_material_descriptor_set->vk_descriptor_set_layout);
-    builder.vk_descriptor_set_layouts.push_back(val_object_descriptor_set->vk_descriptor_set_layout);
+    return true;
+}
 
-    val_pipeline = builder.build(render_server->val_default_vertex_input, val_instance);
-
-    vert_module->release(val_instance);
-    delete vert_module;
-
-    frag_module->release(val_instance);
-    delete frag_module;
+ShaderPass *VulkanShader::create_shader_pass() {
+    return new VulkanShaderPass();
 }
 
 void VulkanShader::create_default_shaders() {
     std::vector<char> vert_code;
     std::vector<char> frag_code;
+
+    const VulkanRenderServer* rs_instance = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
+    ValInstance* val_instance = rs_instance->val_instance;
 
     {
         vert_code.resize(sizeof(ERROR_VERT_CONTENTS));
@@ -231,7 +260,20 @@ void VulkanShader::create_default_shaders() {
         memcpy(frag_code.data(), ERROR_FRAG_CONTENTS, sizeof(ERROR_FRAG_CONTENTS));
 
         VulkanShader *shader = new VulkanShader();
-        shader->create_vert_frag(vert_code, frag_code);
+
+        ValDescriptorSetBuilder set_builder;
+        set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+
+        std::vector<ValDescriptorSetInfo *> sets = set_builder.build(val_instance);
+        shader->val_material_descriptor_set = sets[0];
+
+        VulkanShaderPass *shader_pass = new VulkanShaderPass();
+        shader_pass->name = "error";
+        shader_pass->vert_code = vert_code;
+        shader_pass->frag_code = frag_code;
+        shader_pass->create_vert_frag(shader);
+
+        shader->passes.push_back(shader_pass);
 
         VulkanShader::error_shader = shader;
     }
@@ -244,10 +286,8 @@ void VulkanShader::create_default_shaders() {
         memcpy(frag_code.data(), DEPTH_PASS_FRAG_CONTENTS, sizeof(DEPTH_PASS_FRAG_CONTENTS));
 
         VulkanShader *shader = new VulkanShader();
-        shader->is_shadow = true;
-        shader->create_vert_frag(vert_code, frag_code);
+        //shader->create_vert_frag(vert_code, frag_code);
 
         VulkanShader::depth_only_shader = shader;
     }
 }
-

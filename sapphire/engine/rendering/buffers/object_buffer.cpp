@@ -18,6 +18,6 @@ ObjectBuffer::~ObjectBuffer() {
     delete buffer;
 }
 
-void ObjectBuffer::write(ObjectBufferData data) {
+void ObjectBuffer::write(ObjectBufferData& data) {
     buffer->write(&data, sizeof(ObjectBufferData));
 }

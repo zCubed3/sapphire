@@ -48,13 +48,13 @@ char StringTools::to_upper(char c) {
     return c;
 }
 
-std::string StringTools::trim(const std::string &string) {
+std::string StringTools::strip(const std::string &string) {
     std::string dupe = string;
-    while (is_whitespace(dupe.back())) {
+    while (is_whitespace(dupe.back()) || dupe.back() == '"' || dupe.back() == '\'') {
         dupe.pop_back();
     }
 
-    while (is_whitespace(dupe.front())) {
+    while (is_whitespace(dupe.front()) || dupe.front() == '"' || dupe.front() == '\'') {
         dupe.erase(dupe.begin());
     }
 

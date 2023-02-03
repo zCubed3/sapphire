@@ -3,23 +3,24 @@
 #include <engine/assets/material_asset.h>
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/buffers/object_buffer.h>
+#include <engine/rendering/objects/mesh_draw_object.h>
 #include <engine/rendering/render_server.h>
 #include <engine/rendering/render_target.h>
 
 MeshActor::MeshActor() {
-    buffer = new ObjectBuffer();
+    draw_object = new MeshDrawObject();
 }
 
 MeshActor::~MeshActor() {
     Actor::~Actor();
 
-    delete buffer;
+    delete draw_object;
 }
 
 void MeshActor::draw(World *p_world) {
     Actor::draw(p_world);
 
-    const RenderServer* rs_instance = RenderServer::get_singleton();
+    RenderServer* rs_instance = RenderServer::get_singleton();
 
     transform.calculate_matrices();
 
@@ -29,10 +30,19 @@ void MeshActor::draw(World *p_world) {
     data.model_inverse_transpose = transform.trs_inverse_transpose;
     data.model_view_projection = rs_instance->get_current_target()->view_data.view_projection * transform.trs;
 
-    buffer->write(data);
+    draw_object->update_buffer(data);
 
-    if (mesh_asset != nullptr) {
-        Material *material = material_asset == nullptr ? nullptr : material_asset->material;
-        mesh_asset->render(buffer, material);
+    if (mesh_asset) {
+        draw_object->mesh_buffer = mesh_asset->buffer;
+    } else {
+        draw_object->mesh_buffer = nullptr;
     }
+
+    if (material_asset) {
+        draw_object->material = material_asset->material;
+    } else {
+        draw_object->material = nullptr;
+    }
+
+    rs_instance->enqueue_mesh_draw_object(draw_object);
 }

@@ -7,14 +7,14 @@
 
 class MeshAsset;
 class MaterialAsset;
-class ObjectBuffer;
+class MeshDrawObject;
 
 // TODO: This is a temporary mesh renderer; replace it with something better!
 class MeshActor : public Actor {
     REFLECT_CLASS(MeshActor, Actor)
 
 public:
-    ObjectBuffer* buffer = nullptr;
+    MeshDrawObject* draw_object = nullptr;
     std::shared_ptr<MeshAsset> mesh_asset = nullptr;
     std::shared_ptr<MaterialAsset> material_asset = nullptr;
 

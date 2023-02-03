@@ -16,7 +16,7 @@ public:
 
     virtual bool make_from_semd(ConfigFile *p_semd_file);
 
-    virtual void bind() = 0;
+    virtual ShaderPass *bind_pass(const std::string& pass_name) = 0;
 };
 
 #endif

@@ -26,6 +26,14 @@ int Panel::get_imgui_flags() {
     return 0;
 }
 
+void Panel::push_style_vars() {
+
+}
+
+void Panel::pop_style_vars() {
+
+}
+
 void Panel::draw_panel() {
     bool *p_open = can_close() ? &open : nullptr;
 
@@ -39,8 +47,12 @@ void Panel::draw_panel() {
             combo_id += std::to_string(id);
         }
 
+        push_style_vars();
+
         if (ImGui::Begin(combo_id.c_str(), p_open, flags)) {
             draw_contents();
+        } else {
+            pop_style_vars();
         }
 
         ImGui::End();

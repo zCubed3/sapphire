@@ -26,16 +26,24 @@ VulkanMaterial::~VulkanMaterial() {
     }
 }
 
-void VulkanMaterial::bind() {
+ShaderPass *VulkanMaterial::bind_pass(const std::string& pass_name) {
     const VulkanRenderServer *rs_instance = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
 
     VkCommandBuffer active_command_buffer = rs_instance->val_active_render_target->vk_command_buffer;
     VulkanShader *vk_shader = reinterpret_cast<VulkanShader *>(shader);
 
-    if (vk_shader != nullptr) {
-        if (val_material_descriptor_info == nullptr && vk_shader->val_material_descriptor_set != nullptr) {
-            val_material_descriptor_info = vk_shader->val_material_descriptor_set->allocate_set(rs_instance->val_instance);
-        }
+    if (vk_shader == nullptr) {
+        return nullptr;
+    }
+
+    VulkanShaderPass *shader_pass = reinterpret_cast<VulkanShaderPass*>(vk_shader->get_pass(pass_name));
+
+    if (shader_pass == nullptr) {
+        return nullptr;
+    }
+
+    if (val_material_descriptor_info == nullptr && vk_shader->val_material_descriptor_set != nullptr) {
+        val_material_descriptor_info = vk_shader->val_material_descriptor_set->allocate_set(rs_instance->val_instance);
     }
 
     if (val_material_descriptor_info != nullptr) {
@@ -72,7 +80,7 @@ void VulkanMaterial::bind() {
             vkCmdBindDescriptorSets(
                     active_command_buffer,
                     VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    vk_shader->val_pipeline->vk_pipeline_layout,
+                    shader_pass->val_pipeline->vk_pipeline_layout,
                     1,
                     1,
                     &val_material_descriptor_info->vk_descriptor_set,
@@ -80,4 +88,7 @@ void VulkanMaterial::bind() {
                     nullptr);
         }
     }
+
+    vkCmdBindPipeline(active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_pass->val_pipeline->vk_pipeline);
+    return shader_pass;
 }

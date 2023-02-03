@@ -23,9 +23,9 @@ public:
     TextureRenderTarget* target = nullptr;
     World* world = nullptr;
 
+    bool enable_padding = false;
     int width;
     int height;
-
     bool automatic_size = true;
 
     glm::vec3 euler {};
@@ -37,6 +37,8 @@ public:
 
     int get_imgui_flags() override;
     const char * get_title() override;
+    void push_style_vars() override;
+    void pop_style_vars() override;
 
     void draw_world(RenderServer *p_render_server);
 

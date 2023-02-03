@@ -20,7 +20,7 @@ public:
     ObjectBuffer(GraphicsBuffer *p_buffer);
     ~ObjectBuffer();
 
-    void write(ObjectBufferData data);
+    void write(ObjectBufferData& data);
 };
 
 #endif

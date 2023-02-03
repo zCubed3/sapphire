@@ -96,60 +96,17 @@ VulkanMeshBuffer::~VulkanMeshBuffer() {
 }
 
 // TODO: Instancing
-void VulkanMeshBuffer::render(ObjectBuffer* p_object_buffer, Material *p_material) {
-    // We expect the material to have been bound and updated
-    // Therefore we just simply grab the shader
-    VulkanShader *vk_shader = nullptr;
-    if (p_material != nullptr) {
-        // TODO: Actually do what stupid past me said
-        p_material->bind();
-        vk_shader = reinterpret_cast<VulkanShader *>(p_material->shader);
-    }
-
-    if (vk_shader == nullptr) {
-        //vk_shader = VulkanShader::error_shader;
-        vk_shader = VulkanShader::depth_only_shader;
-    }
-
+void VulkanMeshBuffer::draw(ObjectBuffer* p_object_buffer, std::shared_ptr<Material> p_material) {
     const VulkanRenderServer *render_server = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
     ValInstance *val_instance = render_server->val_instance;
 
-    RenderTarget *current_target = render_server->get_current_target();
-
-    // Our object data is already updated by this moment
-    // We just have to update the binding
-    VulkanGraphicsBuffer *object_ubo = reinterpret_cast<VulkanGraphicsBuffer *>(p_object_buffer->buffer);
-
-    // If we don't have an instance of the per-object descriptor we must allocate one
-    if (object_ubo->val_descriptor_set == nullptr) {
-        object_ubo->val_descriptor_set = vk_shader->val_object_descriptor_set->allocate_set(val_instance);
-    }
-
-    ValDescriptorSetWriteInfo object_write_info{};
-    object_write_info.val_buffer = object_ubo->val_buffer;
-
-    object_ubo->val_descriptor_set->write_binding(&object_write_info);
-    object_ubo->val_descriptor_set->update_set(val_instance);
-
     // We assume a command buffer is currently recording
     VkCommandBuffer active_command_buffer = render_server->val_active_render_target->vk_command_buffer;
-
-    vkCmdBindPipeline(active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_shader->val_pipeline->vk_pipeline);
 
     VkDeviceSize offset = 0;
     vkCmdBindVertexBuffers(active_command_buffer, 0, 1, &val_mbo->vk_buffer, &offset);
 
     vkCmdBindIndexBuffer(active_command_buffer, val_mbo->vk_buffer, sub_ibo_offset, VK_INDEX_TYPE_UINT32);
-
-    vkCmdBindDescriptorSets(
-            active_command_buffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            vk_shader->val_pipeline->vk_pipeline_layout,
-            2,
-            1,
-            &object_ubo->val_descriptor_set->vk_descriptor_set,
-            0,
-            nullptr);
 
     vkCmdDrawIndexed(active_command_buffer, tri_count, 1, 0, 0, 0);
 }

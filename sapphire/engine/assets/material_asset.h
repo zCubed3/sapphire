@@ -14,7 +14,7 @@ class MaterialAsset : public Asset {
     REFLECT_CLASS(MaterialAsset, Asset)
 
 public:
-    Material* material = nullptr;
+    std::shared_ptr<Material> material = nullptr;
 
     ~MaterialAsset() override;
 };

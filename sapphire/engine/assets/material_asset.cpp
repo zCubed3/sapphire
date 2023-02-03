@@ -3,5 +3,5 @@
 #include <engine/rendering/material.h>
 
 MaterialAsset::~MaterialAsset() {
-    delete material;
+    // TODO: Reset the material
 }

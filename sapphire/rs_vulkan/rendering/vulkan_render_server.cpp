@@ -14,6 +14,7 @@
 #include <engine/rendering/texture_render_target.h>
 #include <engine/rendering/window_render_target.h>
 #include <engine/rendering/lighting/light.h>
+#include <engine/rendering/objects/mesh_draw_object.h>
 #include <engine/scene/world.h>
 
 #include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
@@ -120,6 +121,8 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
             {"VK_LAYER_KHRONOS_validation", 0}};
 #endif
 
+    val_create_info.vk_enabled_features.fillModeNonSolid = true;
+
     val_create_info.requested_queues = {
             ValQueue::QueueType::QUEUE_TYPE_GRAPHICS,
             ValQueue::QueueType::QUEUE_TYPE_PRESENT,
@@ -169,11 +172,19 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     // TODO: User defined layouts?
     ValDescriptorSetBuilder val_set_builder;
 
+    val_set_builder.push_pre_allocate(false);
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    val_view_descriptor_info = val_set_builder.build(val_instance)[0];
+    val_set_builder.push_set();
+
+    val_set_builder.push_pre_allocate(false);
+    val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    std::vector<ValDescriptorSetInfo*> sets = val_set_builder.build(val_instance);
+    val_view_descriptor_info = sets[0];
+    val_object_descriptor_info = sets[1];
 
 #if defined(IMGUI_SUPPORT)
     ValDescriptorSetBuilder val_imgui_set_builder;
@@ -280,10 +291,12 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
             val_active_render_target->begin_render(pass, val_instance);
 
             // TODO: Make a dummy shader?
+            VulkanShaderPass *error_shader_pass = reinterpret_cast<VulkanShaderPass*>(VulkanShader::error_shader->passes[0]);
+
             vkCmdBindDescriptorSets(
                     val_active_render_target->vk_command_buffer,
                     VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    VulkanShader::error_shader->val_pipeline->vk_pipeline_layout,
+                    error_shader_pass->val_pipeline->vk_pipeline_layout,
                     0,
                     1,
                     &val_view_descriptor_info->val_descriptor_set->vk_descriptor_set,
@@ -313,6 +326,51 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
 }
 
 bool VulkanRenderServer::end_target(RenderTarget *p_target) {
+    // TODO: Render the world instead
+    VkCommandBuffer active_command_buffer = val_active_render_target->vk_command_buffer;
+
+    for (auto iter: mesh_draw_calls) {
+        VulkanShaderPass* shader_pass = nullptr;
+
+        if (iter.first == nullptr) {
+            shader_pass = reinterpret_cast<VulkanShaderPass *>(VulkanShader::error_shader->passes[0]);
+            vkCmdBindPipeline(active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_pass->val_pipeline->vk_pipeline);
+        } else {
+            shader_pass = reinterpret_cast<VulkanShaderPass*>(iter.first->bind_pass("Lit"));
+        }
+
+        // Our object data is already updated by this moment
+        // We just have to update the binding
+        for (MeshDrawObject* object: iter.second) {
+            VulkanGraphicsBuffer *object_ubo = reinterpret_cast<VulkanGraphicsBuffer *>(object->object_buffer->buffer);
+
+            // If we don't have an instance of the per-object descriptor we must allocate one
+            if (object_ubo->val_descriptor_set == nullptr) {
+                object_ubo->val_descriptor_set = val_object_descriptor_info->allocate_set(val_instance);
+            }
+
+            ValDescriptorSetWriteInfo object_write_info{};
+            object_write_info.val_buffer = object_ubo->val_buffer;
+
+            object_ubo->val_descriptor_set->write_binding(&object_write_info);
+            object_ubo->val_descriptor_set->update_set(val_instance);
+
+            vkCmdBindDescriptorSets(
+                    active_command_buffer,
+                    VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    shader_pass->val_pipeline->vk_pipeline_layout,
+                    2,
+                    1,
+                    &object_ubo->val_descriptor_set->vk_descriptor_set,
+                    0,
+                    nullptr);
+
+            object->draw();
+        }
+    }
+
+    mesh_draw_calls.clear();
+
     VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData *>(p_target->rt_data);
 
     if (target_data != nullptr) {
@@ -358,7 +416,7 @@ Material *VulkanRenderServer::create_material() const {
 
 void VulkanRenderServer::populate_mesh_buffer(MeshAsset *p_mesh_asset) const {
     if (p_mesh_asset != nullptr) {
-        p_mesh_asset->buffer = new VulkanMeshBuffer(p_mesh_asset);
+        p_mesh_asset->buffer = std::shared_ptr<MeshBuffer>(new VulkanMeshBuffer(p_mesh_asset));
     }
 }
 

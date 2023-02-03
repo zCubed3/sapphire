@@ -15,10 +15,14 @@ const char *ConsolePanel::get_title() {
 }
 
 void ConsolePanel::draw_contents() {
-    ImGui::InputText("Command##commandbuffer", &buffer);
+    if (ImGui::Button("Clear")) {
+        Console::console_cout.clear();
+    }
+
     ImGui::SameLine();
 
-    if (ImGui::Button("Submit")) {
+    ImGui::PushItemWidth(-1);
+    if (ImGui::InputText("##buffer", &buffer, ImGuiInputTextFlags_EnterReturnsTrue)) {
         // Split the arguments by space
         std::vector<std::string> arguments;
 
@@ -40,7 +44,15 @@ void ConsolePanel::draw_contents() {
             arguments.push_back(arg_buffer);
         }
 
+        Console::console_cout.write("> ").write(buffer).endl();
+        buffer.clear();
         Console::execute(arguments);
     }
+
+    ImGui::PopItemWidth();
+
+    ImGui::BeginChild("ConsoleLog", {0, 0}, true);
+    ImGui::Text("%s", Console::console_cout.get_string().c_str());
+    ImGui::EndChild();
 }
 #endif

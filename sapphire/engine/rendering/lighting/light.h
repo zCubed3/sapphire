@@ -18,6 +18,7 @@ struct LightShadowData {
 // TODO: Use an atlas!
 class Light {
 public:
+    glm::vec3 sun_pos = {30, 30, 30};
     GraphicsBuffer* buffer = nullptr;
     TextureRenderTarget* shadow = nullptr;
 

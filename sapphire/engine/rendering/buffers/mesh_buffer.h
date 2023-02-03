@@ -7,6 +7,8 @@
 
 #include <engine/scene/transform.h>
 
+#include <memory>
+
 class Material;
 class ObjectBuffer;
 
@@ -20,7 +22,7 @@ public:
         glm::vec2 uv0 = {};
     };
 
-    virtual void render(ObjectBuffer* p_object_buffer, Material *p_material) = 0;
+    virtual void draw(ObjectBuffer* p_object_buffer, std::shared_ptr<Material> p_material) = 0;
 
     virtual ~MeshBuffer() = default;
 };

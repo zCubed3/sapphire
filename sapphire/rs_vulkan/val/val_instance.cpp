@@ -263,7 +263,7 @@ ValInstance::ChosenGPU ValInstance::pick_gpu(VkInstance vk_instance, VkSurfaceKH
                 // Ensure we haven't already found a suitable queue
                 bool already_found = false;
 
-                for (ValQueue queue: queues) {
+                for (ValQueue& queue: queues) {
                     if (queue.type == type) {
                         already_found = true;
                     }
@@ -326,13 +326,28 @@ ValInstance::ChosenGPU ValInstance::pick_gpu(VkInstance vk_instance, VkSurfaceKH
         // TODO: Config option to manually decide GPU?
         // TODO: Go through ALL GPUs and don't pick the first supported GPU as the default always!
 
-        return ValInstance::ChosenGPU {gpu, queues};
+        if (queues.size() != p_create_info->requested_queues.size()) {
+            continue;
+        }
+
+        // TODO: This will break if Vulkan stops using VkBool32 for features
+        VkPhysicalDeviceFeatures enabled_features {};
+        size_t num_features = sizeof(VkPhysicalDeviceFeatures) / sizeof(VkBool32);
+
+        for (int f = 0; f < num_features; f++) {
+            VkBool32 has = (&features.robustBufferAccess)[f];
+            VkBool32 requested = (&p_create_info->vk_enabled_features.robustBufferAccess)[f];
+
+            (&enabled_features.robustBufferAccess)[f] = has && requested;
+        }
+
+        return ValInstance::ChosenGPU {gpu, features, queues};
     }
 
     return ValInstance::ChosenGPU {};
 }
 
-VkDevice ValInstance::create_vk_device(VkPhysicalDevice vk_gpu, std::vector<ValQueue>& val_queues, ValInstanceCreateInfo* p_create_info) {
+VkDevice ValInstance::create_vk_device(ChosenGPU& vk_gpu, std::vector<ValQueue>& val_queues, ValInstanceCreateInfo* p_create_info) {
     VkDevice vk_device = nullptr;
 
     std::vector<uint32_t> device_queues;
@@ -358,11 +373,13 @@ VkDevice ValInstance::create_vk_device(VkPhysicalDevice vk_gpu, std::vector<ValQ
     device_create_info.pQueueCreateInfos = device_queue_infos.data();
     device_create_info.queueCreateInfoCount = static_cast<uint32_t>(device_queue_infos.size());
 
+    device_create_info.pEnabledFeatures = &vk_gpu.vk_features;
+
     //
     // Extensions
     //
     std::vector<const char*> enabled_extensions {};
-    std::vector<ValExtension> missing_extensions = validate_device_extensions(vk_gpu, p_create_info);
+    std::vector<ValExtension> missing_extensions = validate_device_extensions(vk_gpu.vk_device, p_create_info);
 
     for (const ValExtension& extension: p_create_info->device_extensions) {
         bool missing_extension = false;
@@ -394,7 +411,7 @@ VkDevice ValInstance::create_vk_device(VkPhysicalDevice vk_gpu, std::vector<ValQ
 
     device_create_info.enabledLayerCount = 0;
 
-    if (vkCreateDevice(vk_gpu, &device_create_info, nullptr, &vk_device) != VK_SUCCESS) {
+    if (vkCreateDevice(vk_gpu.vk_device, &device_create_info, nullptr, &vk_device) != VK_SUCCESS) {
         last_error = ERR_VK_DEVICE_FAILURE;
         return nullptr;
     }
@@ -625,7 +642,7 @@ ValInstance *ValInstance::create_val_instance(ValInstanceCreateInfo *p_create_in
 
     // TODO: Proper multiple window support (thanks windows for making presenting harder :| )
     ChosenGPU gpu = pick_gpu(vk_instance, main_window->vk_surface, p_create_info);
-    VkDevice vk_device = create_vk_device(gpu.vk_device, gpu.queues, p_create_info);
+    VkDevice vk_device = create_vk_device(gpu, gpu.queues, p_create_info);
 
     instance->vk_physical_device = gpu.vk_device;
     instance->val_queues = gpu.queues;

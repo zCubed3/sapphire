@@ -3,5 +3,5 @@
 #include <engine/rendering/buffers/mesh_buffer.h>
 
 MeshAsset::~MeshAsset() {
-    delete buffer;
+    // TODO: Reset the buffer
 }
