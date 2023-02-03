@@ -81,6 +81,18 @@ std::string StringTools::to_upper(const std::string &string) {
     return upper;
 }
 
+std::string StringTools::replace(const std::string &string, char c_old, char c_new) {
+    std::string replaced = string;
+
+    for (char& c: replaced) {
+        if (c == c_old) {
+            c = c_new;
+        }
+    }
+
+    return replaced;
+}
+
 bool StringTools::compare(const std::string &lhs, const std::string &rhs, bool caseless) {
     size_t size = std::min(lhs.size(), rhs.size());
 

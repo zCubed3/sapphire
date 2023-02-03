@@ -10,6 +10,8 @@
 
 #include <gtc/type_ptr.hpp>
 
+int WorldViewPanel::panel_count = 0;
+
 WorldViewPanel::WorldViewPanel() : Panel() {
     const RenderServer* rs_instance = RenderServer::get_singleton();
 
@@ -18,9 +20,15 @@ WorldViewPanel::WorldViewPanel() : Panel() {
     height = 256;
 
     rs_instance->populate_render_target_data(target);
+
+    id = panel_count++;
 }
 
 WorldViewPanel::~WorldViewPanel() {
+    if (panel_count > 0) {
+        panel_count--;
+    }
+
     delete target;
 }
 
@@ -34,6 +42,10 @@ int WorldViewPanel::get_imgui_flags() {
 
 bool WorldViewPanel::is_unique() {
     return true;
+}
+
+int WorldViewPanel::get_id() {
+    return id;
 }
 
 void WorldViewPanel::draw_world(RenderServer *p_render_server) {

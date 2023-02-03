@@ -7,6 +7,8 @@ class DrawObject {
     REFLECT_BASE_CLASS(DrawObject)
 
 public:
+    virtual ~DrawObject() = default;
+
     virtual void draw() = 0;
 };
 

@@ -22,6 +22,8 @@ public:
     static std::string to_lower(const std::string& string);
     static std::string to_upper(const std::string& string);
 
+    static std::string replace(const std::string& string, char c_old, char c_new);
+
     static bool compare(const std::string& lhs, const std::string& rhs, bool caseless = true);
 };
 

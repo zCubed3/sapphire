@@ -32,6 +32,7 @@
 #endif
 
 #define TEST_MULTI_WINDOW
+#define TEST_SCENE
 
 #if defined(IMGUI_SUPPORT)
 #include <backends/imgui_impl_sdl.h>
@@ -61,159 +62,340 @@ struct ChildWindow {
 };
 #endif
 
-int main(int argc, char **argv) {
-    // Our platform we're currently running on
+class Engine {
+public:
+    Timing *timing = nullptr;
     const Platform *platform = nullptr;
-#ifdef WIN32
-    platform = Win32Platform::create_win32_platform();
-#endif
-
-    AssetLoader::register_engine_asset_loaders();
-    Console::register_defaults();
-
-    // Load the engine config file (if it exists)
-    // We write the config back to validate new settings
-    ConfigFile engine_config;
-
-    // Defaults
-    engine_config.set_string("sRenderServer", "Rendering", "Vulkan");
-
-    engine_config.read_from_path("engine.secf");
-
-    engine_config.write_to_path("engine.secf");
-
-    auto test = StringTools::split("test;test2;test3");
-
-    // TODO: Not be case sensitive
-    std::string user_render_server = engine_config.try_get_string("sRenderServer", "Rendering", "Vulkan");
-
     RenderServer *render_server = nullptr;
-    if (StringTools::compare(user_render_server, "vulkan")) {
-#ifdef RS_VULKAN_SUPPORT
-        render_server = new VulkanRenderServer();
-#else
-        std::cout << "Error: Vulkan support was not compiled into the engine!" << std::endl;
-        return 1;
+
+    SDL_Window *main_window = nullptr;
+    WindowRenderTarget *main_window_rt = nullptr;
+
+    ConfigFile engine_config;
+    ConfigFile editor_config;
+
+    // TODO: Temporary, lighting needs an overhaul
+    Light* light = nullptr;
+
+#if defined(TEST_SCENE)
+    World* world = nullptr;
+    std::vector<Actor*> actors;
+
+    std::shared_ptr<MeshAsset> mesh = nullptr;
+    std::shared_ptr<MeshAsset> mesh2 = nullptr;
+    std::shared_ptr<MaterialAsset> material = nullptr;
 #endif
-    }
 
-    if (StringTools::compare(user_render_server, "opengl4")) {
-#ifdef RS_OPENGL4_SUPPORT
-        render_server = new OpenGL4RenderServer();
-#else
-        std::cout << "Error: OpenGL 4 support was not compiled into the engine!" << std::endl;
-        return 1;
-#endif
-    }
-
-    if (render_server == nullptr) {
-        std::cout << "Error: Unrecognized render server '" << user_render_server << "'!" << std::endl;
-        return 1;
-    }
-
-    render_server->register_rs_asset_loaders();
-
-    // The render server requires a main window to get things started
-    SDL_Init(SDL_INIT_EVERYTHING);
-
-    uint32_t window_flags = render_server->get_sdl_window_flags();
-
-    std::string window_name = "Sapphire (";
-    window_name += render_server->get_name();
-    window_name += ")";
-
-    // TODO: Abstract window class?
-    SDL_Window *main_window = SDL_CreateWindow(
-            window_name.c_str(),
-            engine_config.try_get_int("iMainWindowX", "MainWindow", SDL_WINDOWPOS_UNDEFINED),
-            engine_config.try_get_int("iMainWindowY", "MainWindow", SDL_WINDOWPOS_UNDEFINED),
-            engine_config.try_get_int("iMainWindowWidth", "MainWindow", 1280),
-            engine_config.try_get_int("iMainWindowHeight", "MainWindow", 720),
-            window_flags | SDL_WINDOW_RESIZABLE);
-
-    WindowRenderTarget *rt_window = new WindowRenderTarget(main_window);
-    SDL_SetWindowData(main_window, "RT", rt_window);
-
-    if (!render_server->initialize(main_window)) {
-        std::cout << render_server->get_error() << std::endl;
-        return 1;
-    }
-
-    AssetLoader::load_all_placeholders();
-
-    // Test assets
-    std::shared_ptr<MeshAsset> mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.obj"));
-    std::shared_ptr<MeshAsset> mesh2 = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test2.obj"));
-    std::shared_ptr<MaterialAsset> material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test.semd"));
-
-    // TODO: Temporary shadow test
-    Light *light = new Light();
-
-    // We need to load our model and our shader
-    World *world = new World();
-
-    MeshActor *actor = new MeshActor();
-    actor->mesh_asset = mesh;
-    actor->material_asset = material;
-
-    MeshActor *actor2 = new MeshActor();
-    actor2->mesh_asset = mesh2;
-    //actor2->material_asset = material;
-
-    world->add_actor(actor);
-    world->add_actor(actor2);
-
-    render_server->populate_render_target_data(rt_window);
-
-    rt_window->world = world;
-
-    SDL_Event event{};
-    bool keep_running = true;
-
-    Timing *timing = Timing::get_singleton();
-
-    // ImGui my beloved :)
 #if defined(IMGUI_SUPPORT)
-    render_server->initialize_imgui(rt_window);
+    WorldActorPanel* world_actor_panel = nullptr;
+    ActorPanel* actor_panel = nullptr;
+    RendererPanel * renderer_panel = nullptr;
+    ConsolePanel* console_panel = nullptr;
 
-    std::vector<double> fps_stack;
+    std::vector<WorldViewPanel*> view_panels;
+#endif
 
-    std::string test_obj_path;
-    std::string test_semd_path;
-    glm::vec3 test_position = {1, 0, 0};
+protected:
+    void initialize_configs() {
+        platform->create_folder("config");
 
-    WorldActorPanel *world_actor_panel = new WorldActorPanel();
-    world_actor_panel->target = world;
+        //
+        // Engine config
+        //
+        engine_config.set_string("sRenderServer", "Rendering", "Vulkan");
 
-    ActorPanel *actor_panel = new ActorPanel();
-    actor_panel->target = nullptr;
-    actor_panel->world = world;
+        engine_config.read_from_path("config/engine.secf");
+        engine_config.write_to_path("config/engine.secf");
 
-    RendererPanel *renderer_panel = new RendererPanel();
+        //
+        // Editor config
+        //
+        editor_config.read_from_path("config/editor.secf");
+        editor_config.write_to_path("config/editor.secf");
+    }
 
-    ConsolePanel *console_panel = new ConsolePanel();
+    bool initialize_rendering() {
+        std::string user_render_server = engine_config.try_get_string("sRenderServer", "Rendering", "Vulkan");
 
-    std::vector<WorldViewPanel*> world_panels;
+        if (StringTools::compare(user_render_server, "vulkan")) {
+#ifdef RS_VULKAN_SUPPORT
+            render_server = new VulkanRenderServer();
+            return true;
+#else
+            std::cout << "Error: Vulkan support was not compiled into the engine!" << std::endl;
+#endif
+        }
 
-    {
+        if (StringTools::compare(user_render_server, "opengl4")) {
+#ifdef RS_OPENGL4_SUPPORT
+            render_server = new OpenGL4RenderServer();
+            return true;
+#else
+            std::cout << "Error: OpenGL 4 support was not compiled into the engine!" << std::endl;
+#endif
+        }
+
+        if (render_server == nullptr) {
+            std::cout << "Error: Unrecognized render server '" << user_render_server << "'!" << std::endl;
+            return false;
+        }
+
+        return false;
+    }
+
+    std::string get_main_window_name() {
+        std::string name = "Sapphire (";
+        name += render_server->get_name();
+        name += ")";
+
+#ifdef DEBUG
+        name += " - DEBUG BUILD";
+#endif
+
+        return name;
+    }
+
+    bool create_main_window() {
+        std::string main_window_name = get_main_window_name();
+
+        main_window = SDL_CreateWindow(
+                main_window_name.c_str(),
+                SDL_WINDOWPOS_UNDEFINED,
+                SDL_WINDOWPOS_UNDEFINED,
+                1280,
+                720,
+                render_server->get_sdl_window_flags() | SDL_WINDOW_RESIZABLE);
+
+        main_window_rt = new WindowRenderTarget(main_window);
+        SDL_SetWindowData(main_window, "RT", main_window_rt);
+
+        SDL_MaximizeWindow(main_window);
+
+        if (!render_server->initialize(main_window)) {
+            std::cout << render_server->get_error() << std::endl;
+            return false;
+        }
+
+        render_server->populate_render_target_data(main_window_rt);
+
+#if defined(IMGUI_SUPPORT)
+        render_server->initialize_imgui(main_window_rt);
+#endif
+
+        return true;
+    }
+
+    bool create_test_scene() {
+        mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.obj"));
+        mesh2 = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test2.obj"));
+        material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test.semd"));
+
+        world = new World();
+
+        light = new Light();
+
+        {
+            MeshActor *actor = new MeshActor();
+            actor->mesh_asset = mesh;
+            actor->material_asset = material;
+
+            actors.push_back(actor);
+            world->add_actor(actor);
+        }
+
+        {
+            MeshActor *actor = new MeshActor();
+            actor->mesh_asset = mesh2;
+            actor->material_asset = material;
+
+            actors.push_back(actor);
+            world->add_actor(actor);
+        }
+
+        return true;
+    }
+
+#if defined(IMGUI_SUPPORT)
+    bool create_view_panel() {
         WorldViewPanel *view_panel = new WorldViewPanel();
         view_panel->world = world;
-        view_panel->id = 0;
-
         view_panel->target->transform.position = {0, 0, 2};
         view_panel->target->light = light;
 
-        world_panels.push_back(view_panel);
+        view_panels.push_back(view_panel);
+
+        return true;
+    }
+
+    bool draw_editor_gui() {
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+        ImGuiID dockspace_id = ImGui::GetID("EditorDockspace");
+
+        int imgui_window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+        imgui_window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        imgui_window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+        ImGui::Begin("Editor", nullptr, imgui_window_flags);
+        ImGui::PopStyleVar(3);
+
+        ImGui::BeginMenuBar();
+
+        if (ImGui::BeginMenu("Panels")) {
+            ImGui::Checkbox("World", &world_actor_panel->open);
+            ImGui::Checkbox("Actor", &actor_panel->open);
+            ImGui::Checkbox("Renderer", &renderer_panel->open);
+
+            if (ImGui::Button("Create WorldViewPanel")) {
+                create_view_panel();
+            }
+
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMenuBar();
+
+        ImGui::DockSpace(dockspace_id);
+        ImGui::End();
+
+        world_actor_panel->draw_panel();
+        actor_panel->draw_panel();
+        renderer_panel->draw_panel();
+        console_panel->draw_panel();
+
+        for (WorldViewPanel* panel: view_panels) {
+            panel->draw_panel();
+        }
+
+        return true;
+    }
+
+    bool create_editor_panels() {
+        world_actor_panel = new WorldActorPanel();
+        world_actor_panel->target = world;
+
+        actor_panel = new ActorPanel();
+        actor_panel->world = world;
+
+        renderer_panel = new RendererPanel();
+
+        console_panel = new ConsolePanel();
+
+        create_view_panel();
+
+        return true;
     }
 #endif
 
-#ifdef TEST_MULTI_WINDOW
-    std::vector<ChildWindow> child_windows{};
+public:
+    bool initialize() {
+#ifdef WIN32
+        platform = Win32Platform::create_win32_platform();
 #endif
 
-    // We don't have a camera, so we need to move our render target initially
-    rt_window->transform.position = glm::vec3(0, 0, 2);
+        timing = Timing::get_singleton();
 
+        AssetLoader::register_engine_asset_loaders();
+        Console::register_defaults();
+
+        initialize_configs();
+
+        SDL_Init(SDL_INIT_EVERYTHING);
+
+        if (!initialize_rendering()) {
+            return false;
+        }
+
+        render_server->register_rs_asset_loaders();
+
+        create_main_window();
+
+        AssetLoader::load_all_placeholders();
+
+#if defined(TEST_SCENE)
+        create_test_scene();
+#endif
+
+#if defined(IMGUI_SUPPORT)
+        create_editor_panels();
+#endif
+
+        return true;
+    }
+
+    bool engine_loop() {
+        if (render_server == nullptr) {
+            return false;
+        }
+
+        timing->new_frame();
+
+        // TODO: Update the world properly
+        float delta = static_cast<float>(timing->get_delta());
+
+        world->delta_time = delta;
+        world->elapsed_time += delta;
+
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+#if defined(IMGUI_SUPPORT)
+            if (SDL_GetWindowFlags(main_window) & SDL_WINDOW_INPUT_FOCUS) {
+                ImGui::SetCurrentContext(main_window_rt->imgui_context);
+                ImGui_ImplSDL2_ProcessEvent(&event);
+            }
+#endif
+
+            if (event.type == SDL_QUIT) {
+                return false;
+            }
+
+            if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                render_server->on_window_resized(SDL_GetWindowFromID(event.window.windowID));
+            }
+        }
+
+        render_server->begin_frame();
+
+        // TODO: Temporary lighting
+        light->render_shadows(render_server, world);
+
+        for (WorldViewPanel* panel: view_panels) {
+            panel->draw_world(render_server);
+        }
+
+        render_server->begin_target(main_window_rt);
+        render_server->begin_imgui(main_window_rt);
+
+        draw_editor_gui();
+
+        render_server->end_imgui(main_window_rt);
+        render_server->end_target(main_window_rt);
+
+        render_server->end_frame();
+
+        render_server->present(main_window);
+
+        return true;
+    }
+};
+
+int main(int argc, char **argv) {
+    Engine engine;
+    engine.initialize();
+
+    while (engine.engine_loop()) {
+
+    }
+
+    // ImGui my beloved :)
+
+    /*
     while (keep_running) {
         while (SDL_PollEvent(&event) != 0) {
 #if defined(IMGUI_SUPPORT)
@@ -273,6 +455,9 @@ int main(int argc, char **argv) {
         timing->new_frame();
         float delta = static_cast<float>(timing->get_delta());
 
+        world->delta_time = delta;
+world->elapsed_time += delta;
+
         glm::vec3 euler{};
         euler.x = sin(world->elapsed_time) * 10;
         euler.y = cos(world->elapsed_time) * 10;
@@ -282,10 +467,12 @@ int main(int argc, char **argv) {
 
         render_server->begin_frame();
 
-        //light->render_shadows(render_server, shadow_world);
+        light->render_shadows(render_server, world);
 
 #ifdef TEST_MULTI_WINDOW
         for (ChildWindow &window: child_windows) {
+            window.rt->light = light;
+
             render_server->begin_target(window.rt);
             render_server->begin_imgui(window.rt);
 
@@ -319,45 +506,6 @@ int main(int argc, char **argv) {
         //actor->transform.position = glm::vec3(0, sin(world->elapsed_time), 0);
 
 #if defined(IMGUI_SUPPORT)
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->WorkPos);
-        ImGui::SetNextWindowSize(viewport->WorkSize);
-        ImGui::SetNextWindowViewport(viewport->ID);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-        ImGuiID dockspace_id = ImGui::GetID("EditorDockspace");
-
-        int window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-        ImGui::Begin("Editor", nullptr, window_flags);
-        ImGui::PopStyleVar(3);
-
-        ImGui::BeginMenuBar();
-
-        if (ImGui::BeginMenu("Panels")) {
-            ImGui::Checkbox("World", &world_actor_panel->open);
-            ImGui::Checkbox("Actor", &actor_panel->open);
-            ImGui::Checkbox("Renderer", &renderer_panel->open);
-
-            if (ImGui::Button("Create WorldViewPanel")) {
-                WorldViewPanel *view_panel = new WorldViewPanel();
-                view_panel->world = world;
-
-                world_panels.push_back(view_panel);
-            }
-
-            ImGui::EndMenu();
-        }
-
-        ImGui::EndMenuBar();
-
-        ImGui::DockSpace(dockspace_id);
-        ImGui::End();
-
         ImGui::Begin("WindowTester");
 
         if (ImGui::Button("Create Window")) {
@@ -486,5 +634,6 @@ int main(int argc, char **argv) {
 
     engine_config.write_to_path("engine.secf");
 
+     */
     return 0;
 }

@@ -8,14 +8,13 @@ class Panel {
     REFLECT_BASE_CLASS(Panel);
 
 public:
-    int id;
     bool open = true;
 
-    Panel();
     virtual ~Panel() = default;
 
     virtual bool can_close();
     virtual bool is_unique();
+    virtual int get_id();
 
     virtual int get_imgui_flags();
     virtual const char* get_title() = 0;

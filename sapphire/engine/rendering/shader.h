@@ -27,9 +27,15 @@ public:
         DEPTH_OP_ALWAYS
     };
 
+    enum UsageIntent {
+        USAGE_INTENT_DEFAULT,
+        USAGE_INTENT_DEPTH_ONLY
+    };
+
     bool write_depth = true;
     CullMode cull_mode = CullMode::CULL_MODE_BACK;
     DepthOp depth_op = DepthOp::DEPTH_OP_LESS;
+    UsageIntent usage = USAGE_INTENT_DEFAULT;
 
 public:
     std::string name;

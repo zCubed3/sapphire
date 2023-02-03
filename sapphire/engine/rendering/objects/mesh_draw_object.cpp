@@ -7,6 +7,10 @@ MeshDrawObject::MeshDrawObject() {
     object_buffer = new ObjectBuffer();
 }
 
+MeshDrawObject::~MeshDrawObject() {
+    delete object_buffer;
+}
+
 void MeshDrawObject::update_buffer(ObjectBufferData& data) {
     object_buffer->write(data);
 }

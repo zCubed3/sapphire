@@ -106,7 +106,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     val_create_info.application_name = "Sapphire Application";
 
     // TODO: Optional SDL?
-    // TODO: Allow switching between sRGB and Linear
+    // TODO: Allow switching between sRGB and Linear at runtime
     ValInstancePresentPreferences present_preferences{};
     present_preferences.use_vsync = true;
 
@@ -332,11 +332,26 @@ bool VulkanRenderServer::end_target(RenderTarget *p_target) {
     for (auto iter: mesh_draw_calls) {
         VulkanShaderPass* shader_pass = nullptr;
 
-        if (iter.first == nullptr) {
-            shader_pass = reinterpret_cast<VulkanShaderPass *>(VulkanShader::error_shader->passes[0]);
+        // TODO: Temp, make a better way of rendering shadows
+        bool use_shadow = false;
+        if (p_target->get_type() == RenderTarget::TARGET_TYPE_TEXTURE) {
+            TextureRenderTarget* texture_target = reinterpret_cast<TextureRenderTarget*>(p_target);
+
+            if (texture_target->usage_intent == TextureRenderTarget::USAGE_INTENT_SHADOW) {
+                use_shadow = true;
+            }
+        }
+
+        if (use_shadow) {
+            shader_pass = reinterpret_cast<VulkanShaderPass *>(VulkanShader::depth_only_shader->passes[0]);
             vkCmdBindPipeline(active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_pass->val_pipeline->vk_pipeline);
         } else {
-            shader_pass = reinterpret_cast<VulkanShaderPass*>(iter.first->bind_pass("Lit"));
+            if (iter.first == nullptr) {
+                shader_pass = reinterpret_cast<VulkanShaderPass *>(VulkanShader::error_shader->passes[0]);
+                vkCmdBindPipeline(active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_pass->val_pipeline->vk_pipeline);
+            } else {
+                shader_pass = reinterpret_cast<VulkanShaderPass *>(iter.first->bind_pass("Lit"));
+            }
         }
 
         // Our object data is already updated by this moment

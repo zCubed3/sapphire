@@ -14,6 +14,8 @@ public:
 
     virtual std::string get_name() const = 0;
 
+    virtual bool create_folder(const std::string &path, bool create_parents = true) const = 0;
+
     virtual bool file_exists(const std::string &path) const = 0;
     virtual bool folder_exists(const std::string &path) const = 0;
 };

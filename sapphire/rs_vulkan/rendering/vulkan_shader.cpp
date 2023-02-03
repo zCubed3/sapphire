@@ -135,7 +135,15 @@ void VulkanShaderPass::create_vert_frag(VulkanShader *p_shader) {
     builder.push_module(frag_module);
 
     // TODO: Temp, create passes similar to rt intents
-    builder.val_render_pass = render_server->val_window_render_pass;
+    switch (usage) {
+        default:
+            builder.val_render_pass = render_server->val_window_render_pass;
+            break;
+
+        case ShaderPass::USAGE_INTENT_DEPTH_ONLY:
+            builder.val_render_pass = render_server->val_shadow_render_pass;
+            break;
+    }
 
     // Our first set is the engine's "view" descriptor set
     builder.vk_descriptor_set_layouts.push_back(render_server->val_view_descriptor_info->vk_descriptor_set_layout);
@@ -268,7 +276,7 @@ void VulkanShader::create_default_shaders() {
         shader->val_material_descriptor_set = sets[0];
 
         VulkanShaderPass *shader_pass = new VulkanShaderPass();
-        shader_pass->name = "error";
+        shader_pass->name = "Error";
         shader_pass->vert_code = vert_code;
         shader_pass->frag_code = frag_code;
         shader_pass->create_vert_frag(shader);
@@ -286,7 +294,21 @@ void VulkanShader::create_default_shaders() {
         memcpy(frag_code.data(), DEPTH_PASS_FRAG_CONTENTS, sizeof(DEPTH_PASS_FRAG_CONTENTS));
 
         VulkanShader *shader = new VulkanShader();
-        //shader->create_vert_frag(vert_code, frag_code);
+
+        ValDescriptorSetBuilder set_builder;
+        set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+
+        std::vector<ValDescriptorSetInfo *> sets = set_builder.build(val_instance);
+        shader->val_material_descriptor_set = sets[0];
+
+        VulkanShaderPass *shader_pass = new VulkanShaderPass();
+        shader_pass->name = "DepthOnly";
+        shader_pass->vert_code = vert_code;
+        shader_pass->frag_code = frag_code;
+        shader_pass->usage = ShaderPass::USAGE_INTENT_DEPTH_ONLY;
+        shader_pass->create_vert_frag(shader);
+
+        shader->passes.push_back(shader_pass);
 
         VulkanShader::depth_only_shader = shader;
     }

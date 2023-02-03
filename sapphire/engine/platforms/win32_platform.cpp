@@ -3,6 +3,8 @@
 #include <Windows.h>
 #include <sysinfoapi.h>
 
+#include <engine/data/string_tools.h>
+
 const Win32Platform* Win32Platform::create_win32_platform() {
     const Win32Platform* existing = reinterpret_cast<const Win32Platform*>(get_singleton());
 
@@ -17,6 +19,33 @@ const Win32Platform* Win32Platform::create_win32_platform() {
 // TODO: Version info?
 std::string Win32Platform::get_name() const {
     return "Windows";
+}
+
+// TODO: Security attributes?
+bool Win32Platform::create_folder(const std::string &path, bool create_parents) const {
+    if (create_parents) {
+        char* base_path = new char[MAX_PATH];
+        GetCurrentDirectoryA(MAX_PATH, base_path);
+
+        std::string fixed_path = StringTools::replace(path, '\\', '/');
+
+        bool success = true;
+        for (std::string& folder: StringTools::split(fixed_path, '/')) {
+            if (!CreateDirectoryA(folder.c_str(), nullptr) && !folder_exists(folder)) {
+                success = false;
+                break;
+            }
+
+            // Necessary to not allocate extra memory when creating sub-folders
+            SetCurrentDirectoryA(folder.c_str());
+        }
+
+        SetCurrentDirectoryA(base_path);
+        delete[] base_path;
+        return success;
+    } else {
+        return CreateDirectoryA(path.c_str(), nullptr);
+    }
 }
 
 bool Win32Platform::file_exists(const std::string &path) const {

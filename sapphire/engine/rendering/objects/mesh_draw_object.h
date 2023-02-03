@@ -20,6 +20,7 @@ public:
     ObjectBuffer* object_buffer;
 
     MeshDrawObject();
+    ~MeshDrawObject() override;
 
     void update_buffer(ObjectBufferData& data);
 

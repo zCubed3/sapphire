@@ -11,6 +11,8 @@ class RenderServer;
 class WorldViewPanel : public Panel {
     REFLECT_CLASS(WorldViewPanel, Panel)
 
+    static int panel_count;
+
 public:
     enum ViewMode {
         VIEW_MODE_COLOR,
@@ -18,6 +20,8 @@ public:
 
         VIEW_MODE_ENUM_MAX = VIEW_MODE_DEPTH
     };
+
+    int id = 0;
 
     ViewMode view_mode = VIEW_MODE_COLOR;
     TextureRenderTarget* target = nullptr;
@@ -34,6 +38,7 @@ public:
     ~WorldViewPanel() override;
 
     bool is_unique() override;
+    int get_id() override;
 
     int get_imgui_flags() override;
     const char * get_title() override;

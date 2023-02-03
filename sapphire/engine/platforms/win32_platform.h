@@ -12,6 +12,8 @@ public:
 
     std::string get_name() const override;
 
+    bool create_folder(const std::string &path, bool create_parents = true) const override;
+
     bool file_exists(const std::string &path) const override;
     bool folder_exists(const std::string &path) const override;
 };
