@@ -8,3 +8,5 @@ This is a hobby engine. It's sole purpose is for learning engine design and not 
 ### What are your goals?
 * Vulkan and OpenGL 4 renderer parity and abstraction
 * **TBA**
+
+### [Credits](CREDIT.md)
