@@ -8,13 +8,13 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 #include <engine/rendering/render_server.h>
-#include <engine/timing/timing.h>
+#include <engine/data/timing.h>
 
 const char *ConsolePanel::get_title() {
     return "Console";
 }
 
-void ConsolePanel::draw_contents() {
+void ConsolePanel::draw_contents(Engine* p_engine) {
     if (ImGui::Button("Clear")) {
         Console::console_cout.clear();
     }

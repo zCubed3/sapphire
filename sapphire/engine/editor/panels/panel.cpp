@@ -31,7 +31,7 @@ void Panel::pop_style_vars() {
 
 }
 
-void Panel::draw_panel() {
+void Panel::draw_panel(Engine* p_engine) {
     bool *p_open = can_close() ? &open : nullptr;
 
     if (open) {
@@ -46,7 +46,7 @@ void Panel::draw_panel() {
         push_style_vars();
 
         if (ImGui::Begin(combo_id.c_str(), p_open, flags)) {
-            draw_contents();
+            draw_contents(p_engine);
         } else {
             pop_style_vars();
         }

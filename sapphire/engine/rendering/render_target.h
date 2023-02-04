@@ -1,9 +1,10 @@
 #ifndef SAPPHIRE_RENDER_TARGET_H
 #define SAPPHIRE_RENDER_TARGET_H
 
+#include <memory>
+
 #include <engine/data/color.h>
 #include <engine/data/rect.h>
-
 #include <engine/rendering/buffers/view_buffer.h>
 #include <engine/scene/transform.h>
 
@@ -54,7 +55,7 @@ public:
     RenderTargetData *rt_data = nullptr;
 
 
-    World *world = nullptr;
+    std::shared_ptr<World> world = nullptr;
 
     virtual ~RenderTarget();
 

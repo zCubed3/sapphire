@@ -1,6 +1,8 @@
 #ifndef SAPPHIRE_WORLD_VIEW_PANEL_H
 #define SAPPHIRE_WORLD_VIEW_PANEL_H
 
+#include <memory>
+
 #include <engine/rendering/texture_render_target.h>
 
 #if defined(IMGUI_SUPPORT)
@@ -25,7 +27,7 @@ public:
 
     ViewMode view_mode = VIEW_MODE_COLOR;
     TextureRenderTarget* target = nullptr;
-    World* world = nullptr;
+    std::shared_ptr<World> world = nullptr;
 
     bool enable_padding = false;
     int width;
@@ -50,7 +52,7 @@ public:
     static const char* get_view_mode_name(ViewMode mode);
 
 protected:
-    void draw_contents() override;
+    void draw_contents(Engine* p_engine) override;
 };
 #endif
 

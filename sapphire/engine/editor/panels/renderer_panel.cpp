@@ -5,13 +5,13 @@
 #include <imgui.h>
 
 #include <engine/rendering/render_server.h>
-#include <engine/timing/timing.h>
+#include <engine/data/timing.h>
 
 const char *RendererPanel::get_title() {
     return "Renderer";
 }
 
-void RendererPanel::draw_contents() {
+void RendererPanel::draw_contents(Engine* p_engine) {
     const RenderServer* rs_instance = RenderServer::get_singleton();
     const Timing* timing = Timing::get_singleton();
 

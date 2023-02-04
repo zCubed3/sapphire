@@ -270,7 +270,7 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
 
     // TODO: Temp
     if (p_target->world != nullptr) {
-        World* world = p_target->world;
+        std::shared_ptr<World> world = p_target->world;
 
         if (p_target->world->skybox != nullptr) {
             ValDescriptorSetWriteInfo env_texture_write_info{};

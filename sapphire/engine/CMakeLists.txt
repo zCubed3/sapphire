@@ -26,6 +26,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "scene/actor.cpp"
         "scene/mesh_actor.cpp"
         "scene/world.cpp"
+        "scene/universe.cpp"
         "scene/transform.cpp"
 
         "typing/class_registry.cpp"
@@ -33,6 +34,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "data/color.cpp"
         "data/rect.cpp"
         "data/string_tools.cpp"
+        "data/timing.cpp"
 
         "math/angle_math.cpp"
 
@@ -52,14 +54,14 @@ set(SAPPHIRE_ENGINE_SOURCES
         "rendering/objects/mesh_draw_object.cpp"
         "rendering/lighting/light.cpp"
 
-        "timing/timing.cpp"
-
         # TODO: Move this under "if editor"
+        "editor/editor.cpp"
+        "editor/data/project.cpp"
         "editor/panels/panel.cpp"
         "editor/panels/actor_panel.cpp"
         "editor/panels/console_panel.cpp"
         "editor/panels/renderer_panel.cpp"
-        "editor/panels/world_actor_panel.cpp"
+        "editor/panels/world_panel.cpp"
         "editor/panels/world_view_panel.cpp"
 
         "engine.cpp"

@@ -24,6 +24,9 @@ public:
 
     static std::string replace(const std::string& string, char c_old, char c_new);
 
+    static std::string join_paths(const std::string& lhs, const std::string& rhs);
+    static std::string get_folder(const std::string& path);
+
     static bool compare(const std::string& lhs, const std::string& rhs, bool caseless = true, bool same_size = true);
 };
 

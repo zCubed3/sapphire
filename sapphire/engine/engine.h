@@ -2,6 +2,7 @@
 #define SAPPHIRE_ENGINE_H
 
 #include <engine/config/config_file.h>
+#include <engine/scene/universe.h>
 
 #include <vector>
 #include <memory>
@@ -21,14 +22,7 @@ class WindowRenderTarget;
 class Asset;
 class MeshAsset;
 class MaterialAsset;
-
-#if defined(IMGUI_SUPPORT)
-class ActorPanel;
-class WorldActorPanel;
-class WorldViewPanel;
-class RendererPanel;
-class ConsolePanel;
-#endif
+class Editor;
 
 class Engine {
 public:
@@ -36,16 +30,20 @@ public:
     const Platform *platform = nullptr;
     RenderServer *render_server = nullptr;
 
+    Universe universe;
+
     SDL_Window *main_window = nullptr;
     WindowRenderTarget *main_window_rt = nullptr;
 
     ConfigFile engine_config;
-    ConfigFile editor_config;
 
     // TODO: Temporary, lighting needs an overhaul
     Light* light = nullptr;
 
-#if defined(TEST_SCENE)
+    // TODO: If editor
+    Editor* editor = nullptr;
+
+#if defined(DEBUG)
     World* world = nullptr;
     std::vector<Actor*> actors;
 
@@ -55,40 +53,24 @@ public:
     std::shared_ptr<MaterialAsset> skybox_material = nullptr;
 #endif
 
-#if defined(IMGUI_SUPPORT)
-    WorldActorPanel* world_actor_panel = nullptr;
-    ActorPanel* actor_panel = nullptr;
-    RendererPanel * renderer_panel = nullptr;
-    ConsolePanel* console_panel = nullptr;
-
-    std::vector<WorldViewPanel*> view_panels;
-#endif
-
 protected:
     void initialize_configs();
 
     bool initialize_rendering();
 
-    std::string get_main_window_name();
-
     bool create_main_window();
-
-#if defined(TEST_SCENE)
-    bool create_test_scene();
-#endif
-
-#if defined(IMGUI_SUPPORT)
-    bool create_view_panel();
-
-    bool draw_editor_gui();
-
-    bool create_editor_panels();
-#endif
 
 public:
     bool initialize();
 
     bool engine_loop();
+
+    std::string get_default_window_title() const;
+    void set_window_title(const std::string &title);
+
+#if defined(DEBUG)
+    bool create_test_world();
+#endif
 };
 
 

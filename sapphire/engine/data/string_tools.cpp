@@ -93,6 +93,47 @@ std::string StringTools::replace(const std::string &string, char c_old, char c_n
     return replaced;
 }
 
+std::string StringTools::join_paths(const std::string &lhs, const std::string &rhs) {
+    // TODO: Windows \\ paths?
+    // TODO: Cope with malformed paths?
+    std::string stem = replace(lhs, '\\', '/');
+    std::string file = rhs;
+
+    if (!stem.empty()) {
+        if (stem.back() != '/') {
+            stem += '/';
+        }
+    }
+
+    if (!file.empty()) {
+        if (file.front() == '/') {
+            file.erase(file.begin());
+        }
+    }
+
+    return stem + file;
+}
+
+std::string StringTools::get_folder(const std::string &path) {
+    if (path.empty()) {
+        return "";
+    }
+
+    std::string trimmed = replace(path, '\\', '/');
+
+    if (trimmed.back() == '/') {
+        return trimmed;
+    } else {
+        size_t slash = trimmed.find_last_of('/') + 1;
+
+        if (slash > trimmed.size() || slash == std::string::npos) {
+            return trimmed;
+        } else {
+            return trimmed.substr(0, slash);
+        }
+    }
+}
+
 bool StringTools::compare(const std::string &lhs, const std::string &rhs, bool caseless, bool same_size) {
     if (same_size && lhs.size() != rhs.size()) {
         return false;

@@ -15,7 +15,7 @@ protected:
     std::vector<float> previous_deltas;
     int max_deltas = 100;
 
-    void draw_contents() override;
+    void draw_contents(Engine* p_engine) override;
 };
 #endif
 

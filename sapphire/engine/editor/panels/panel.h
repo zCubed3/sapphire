@@ -4,6 +4,8 @@
 #if defined(IMGUI_SUPPORT)
 #include <engine/typing/class_registry.h>
 
+class Engine;
+
 class Panel {
     REFLECT_BASE_CLASS(Panel);
 
@@ -21,10 +23,10 @@ public:
     virtual void push_style_vars();
     virtual void pop_style_vars();
 
-    virtual void draw_panel();
+    virtual void draw_panel(Engine *p_engine);
 
 protected:
-    virtual void draw_contents() = 0;
+    virtual void draw_contents(Engine *p_engine) = 0;
 };
 #endif
 

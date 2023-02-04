@@ -20,7 +20,7 @@
 #include <engine/rendering/window_render_target.h>
 #include <engine/scene/mesh_actor.h>
 #include <engine/scene/world.h>
-#include <engine/timing/timing.h>
+#include <engine/data/timing.h>
 #include <engine/typing/class_registry.h>
 
 #include <glm.hpp>
@@ -37,15 +37,10 @@
 #endif
 
 #if defined(IMGUI_SUPPORT)
-#include <backends/imgui_impl_sdl.h>
 #include <imgui.h>
-#include <misc/cpp/imgui_stdlib.h>
+#include <backends/imgui_impl_sdl.h>
 
-#include <engine/editor/panels/actor_panel.h>
-#include <engine/editor/panels/console_panel.h>
-#include <engine/editor/panels/renderer_panel.h>
-#include <engine/editor/panels/world_actor_panel.h>
-#include <engine/editor/panels/world_view_panel.h>
+#include <engine/editor/editor.h>
 #endif
 
 void Engine::initialize_configs() {
@@ -58,12 +53,6 @@ void Engine::initialize_configs() {
 
     engine_config.read_from_path("config/engine.secf");
     engine_config.write_to_path("config/engine.secf");
-
-    //
-    // Editor config
-    //
-    editor_config.read_from_path("config/editor.secf");
-    editor_config.write_to_path("config/editor.secf");
 }
 
 bool Engine::initialize_rendering() {
@@ -95,20 +84,8 @@ bool Engine::initialize_rendering() {
     return false;
 }
 
-std::string Engine::get_main_window_name() {
-    std::string name = "Sapphire (";
-    name += render_server->get_name();
-    name += ")";
-
-#ifdef DEBUG
-    name += " - DEBUG BUILD";
-#endif
-
-    return name;
-}
-
 bool Engine::create_main_window() {
-    std::string main_window_name = get_main_window_name();
+    std::string main_window_name = get_default_window_title();
 
     main_window = SDL_CreateWindow(
             main_window_name.c_str(),
@@ -137,123 +114,6 @@ bool Engine::create_main_window() {
     return true;
 }
 
-#if defined(TEST_SCENE)
-bool Engine::create_test_scene() {
-    mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.obj"));
-    material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test.semd"));
-
-    skybox_mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test_skybox.obj"));
-    skybox_material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test_skybox.semd"));
-
-    std::shared_ptr<TextureAsset> cubemap = std::reinterpret_pointer_cast<TextureAsset>(AssetLoader::load_asset("test_cube.setd"));
-
-    world = new World();
-    world->skybox = cubemap;
-
-    light = new Light();
-
-    {
-        MeshActor *actor = new MeshActor();
-        actor->mesh_asset = mesh;
-        actor->material_asset = material;
-
-        actors.push_back(actor);
-        world->add_actor(actor);
-    }
-
-    {
-        MeshActor *actor = new MeshActor();
-        actor->mesh_asset = skybox_mesh;
-        actor->material_asset = skybox_material;
-
-        actors.push_back(actor);
-        world->add_actor(actor);
-    }
-
-    return true;
-}
-#endif
-
-#if defined(IMGUI_SUPPORT)
-bool Engine::create_view_panel() {
-    WorldViewPanel *view_panel = new WorldViewPanel();
-    view_panel->world = world;
-    view_panel->target->transform.position = {0, 0, 2};
-    view_panel->target->light = light;
-
-    view_panels.push_back(view_panel);
-
-    return true;
-}
-
-bool Engine::draw_editor_gui() {
-    ImGuiViewport *viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(viewport->WorkPos);
-    ImGui::SetNextWindowSize(viewport->WorkSize);
-    ImGui::SetNextWindowViewport(viewport->ID);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-    ImGuiID dockspace_id = ImGui::GetID("EditorDockspace");
-
-    int imgui_window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-    imgui_window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-    imgui_window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-    ImGui::Begin("Editor", nullptr, imgui_window_flags);
-    ImGui::PopStyleVar(3);
-
-    ImGui::BeginMenuBar();
-
-    if (ImGui::BeginMenu("Panels")) {
-        ImGui::Checkbox("World", &world_actor_panel->open);
-        ImGui::Checkbox("Actor", &actor_panel->open);
-        ImGui::Checkbox("Renderer", &renderer_panel->open);
-
-        if (ImGui::Button("Create WorldViewPanel")) {
-            create_view_panel();
-        }
-
-        ImGui::EndMenu();
-    }
-
-    ImGui::EndMenuBar();
-
-    ImGui::DockSpace(dockspace_id);
-    ImGui::End();
-
-    world_actor_panel->draw_panel();
-    actor_panel->draw_panel();
-    renderer_panel->draw_panel();
-    console_panel->draw_panel();
-
-    actor_panel->target = world_actor_panel->selected;
-
-    for (WorldViewPanel *panel: view_panels) {
-        panel->draw_panel();
-    }
-
-    return true;
-}
-
-bool Engine::create_editor_panels() {
-    world_actor_panel = new WorldActorPanel();
-    world_actor_panel->target = world;
-
-    actor_panel = new ActorPanel();
-    actor_panel->world = world;
-
-    renderer_panel = new RendererPanel();
-
-    console_panel = new ConsolePanel();
-
-    create_view_panel();
-
-    return true;
-}
-#endif
-
 bool Engine::initialize() {
 #ifdef WIN32
     platform = Win32Platform::create_win32_platform();
@@ -278,12 +138,9 @@ bool Engine::initialize() {
 
     AssetLoader::load_all_placeholders();
 
-#if defined(TEST_SCENE)
-    create_test_scene();
-#endif
-
 #if defined(IMGUI_SUPPORT)
-    create_editor_panels();
+    editor = new Editor();
+    editor->initialize(this);
 #endif
 
     return true;
@@ -297,10 +154,7 @@ bool Engine::engine_loop() {
     timing->new_frame();
 
     // TODO: Update the world properly
-    float delta = static_cast<float>(timing->get_delta());
-
-    world->delta_time = delta;
-    world->elapsed_time += delta;
+    universe.tick(this);
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -323,16 +177,15 @@ bool Engine::engine_loop() {
     render_server->begin_frame();
 
     // TODO: Temporary lighting
-    light->render_shadows(render_server, world);
+    //light->render_shadows(render_server, world);
 
-    for (WorldViewPanel *panel: view_panels) {
-        panel->draw_world(render_server);
-    }
+    // TODO: If editor
+    editor->draw(this);
 
     render_server->begin_target(main_window_rt);
     render_server->begin_imgui(main_window_rt);
 
-    draw_editor_gui();
+    editor->draw_editor_gui(this);
 
     render_server->end_imgui(main_window_rt);
     render_server->end_target(main_window_rt);
@@ -343,3 +196,59 @@ bool Engine::engine_loop() {
 
     return true;
 }
+
+std::string Engine::get_default_window_title() const {
+    std::string name = "Sapphire (";
+    name += render_server->get_name();
+    name += ")";
+
+#ifdef DEBUG
+    name += " - DEBUG BUILD";
+#endif
+
+    return name;
+}
+
+void Engine::set_window_title(const std::string &title) {
+    SDL_SetWindowTitle(main_window, title.c_str());
+}
+
+#if defined(DEBUG)
+bool Engine::create_test_world() {
+    mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.obj"));
+    material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test.semd"));
+
+    skybox_mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test_skybox.obj"));
+    skybox_material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test_skybox.semd"));
+
+    std::shared_ptr<TextureAsset> cubemap = std::reinterpret_pointer_cast<TextureAsset>(AssetLoader::load_asset("test_cube.setd"));
+
+    world = new World();
+    world->name = "TestWorld";
+    world->skybox = cubemap;
+
+    universe.add_world(std::shared_ptr<World>(world));
+
+    light = new Light();
+
+    {
+        MeshActor *actor = new MeshActor();
+        actor->mesh_asset = mesh;
+        actor->material_asset = material;
+
+        actors.push_back(actor);
+        world->add_actor(actor);
+    }
+
+    {
+        MeshActor *actor = new MeshActor();
+        actor->mesh_asset = skybox_mesh;
+        actor->material_asset = skybox_material;
+
+        actors.push_back(actor);
+        world->add_actor(actor);
+    }
+
+    return true;
+}
+#endif

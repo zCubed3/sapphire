@@ -21,6 +21,8 @@ public:
     float elapsed_time = 0;
     float delta_time = 0;
 
+    std::string name;
+
     // TODO: Allow skyboxes to be an actor instead?
     std::shared_ptr<TextureAsset> skybox = nullptr;
 

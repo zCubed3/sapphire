@@ -14,7 +14,7 @@ public:
 protected:
     std::string buffer;
 
-    void draw_contents() override;
+    void draw_contents(Engine* p_engine) override;
 };
 #endif
 
