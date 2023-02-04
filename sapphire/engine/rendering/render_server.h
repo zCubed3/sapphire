@@ -23,6 +23,8 @@ class MeshDrawObject;
 
 class WindowRenderTarget;
 
+class TextureAsset;
+
 // Abstraction over various rendering APIs
 class RenderServer {
 protected:
@@ -40,6 +42,9 @@ public:
 
     // TODO: Move this to worlds?
     std::unordered_map<std::shared_ptr<Material>, std::vector<MeshDrawObject*>> mesh_draw_calls;
+
+    // TODO: TEMP!
+    std::shared_ptr<TextureAsset> cubemap;
 
     static RenderServer *get_singleton();
 

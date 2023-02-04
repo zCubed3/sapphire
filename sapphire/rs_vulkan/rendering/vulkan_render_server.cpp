@@ -16,6 +16,7 @@
 #include <engine/rendering/lighting/light.h>
 #include <engine/rendering/objects/mesh_draw_object.h>
 #include <engine/scene/world.h>
+#include <engine/assets/texture_asset.h>
 
 #include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
 #include <rs_vulkan/rendering/vulkan_material.h>
@@ -176,6 +177,7 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
     val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+    val_set_builder.push_binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     val_set_builder.push_set();
 
@@ -265,6 +267,13 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
         val_view_descriptor_info->write_binding(&light_write_info);
         val_view_descriptor_info->write_binding(&light_texture_write_info);
     }
+
+    // TODO: Temp
+    ValDescriptorSetWriteInfo env_texture_write_info{};
+    env_texture_write_info.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    env_texture_write_info.binding_index = 3;
+    env_texture_write_info.val_image = ((VulkanTexture*)cubemap->texture)->val_image;
+    val_view_descriptor_info->write_binding(&env_texture_write_info);
 
     val_view_descriptor_info->write_binding(&view_write_info);
     val_view_descriptor_info->update_set(val_instance);

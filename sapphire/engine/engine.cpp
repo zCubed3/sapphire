@@ -143,6 +143,9 @@ bool Engine::create_test_scene() {
     mesh2 = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test2.obj"));
     material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test.semd"));
 
+    std::shared_ptr<TextureAsset> texture = std::reinterpret_pointer_cast<TextureAsset>(AssetLoader::load_asset("test_cube.png"));
+    render_server->cubemap = texture;
+
     world = new World();
 
     light = new Light();

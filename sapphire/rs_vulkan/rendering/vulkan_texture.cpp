@@ -72,14 +72,62 @@ void VulkanTexture::load_bytes(unsigned char *bytes, int width, int height, int 
     create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
     create_info.usage_flags = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
+    // Temp
+    if (width == 4096) {
+        create_info.extent.width = 1024;
+        create_info.extent.height = 1024;
+
+        create_info.dimensions = ValImageCreateInfo::DIMENSIONS_CUBE;
+    }
+
     val_image = ValImage::create(&create_info, rs_instance->val_instance);
 
     // We then need to transfer the image contents into a buffer
     VkCommandBuffer vk_command_buffer = rs_instance->begin_upload(false);
 
-    val_image->write_bytes(bytes, vk_command_buffer, rs_instance->val_instance);
+    val_image->begin_write(bytes, width * height * 4, vk_command_buffer, rs_instance->val_instance);
+
+
+    if (width == 4096) {
+#define CALC_OFFSET(x, y, width) ((y * 4 * width) + (x * 4))
+
+        ValImageCubemapFaceWriteInfo write_info {};
+        write_info.offset = CALC_OFFSET(0, 1024, 4096);
+        write_info.row_length = 4096;
+        write_info.face = ValCubemapFace::VAL_CUBEMAP_FACE_LEFT;
+
+        val_image->write_cubemap_face(&write_info, vk_command_buffer);
+
+        write_info.offset = CALC_OFFSET(0, 1024, 4096);
+        write_info.face = ValCubemapFace::VAL_CUBEMAP_FACE_LEFT;
+        val_image->write_cubemap_face(&write_info, vk_command_buffer);
+
+        write_info.offset = CALC_OFFSET(1024, 1024, 4096);
+        write_info.face = ValCubemapFace::VAL_CUBEMAP_FACE_FRONT;
+        val_image->write_cubemap_face(&write_info, vk_command_buffer);
+
+        write_info.offset = CALC_OFFSET(2048, 1024, 4096);
+        write_info.face = ValCubemapFace::VAL_CUBEMAP_FACE_RIGHT;
+        val_image->write_cubemap_face(&write_info, vk_command_buffer);
+
+        write_info.offset = CALC_OFFSET(3096, 1024, 4096);
+        write_info.face = ValCubemapFace::VAL_CUBEMAP_FACE_BACK;
+        val_image->write_cubemap_face(&write_info, vk_command_buffer);
+
+        write_info.offset = CALC_OFFSET(1024, 0, 4096);
+        write_info.face = ValCubemapFace::VAL_CUBEMAP_FACE_UP;
+        val_image->write_cubemap_face(&write_info, vk_command_buffer);
+
+        write_info.offset = CALC_OFFSET(1024, 2048, 4096);
+        write_info.face = ValCubemapFace::VAL_CUBEMAP_FACE_DOWN;
+        val_image->write_cubemap_face(&write_info, vk_command_buffer);
+    } else {
+        val_image->write_whole(vk_command_buffer);
+    }
+
+    val_image->end_write(vk_command_buffer);
 
     rs_instance->end_upload(vk_command_buffer, false);
 
-    val_image->post_write(rs_instance->val_instance);
+    val_image->cleanup_write(rs_instance->val_instance);
 }

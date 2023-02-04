@@ -1,4 +1,4 @@
-#include "stb_image_loader.h"
+#include "texture_loader.h"
 
 #include <engine/assets/texture_asset.h>
 #include <engine/platforms/platform.h>
@@ -8,11 +8,11 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-std::vector<std::string> STBImageLoader::get_extensions() {
+std::vector<std::string> TextureLoader::get_extensions() {
     return {"png", "jpg", "jpeg", "bmp", "tga"};
 }
 
-std::shared_ptr<Asset> STBImageLoader::load_from_path(const std::string &path, const std::string &extension) {
+std::shared_ptr<Asset> TextureLoader::load_from_path(const std::string &path, const std::string &extension) {
     if (!Platform::get_singleton()->file_exists(path)) {
         return nullptr;
     }

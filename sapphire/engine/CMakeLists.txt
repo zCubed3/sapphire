@@ -15,7 +15,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "assets/texture_asset.cpp"
         "assets/loaders/obj_loader.cpp"
         "assets/loaders/semd_loader.cpp"
-        "assets/loaders/stb_image_loader.cpp"
+        "assets/loaders/texture_loader.cpp"
 
         "console/console.cpp"
 
@@ -43,6 +43,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "rendering/render_server.cpp"
         "rendering/shader.cpp"
         "rendering/material.cpp"
+        "rendering/texture.cpp"
         "rendering/buffers/mesh_buffer.cpp"
         "rendering/buffers/view_buffer.cpp"
         "rendering/buffers/object_buffer.cpp"

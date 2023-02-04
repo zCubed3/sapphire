@@ -3,6 +3,18 @@
 
 class Texture {
 public:
+    enum Dimensions {
+        DIMENSIONS_2D,
+        DIMENSIONS_3D,
+        DIMENSIONS_CUBE
+    };
+
+protected:
+    Dimensions dimensions = DIMENSIONS_2D;
+
+public:
+    virtual Dimensions get_dimensions() const;
+
     virtual ~Texture() = default;
 
 #if defined(IMGUI_SUPPORT)
