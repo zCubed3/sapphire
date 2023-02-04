@@ -1,13 +1,13 @@
-#ifndef SAPPHIRE_SEMD_LOADER_H
-#define SAPPHIRE_SEMD_LOADER_H
+#ifndef SAPPHIRE_MATERIAL_LOADER_H
+#define SAPPHIRE_MATERIAL_LOADER_H
 
 #include <engine/assets/asset_loader.h>
 #include <engine/typing/class_registry.h>
 
 // Sapphire Engine Material Definition
 // By default semd is treated as text, binary forms are "semdb"
-class SEMDLoader : public AssetLoader {
-    REFLECT_CLASS(SEMDLoader, AssetLoader);
+class MaterialLoader : public AssetLoader {
+    REFLECT_CLASS(MaterialLoader, AssetLoader);
 
 protected:
     void release_cache() override;

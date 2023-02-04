@@ -50,8 +50,9 @@ public:
     std::vector<Actor*> actors;
 
     std::shared_ptr<MeshAsset> mesh = nullptr;
-    std::shared_ptr<MeshAsset> mesh2 = nullptr;
     std::shared_ptr<MaterialAsset> material = nullptr;
+    std::shared_ptr<MeshAsset> skybox_mesh = nullptr;
+    std::shared_ptr<MaterialAsset> skybox_material = nullptr;
 #endif
 
 #if defined(IMGUI_SUPPORT)

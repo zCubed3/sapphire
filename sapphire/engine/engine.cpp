@@ -140,10 +140,12 @@ bool Engine::create_main_window() {
 #if defined(TEST_SCENE)
 bool Engine::create_test_scene() {
     mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.obj"));
-    mesh2 = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test2.obj"));
     material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test.semd"));
 
-    std::shared_ptr<TextureAsset> texture = std::reinterpret_pointer_cast<TextureAsset>(AssetLoader::load_asset("test_cube.png"));
+    skybox_mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test_skybox.obj"));
+    skybox_material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test_skybox.semd"));
+
+    std::shared_ptr<TextureAsset> texture = std::reinterpret_pointer_cast<TextureAsset>(AssetLoader::load_asset("test_cube.setd"));
     render_server->cubemap = texture;
 
     world = new World();
@@ -159,16 +161,14 @@ bool Engine::create_test_scene() {
         world->add_actor(actor);
     }
 
-    /*
     {
         MeshActor *actor = new MeshActor();
-        actor->mesh_asset = mesh2;
-        actor->material_asset = material;
+        actor->mesh_asset = skybox_mesh;
+        actor->material_asset = skybox_material;
 
         actors.push_back(actor);
         world->add_actor(actor);
     }
-     */
 
     return true;
 }

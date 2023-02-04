@@ -11,6 +11,7 @@ protected:
 #if defined(IMGUI_SUPPORT)
     ValDescriptorSet *val_imgui_descriptor_set = nullptr;
 #endif
+
     bool owns_image = true;
 
 public:
@@ -24,7 +25,10 @@ public:
     void * get_imgui_handle() override;
 #endif
 
-    void load_bytes(unsigned char *bytes, int width, int height, int channels) override;
+    void create_image();
+
+    void load_faces(const std::vector<CubemapFace>& faces, unsigned char* shared_bytes, int shared_width, int shared_height) override;
+    void load_bytes(unsigned char *bytes) override;
 };
 
 

@@ -5,9 +5,9 @@
 #include <engine/data/string_tools.h>
 
 bool ShaderPass::make_from_sesd(ConfigFile *p_sesd_file) {
-    write_depth = p_sesd_file->try_get_int("bWriteDepth", "Shader", 1);
+    write_depth = p_sesd_file->try_get_int("bWriteDepth", name, 1);
 
-    std::string cull_string = p_sesd_file->try_get_string("sCullMode", "Material", "Back");
+    std::string cull_string = p_sesd_file->try_get_string("sCullMode", name, "Back");
 
     if (StringTools::compare(cull_string, "Back")) {
         cull_mode = CULL_MODE_BACK;
@@ -17,7 +17,7 @@ bool ShaderPass::make_from_sesd(ConfigFile *p_sesd_file) {
         cull_mode = CULL_MODE_NONE;
     }
 
-    std::string depth_string = p_sesd_file->try_get_string("sDepthOp", "Shader", "Less");
+    std::string depth_string = p_sesd_file->try_get_string("sDepthOp", name, "Less");
 
     if (StringTools::compare(depth_string, "Less")) {
         depth_op = DEPTH_OP_LESS;

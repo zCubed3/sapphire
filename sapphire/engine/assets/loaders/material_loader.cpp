@@ -1,4 +1,4 @@
-#include "semd_loader.h"
+#include "material_loader.h"
 
 #include <fstream>
 
@@ -9,16 +9,16 @@
 #include <engine/rendering/material.h>
 #include <engine/rendering/shader.h>
 
-std::vector<std::string> SEMDLoader::get_extensions() {
+std::vector<std::string> MaterialLoader::get_extensions() {
     return {"semd", "bsemd"};
 }
 
-void SEMDLoader::release_cache() {
+void MaterialLoader::release_cache() {
     AssetLoader::release_cache();
     Shader::release_cache();
 }
 
-std::shared_ptr<Asset> SEMDLoader::load_from_path(const std::string &path, const std::string& extension) {
+std::shared_ptr<Asset> MaterialLoader::load_from_path(const std::string &path, const std::string& extension) {
     const RenderServer* rs_instance = RenderServer::get_singleton();
 
     if (rs_instance == nullptr) {

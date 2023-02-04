@@ -11,7 +11,9 @@ struct OBJTriangle {
     uint32_t n = 0;
 };
 
-void OBJLoader::load_placeholders() {}
+void OBJLoader::load_placeholders() {
+    StaticMeshAsset::create_primitives();
+}
 
 std::vector<std::string> OBJLoader::get_extensions() {
     return {"obj"};

@@ -93,7 +93,11 @@ std::string StringTools::replace(const std::string &string, char c_old, char c_n
     return replaced;
 }
 
-bool StringTools::compare(const std::string &lhs, const std::string &rhs, bool caseless) {
+bool StringTools::compare(const std::string &lhs, const std::string &rhs, bool caseless, bool same_size) {
+    if (same_size && lhs.size() != rhs.size()) {
+        return false;
+    }
+
     size_t size = std::min(lhs.size(), rhs.size());
 
     for (size_t c = 0; c < size; c++) {

@@ -2,8 +2,8 @@
 
 #include <iostream>
 
+#include <engine/assets/loaders/material_loader.h>
 #include <engine/assets/loaders/obj_loader.h>
-#include <engine/assets/loaders/semd_loader.h>
 #include <engine/assets/loaders/texture_loader.h>
 
 #include <engine/assets/asset.h>
@@ -22,7 +22,7 @@ void AssetLoader::unload_placeholders() {
 
 void AssetLoader::register_engine_asset_loaders() {
     register_loader<OBJLoader>();
-    register_loader<SEMDLoader>();
+    register_loader<MaterialLoader>();
     register_loader<TextureLoader>();
 
     //ClassRegistry::register_class<Asset>();

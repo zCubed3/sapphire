@@ -8,7 +8,6 @@
 class ConfigFile;
 class TextureAsset;
 class Asset;
-class SEMDLoader;
 
 class ShaderPass {
 public:
@@ -47,7 +46,7 @@ public:
 
 class Shader {
     // TODO: Not use friends?
-    friend SEMDLoader;
+    friend class MaterialLoader;
 
 protected:
     static std::unordered_map<std::string, Shader*> shader_cache;

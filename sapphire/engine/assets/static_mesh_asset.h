@@ -10,7 +10,12 @@
 // Changing data is destructive and unsafe!
 class StaticMeshAsset : public MeshAsset {
 protected:
+    friend class OBJLoader;
+
+    static void create_primitives();
+
     static StaticMeshAsset* primitive_quad;
+    static StaticMeshAsset* primitive_cube;
 
     glm::vec3 *position_data = nullptr;
     glm::vec3 *normal_data = nullptr;
@@ -23,7 +28,8 @@ protected:
 
 public:
     enum Primitive {
-        PRIMITIVE_QUAD
+        PRIMITIVE_QUAD,
+        PRIMITIVE_CUBE
     };
 
     void set_vertex_count(size_t length);

@@ -4,12 +4,10 @@
 #include <engine/platforms/platform.h>
 #include <engine/rendering/render_server.h>
 #include <engine/rendering/texture.h>
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include <engine/config/config_file.h>
 
 std::vector<std::string> TextureLoader::get_extensions() {
-    return {"png", "jpg", "jpeg", "bmp", "tga"};
+    return {"setd"};
 }
 
 std::shared_ptr<Asset> TextureLoader::load_from_path(const std::string &path, const std::string &extension) {
@@ -19,20 +17,25 @@ std::shared_ptr<Asset> TextureLoader::load_from_path(const std::string &path, co
 
     const RenderServer* rs_instance = RenderServer::get_singleton();
 
-    int width;
-    int height;
-    int channels;
-    unsigned char *bytes = stbi_load(path.c_str(), &width, &height, &channels, 4);
+    ConfigFile setd_file;
+
+    if (!Platform::get_singleton()->file_exists(path)) {
+        return nullptr;
+    }
+
+    setd_file.read_from_path(path);
 
     // TODO: sRGB textures
     // TODO: Not always assume the image can be read
     Texture* texture = rs_instance->create_texture();
-    texture->load_bytes(bytes, width, height, channels);
+
+    if (!texture->load_from_setd(&setd_file)) {
+        delete texture;
+        return nullptr;
+    }
 
     TextureAsset *asset = new TextureAsset();
     asset->texture = texture;
-
-    delete[] bytes;
 
     return cache_asset(path, asset);
 }

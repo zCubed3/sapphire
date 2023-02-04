@@ -24,7 +24,7 @@ public:
 
     static std::string replace(const std::string& string, char c_old, char c_new);
 
-    static bool compare(const std::string& lhs, const std::string& rhs, bool caseless = true);
+    static bool compare(const std::string& lhs, const std::string& rhs, bool caseless = true, bool same_size = true);
 };
 
 #endif
