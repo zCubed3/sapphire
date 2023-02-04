@@ -1,6 +1,9 @@
 #ifndef SAPPHIRE_EDITOR_H
 #define SAPPHIRE_EDITOR_H
 
+#include <engine/editor/data/editor_config.h>
+#include <engine/editor/data/project.h>
+
 #include <string>
 #include <vector>
 #include <memory>
@@ -29,14 +32,16 @@ protected:
     std::string new_project_folder;
     bool open_new_project = true;
 
-    Project *project = nullptr;
-
 public:
-    bool create_view_panel(Engine *p_engine);
+    EditorConfig editor_config;
+    Project project;
+
     bool initialize(Engine *p_engine);
+    bool shutdown(Engine *p_engine);
 
     bool draw(Engine *p_engine);
     bool draw_editor_gui(Engine *p_engine);
+    bool create_view_panel(Engine *p_engine);
 
     bool open_project(const std::string& path, Engine *p_engine);
 };

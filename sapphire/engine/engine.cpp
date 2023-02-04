@@ -146,6 +146,14 @@ bool Engine::initialize() {
     return true;
 }
 
+bool Engine::shutdown() {
+#if defined(IMGUI_SUPPORT)
+    editor->shutdown(this);
+#endif
+
+    return true;
+}
+
 bool Engine::engine_loop() {
     if (render_server == nullptr) {
         return false;

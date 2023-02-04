@@ -62,6 +62,7 @@ protected:
 
 public:
     bool initialize();
+    bool shutdown();
 
     bool engine_loop();
 

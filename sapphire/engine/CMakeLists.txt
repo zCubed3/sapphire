@@ -56,6 +56,7 @@ set(SAPPHIRE_ENGINE_SOURCES
 
         # TODO: Move this under "if editor"
         "editor/editor.cpp"
+        "editor/data/editor_config.cpp"
         "editor/data/project.cpp"
         "editor/panels/panel.cpp"
         "editor/panels/actor_panel.cpp"

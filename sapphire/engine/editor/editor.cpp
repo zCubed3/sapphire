@@ -19,6 +19,31 @@
 #include <misc/cpp/imgui_stdlib.h>
 #endif
 
+bool Editor::initialize(Engine *p_engine) {
+    editor_config.load_config(this);
+
+    world_panel = new WorldPanel();
+    actor_panel = new ActorPanel();
+    renderer_panel = new RendererPanel();
+    console_panel = new ConsolePanel();
+
+    create_view_panel(p_engine);
+
+    if (editor_config.open_last_project && !editor_config.last_project_path.empty()) {
+        if (Platform::get_singleton()->file_exists(editor_config.last_project_path)) {
+            open_project(editor_config.last_project_path, p_engine);
+        }
+    }
+
+    return true;
+}
+
+bool Editor::shutdown(Engine *p_engine) {
+    editor_config.save_config(this);
+
+    return true;
+}
+
 bool Editor::create_view_panel(Engine *p_engine) {
     // When a world panel doesn't have a world it asks the user to select one!
     WorldViewPanel *view_panel = new WorldViewPanel();
@@ -125,6 +150,26 @@ bool Editor::draw_editor_gui(Engine *p_engine) {
             ImGui::EndPopup();
         }
 
+        ImGui::Spacing();
+
+        if (ImGui::Button("Settings")) {
+            // TODO: Make a proper file dialog?
+            ImGui::OpenPopup("Settings");
+        }
+
+        if (ImGui::BeginPopupModal("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            if (ImGui::Button("Save & Close")) {
+                editor_config.save_config(this);
+                ImGui::CloseCurrentPopup();
+            }
+
+            if (ImGui::CollapsingHeader("Editor")) {
+                ImGui::Checkbox("Open Last Project", &editor_config.open_last_project);
+            }
+
+            ImGui::EndPopup();
+        }
+
         ImGui::EndMenu();
     }
 
@@ -174,23 +219,10 @@ bool Editor::draw_editor_gui(Engine *p_engine) {
     return true;
 }
 
-bool Editor::initialize(Engine *p_engine) {
-    world_panel = new WorldPanel();
-    actor_panel = new ActorPanel();
-    renderer_panel = new RendererPanel();
-    console_panel = new ConsolePanel();
-
-    create_view_panel(p_engine);
-
-    project = new Project();
-
-    return true;
-}
-
 bool Editor::open_project(const std::string &path, Engine *p_engine) {
-    project->open_project(path);
+    project.open_project(path);
 
-    p_engine->set_window_title(p_engine->get_default_window_title() + ": " + project->name);
+    p_engine->set_window_title(p_engine->get_default_window_title() + ": " + project.name);
 
     return true;
 }

@@ -12,6 +12,8 @@ public:
     std::string name;
 
     void open_project(const std::string& path);
+
+    std::string get_project_path() const;
 };
 
 

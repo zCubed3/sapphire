@@ -49,12 +49,17 @@ char StringTools::to_upper(char c) {
 }
 
 std::string StringTools::strip(const std::string &string) {
+    if (string.empty()) {
+        return "";
+    }
+
     std::string dupe = string;
-    while (is_whitespace(dupe.back()) || dupe.back() == '"' || dupe.back() == '\'') {
+
+    while (!dupe.empty() && (is_whitespace(dupe.back()) || dupe.back() == '"' || dupe.back() == '\'')) {
         dupe.pop_back();
     }
 
-    while (is_whitespace(dupe.front()) || dupe.front() == '"' || dupe.front() == '\'') {
+    while (!dupe.empty() && (is_whitespace(dupe.front()) || dupe.front() == '"' || dupe.front() == '\'')) {
         dupe.erase(dupe.begin());
     }
 
