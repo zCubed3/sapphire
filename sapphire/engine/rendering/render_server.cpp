@@ -33,21 +33,6 @@ void RenderServer::on_window_resized(SDL_Window *p_window) {
 
 }
 
-void RenderServer::enqueue_mesh_draw_object(MeshDrawObject *object) {
-    if (object != nullptr) {
-        if (object->mesh_buffer != nullptr) {
-            auto iter = mesh_draw_calls.find(object->material);
-
-            if (iter == mesh_draw_calls.end()) {
-                std::vector<MeshDrawObject *> objects{object};
-                mesh_draw_calls.emplace(object->material, objects);
-            } else {
-                iter->second.push_back(object);
-            }
-        }
-    }
-}
-
 void RenderServer::populate_render_target_data(RenderTarget *p_render_target) const {
     if (p_render_target->view_buffer == nullptr) {
         GraphicsBuffer* buffer = create_graphics_buffer(sizeof(ViewBufferData), GraphicsBuffer::UsageIntent::USAGE_INTENT_DEFAULT);

@@ -26,26 +26,26 @@ VulkanMaterial::~VulkanMaterial() {
     }
 }
 
-ShaderPass *VulkanMaterial::bind_pass(const std::string& pass_name) {
+bool VulkanMaterial::bind_material(ShaderPass *p_shader_pass) {
+    if (p_shader_pass == nullptr) {
+        return false;
+    }
+
     const VulkanRenderServer *rs_instance = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
 
     VkCommandBuffer active_command_buffer = rs_instance->val_active_render_target->vk_command_buffer;
-    VulkanShader *vk_shader = reinterpret_cast<VulkanShader *>(shader);
+    std::shared_ptr<VulkanShader> vk_shader = std::reinterpret_pointer_cast<VulkanShader>(shader);
+    VulkanShaderPass *vk_shader_pass = reinterpret_cast<VulkanShaderPass*>(p_shader_pass);
 
     if (vk_shader == nullptr) {
-        return nullptr;
-    }
-
-    VulkanShaderPass *shader_pass = reinterpret_cast<VulkanShaderPass*>(vk_shader->get_pass(pass_name));
-
-    if (shader_pass == nullptr) {
-        return nullptr;
+        return false;
     }
 
     if (val_material_descriptor_info == nullptr && vk_shader->val_material_descriptor_set != nullptr) {
         val_material_descriptor_info = vk_shader->val_material_descriptor_set->allocate_set(rs_instance->val_instance);
     }
 
+    // TODO: Make material parameters update only when necessary
     if (val_material_descriptor_info != nullptr) {
         if (!shader->parameters.empty()) {
             // Whenever we apply a parameter we check if it has been overriden
@@ -80,7 +80,7 @@ ShaderPass *VulkanMaterial::bind_pass(const std::string& pass_name) {
             vkCmdBindDescriptorSets(
                     active_command_buffer,
                     VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    shader_pass->val_pipeline->vk_pipeline_layout,
+                    vk_shader_pass->val_pipeline->vk_pipeline_layout,
                     1,
                     1,
                     &val_material_descriptor_info->vk_descriptor_set,
@@ -89,6 +89,5 @@ ShaderPass *VulkanMaterial::bind_pass(const std::string& pass_name) {
         }
     }
 
-    vkCmdBindPipeline(active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_pass->val_pipeline->vk_pipeline);
-    return shader_pass;
+    return p_shader_pass;
 }

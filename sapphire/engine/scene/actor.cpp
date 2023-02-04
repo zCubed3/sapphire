@@ -24,11 +24,35 @@ Actor::~Actor() {
 }
 
 void Actor::tick(World *p_world) {
-
+    for (Actor *child: children) {
+        if (child != nullptr) {
+            child->tick(p_world);
+        }
+    }
 }
 
 void Actor::draw(World *p_world) {
+    for (Actor *child: children) {
+        if (child != nullptr) {
+            child->draw(p_world);
+        }
+    }
+}
 
+void Actor::on_enter_world(World *p_world) {
+    for (Actor *child: children) {
+        if (child != nullptr) {
+            child->on_enter_world(p_world);
+        }
+    }
+}
+
+void Actor::on_exit_world(World *p_world) {
+    for (Actor *child: children) {
+        if (child != nullptr) {
+            child->on_exit_world(p_world);
+        }
+    }
 }
 
 #if defined(IMGUI_SUPPORT)

@@ -23,6 +23,7 @@ public:
     ~VulkanShaderPass() override;
 
     bool make_from_sesd(ConfigFile *p_sesd_file) override;
+    void bind() override;
 
     void create_vert_frag(VulkanShader *p_shader);
 };

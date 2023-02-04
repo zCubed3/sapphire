@@ -36,15 +36,15 @@ bool ShaderPass::make_from_sesd(ConfigFile *p_sesd_file) {
     return true;
 }
 
-std::unordered_map<std::string, Shader*> Shader::shader_cache = {};
+std::unordered_map<std::string, std::shared_ptr<Shader>> Shader::shader_cache = {};
 
 void Shader::release_cache() {
     for (auto pair: shader_cache) {
-        delete pair.second;
+        //delete pair.second;
     }
 }
 
-Shader *Shader::get_cached_shader(const std::string &name) {
+std::shared_ptr<Shader> Shader::get_cached_shader(const std::string &name) {
     auto iter = shader_cache.find(name);
 
     if (iter != shader_cache.end()) {
@@ -54,7 +54,7 @@ Shader *Shader::get_cached_shader(const std::string &name) {
     return nullptr;
 }
 
-void Shader::cache_shader(Shader *shader) {
+void Shader::cache_shader(const std::shared_ptr<Shader>& shader) {
     if (shader == nullptr) {
         return;
     }
@@ -70,6 +70,16 @@ ShaderPass *Shader::get_pass(const std::string &pass_name) {
     }
 
     return nullptr;
+}
+
+ShaderPass *Shader::bind_pass(const std::string &name) {
+    ShaderPass *pass = get_pass(name);
+
+    if (pass != nullptr) {
+        pass->bind();
+    }
+
+    return pass;
 }
 
 bool Shader::make_from_sesd(ConfigFile *p_sesd_file) {

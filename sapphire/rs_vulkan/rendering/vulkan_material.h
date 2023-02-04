@@ -11,7 +11,7 @@ public:
 
     ~VulkanMaterial() override;
 
-    ShaderPass *bind_pass(const std::string& pass_name) override;
+    bool bind_material(ShaderPass *p_shader_pass) override;
 };
 
 

@@ -269,14 +269,20 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     }
 
     // TODO: Temp
-    ValDescriptorSetWriteInfo env_texture_write_info{};
-    env_texture_write_info.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    env_texture_write_info.binding_index = 3;
-    env_texture_write_info.val_image = ((VulkanTexture*)cubemap->texture)->val_image;
-    val_view_descriptor_info->write_binding(&env_texture_write_info);
+    if (p_target->world != nullptr) {
+        World* world = p_target->world;
 
-    val_view_descriptor_info->write_binding(&view_write_info);
-    val_view_descriptor_info->update_set(val_instance);
+        if (p_target->world->skybox != nullptr) {
+            ValDescriptorSetWriteInfo env_texture_write_info{};
+            env_texture_write_info.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            env_texture_write_info.binding_index = 3;
+            env_texture_write_info.val_image = ((VulkanTexture*)world->skybox->texture)->val_image;
+            val_view_descriptor_info->write_binding(&env_texture_write_info);
+
+            val_view_descriptor_info->write_binding(&view_write_info);
+            val_view_descriptor_info->update_set(val_instance);
+        }
+    }
 
     VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData *>(p_target->rt_data);
 
@@ -338,62 +344,81 @@ bool VulkanRenderServer::end_target(RenderTarget *p_target) {
     // TODO: Render the world instead
     VkCommandBuffer active_command_buffer = val_active_render_target->vk_command_buffer;
 
-    for (auto iter: mesh_draw_calls) {
-        VulkanShaderPass* shader_pass = nullptr;
-
-        // TODO: Temp, make a better way of rendering shadows
-        bool use_shadow = false;
-        if (p_target->get_type() == RenderTarget::TARGET_TYPE_TEXTURE) {
-            TextureRenderTarget* texture_target = reinterpret_cast<TextureRenderTarget*>(p_target);
-
-            if (texture_target->usage_intent == TextureRenderTarget::USAGE_INTENT_SHADOW) {
-                use_shadow = true;
+    // TODO: Allow rendering without a world?
+    if (p_target->world != nullptr) {
+        for (const auto& shader_iter: p_target->world->draw_tree) {
+            if (shader_iter.first == nullptr) {
+                continue; // TODO: Restore error shader
             }
-        }
 
-        if (use_shadow) {
-            shader_pass = reinterpret_cast<VulkanShaderPass *>(VulkanShader::depth_only_shader->passes[0]);
-            vkCmdBindPipeline(active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_pass->val_pipeline->vk_pipeline);
-        } else {
-            if (iter.first == nullptr) {
+            VulkanShaderPass *shader_pass = nullptr;
+
+            if (shader_iter.first != nullptr) {
+                shader_pass = reinterpret_cast<VulkanShaderPass *>(shader_iter.first->get_pass("Lit"));
+            }
+
+            bool fallback = shader_pass == nullptr;
+            if (fallback) {
                 shader_pass = reinterpret_cast<VulkanShaderPass *>(VulkanShader::error_shader->passes[0]);
+            }
+
+            shader_pass->bind();
+
+            for (const auto& material_iter: shader_iter.second) {
+                if (!fallback) {
+                    material_iter.first->bind_material(shader_pass);
+                }
+
+                // Our object data should've already been updated by this moment
+                // We just have to update the binding
+                for (MeshDrawObject *object: material_iter.second) {
+                    VulkanGraphicsBuffer *object_ubo = reinterpret_cast<VulkanGraphicsBuffer *>(object->object_buffer->buffer);
+
+                    // If we don't have an instance of the per-object descriptor we must allocate one
+                    if (object_ubo->val_descriptor_set == nullptr) {
+                        object_ubo->val_descriptor_set = val_object_descriptor_info->allocate_set(val_instance);
+                    }
+
+                    ValDescriptorSetWriteInfo object_write_info{};
+                    object_write_info.val_buffer = object_ubo->val_buffer;
+
+                    object_ubo->val_descriptor_set->write_binding(&object_write_info);
+                    object_ubo->val_descriptor_set->update_set(val_instance);
+
+                    vkCmdBindDescriptorSets(
+                            active_command_buffer,
+                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            shader_pass->val_pipeline->vk_pipeline_layout,
+                            2,
+                            1,
+                            &object_ubo->val_descriptor_set->vk_descriptor_set,
+                            0,
+                            nullptr);
+
+                    object->draw();
+                }
+            }
+
+            // TODO: Temp, make a better way of rendering shadows
+            /*
+            bool use_shadow = false;
+            if (p_target->get_type() == RenderTarget::TARGET_TYPE_TEXTURE) {
+                TextureRenderTarget *texture_target = reinterpret_cast<TextureRenderTarget *>(p_target);
+
+                if (texture_target->usage_intent == TextureRenderTarget::USAGE_INTENT_SHADOW) {
+                    use_shadow = true;
+                }
+            }
+
+            if (use_shadow) {
+                shader_pass = reinterpret_cast<VulkanShaderPass *>(VulkanShader::depth_only_shader->passes[0]);
                 vkCmdBindPipeline(active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_pass->val_pipeline->vk_pipeline);
             } else {
-                shader_pass = reinterpret_cast<VulkanShaderPass *>(iter.first->bind_pass("Lit"));
+
             }
-        }
-
-        // Our object data is already updated by this moment
-        // We just have to update the binding
-        for (MeshDrawObject* object: iter.second) {
-            VulkanGraphicsBuffer *object_ubo = reinterpret_cast<VulkanGraphicsBuffer *>(object->object_buffer->buffer);
-
-            // If we don't have an instance of the per-object descriptor we must allocate one
-            if (object_ubo->val_descriptor_set == nullptr) {
-                object_ubo->val_descriptor_set = val_object_descriptor_info->allocate_set(val_instance);
-            }
-
-            ValDescriptorSetWriteInfo object_write_info{};
-            object_write_info.val_buffer = object_ubo->val_buffer;
-
-            object_ubo->val_descriptor_set->write_binding(&object_write_info);
-            object_ubo->val_descriptor_set->update_set(val_instance);
-
-            vkCmdBindDescriptorSets(
-                    active_command_buffer,
-                    VK_PIPELINE_BIND_POINT_GRAPHICS,
-                    shader_pass->val_pipeline->vk_pipeline_layout,
-                    2,
-                    1,
-                    &object_ubo->val_descriptor_set->vk_descriptor_set,
-                    0,
-                    nullptr);
-
-            object->draw();
+             */
         }
     }
-
-    mesh_draw_calls.clear();
 
     VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData *>(p_target->rt_data);
 

@@ -145,10 +145,10 @@ bool Engine::create_test_scene() {
     skybox_mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test_skybox.obj"));
     skybox_material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test_skybox.semd"));
 
-    std::shared_ptr<TextureAsset> texture = std::reinterpret_pointer_cast<TextureAsset>(AssetLoader::load_asset("test_cube.setd"));
-    render_server->cubemap = texture;
+    std::shared_ptr<TextureAsset> cubemap = std::reinterpret_pointer_cast<TextureAsset>(AssetLoader::load_asset("test_cube.setd"));
 
     world = new World();
+    world->skybox = cubemap;
 
     light = new Light();
 

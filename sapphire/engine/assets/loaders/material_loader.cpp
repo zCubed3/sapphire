@@ -47,9 +47,9 @@ std::shared_ptr<Asset> MaterialLoader::load_from_path(const std::string &path, c
             return nullptr;
         }
 
-        Shader* shader = Shader::get_cached_shader(sesd_name);
+        std::shared_ptr<Shader> shader = Shader::get_cached_shader(sesd_name);
         if (shader == nullptr) {
-            shader = rs_instance->create_shader();
+            shader = std::shared_ptr<Shader>(rs_instance->create_shader());
             shader->make_from_sesd(&sesd_file);
 
             Shader::cache_shader(shader);

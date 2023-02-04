@@ -42,6 +42,7 @@ public:
     virtual ~ShaderPass() = default;
 
     virtual bool make_from_sesd(ConfigFile *p_sesd_file);
+    virtual void bind() = 0;
 };
 
 class Shader {
@@ -49,7 +50,7 @@ class Shader {
     friend class MaterialLoader;
 
 protected:
-    static std::unordered_map<std::string, Shader*> shader_cache;
+    static std::unordered_map<std::string, std::shared_ptr<Shader>> shader_cache;
 
     static void release_cache();
 
@@ -72,13 +73,14 @@ public:
     std::vector<ShaderPass*> passes {};
     std::vector<ShaderParameter> parameters {};
 
-    static Shader* get_cached_shader(const std::string& name);
-    static void cache_shader(Shader* shader);
+    static std::shared_ptr<Shader> get_cached_shader(const std::string& name);
+    static void cache_shader(const std::shared_ptr<Shader>& shader);
 
     virtual ~Shader() = default;
 
     virtual ShaderPass* create_shader_pass() = 0;
     virtual ShaderPass* get_pass(const std::string& name);
+    virtual ShaderPass* bind_pass(const std::string& name);
     virtual bool make_from_sesd(ConfigFile *p_sesd_file);
 };
 

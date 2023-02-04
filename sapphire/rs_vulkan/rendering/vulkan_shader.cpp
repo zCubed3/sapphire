@@ -70,6 +70,14 @@ bool VulkanShaderPass::make_from_sesd(ConfigFile *p_sesd_file) {
     return false;
 }
 
+void VulkanShaderPass::bind() {
+    const VulkanRenderServer *rs_instance = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
+
+    VkCommandBuffer active_command_buffer = rs_instance->val_active_render_target->vk_command_buffer;
+
+    vkCmdBindPipeline(active_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, val_pipeline->vk_pipeline);
+}
+
 void VulkanShaderPass::create_vert_frag(VulkanShader *p_shader) {
     const VulkanRenderServer *render_server = reinterpret_cast<const VulkanRenderServer *>(RenderServer::get_singleton());
     ValInstance *val_instance = render_server->val_instance;

@@ -1,5 +1,7 @@
 #include "mesh_actor.h"
 
+#include <engine/scene/world.h>
+
 #include <engine/assets/material_asset.h>
 #include <engine/assets/mesh_asset.h>
 #include <engine/rendering/buffers/object_buffer.h>
@@ -44,5 +46,14 @@ void MeshActor::draw(World *p_world) {
         draw_object->material = nullptr;
     }
 
-    rs_instance->enqueue_mesh_draw_object(draw_object);
+    if (entered_world) {
+        p_world->enqueue_mesh_draw_object(draw_object);
+        entered_world = false;
+    }
+}
+
+void MeshActor::on_enter_world(World *p_world) {
+    // We wait a frame before enqueuing our objects so the proper initialization can occur
+    // TODO: Make initialization immediate?
+    entered_world = true;
 }

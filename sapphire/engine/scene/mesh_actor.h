@@ -18,10 +18,14 @@ public:
     std::shared_ptr<MeshAsset> mesh_asset = nullptr;
     std::shared_ptr<MaterialAsset> material_asset = nullptr;
 
+    bool entered_world = false;
+
     MeshActor();
     ~MeshActor() override;
 
     void draw(World *p_world) override;
+
+    void on_enter_world(World *p_world) override;
 };
 
 
