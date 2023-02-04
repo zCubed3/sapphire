@@ -5,7 +5,7 @@
 
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #include <rs_vulkan/rendering/vulkan_texture.h>
-#include <rs_vulkan/val/render_targets/val_image_render_target.h>
+#include <val/render_targets/val_image_render_target.h>
 
 #ifdef DEBUG
 #include <iostream>

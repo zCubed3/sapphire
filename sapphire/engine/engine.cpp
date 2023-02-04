@@ -156,6 +156,7 @@ bool Engine::create_test_scene() {
         world->add_actor(actor);
     }
 
+    /*
     {
         MeshActor *actor = new MeshActor();
         actor->mesh_asset = mesh2;
@@ -164,6 +165,7 @@ bool Engine::create_test_scene() {
         actors.push_back(actor);
         world->add_actor(actor);
     }
+     */
 
     return true;
 }

@@ -1,25 +1,12 @@
-set(SAPPHIRE_RS_VULKAN_SOURCES
-        "val/val_releasable.cpp"
-        "val/val_instance.cpp"
-        "val/val_extension.cpp"
-        "val/val_layer.cpp"
-        "val/val_queue.cpp"
-        "val/data/val_buffer.cpp"
-        "val/data/val_staging_buffer.cpp"
-        "val/images/val_image.cpp"
-        "val/pipelines/val_render_pass.cpp"
-        "val/pipelines/val_render_pass_builder.cpp"
-        "val/pipelines/val_descriptor_set.cpp"
-        "val/pipelines/val_descriptor_set_info.cpp"
-        "val/pipelines/val_descriptor_set_builder.cpp"
-        "val/pipelines/val_pipeline.cpp"
-        "val/pipelines/val_pipeline_builder.cpp"
-        "val/pipelines/val_shader_module.cpp"
-        "val/pipelines/val_vertex_input_builder.cpp"
-        "val/render_targets/val_render_target.cpp"
-        "val/render_targets/val_image_render_target.cpp"
-        "val/render_targets/val_window_render_target.cpp"
+set(VAL_SDL_PATH ${THIRD_PARTY_DIR}/SDL/include)
 
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(VAL_DEBUG ON)
+endif()
+
+add_subdirectory(VAL)
+
+set(SAPPHIRE_RS_VULKAN_SOURCES
         "rendering/vulkan_render_server.cpp"
         "rendering/vulkan_render_target_data.cpp"
         "rendering/vulkan_graphics_buffer.cpp"
@@ -34,7 +21,7 @@ set(SAPPHIRE_RS_VULKAN_INCLUDE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${THIRD_PARTY_DIR}/SDL/include
         ${THIRD_PARTY_DIR}/glm/glm
-        ${THIRD_PARTY_DIR}/VulkanMemoryAllocator/src
+        ${VAL_INCLUDE_DIRS}
 )
 
 if (IMGUI_SUPPORT)
@@ -42,25 +29,15 @@ if (IMGUI_SUPPORT)
     list(APPEND SAPPHIRE_RS_VULKAN_INCLUDE_DIRS "${THIRD_PARTY_DIR}/imgui")
 endif()
 
-find_package(Vulkan REQUIRED)
-
 add_library(SAPPHIRE_RS_VULKAN STATIC ${SAPPHIRE_RS_VULKAN_SOURCES})
 
-target_include_directories(SAPPHIRE_RS_VULKAN PUBLIC ${SAPPHIRE_RS_VULKAN_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS})
+target_include_directories(SAPPHIRE_RS_VULKAN PUBLIC ${SAPPHIRE_RS_VULKAN_INCLUDE_DIRS})
 
-target_link_libraries(SAPPHIRE_RS_VULKAN PUBLIC
-        ${Vulkan_LIBRARY}
-        VulkanMemoryAllocator
-        )
+target_link_libraries(SAPPHIRE_RS_VULKAN PUBLIC VAL)
 
-target_compile_definitions(SAPPHIRE_RS_VULKAN PUBLIC
-        ${SAPPHIRE_DEFINITIONS}
-        )
+target_compile_definitions(SAPPHIRE_RS_VULKAN PUBLIC ${SAPPHIRE_DEFINITIONS})
 
-target_compile_options(SAPPHIRE_RS_VULKAN PUBLIC
-        ${SAPPHIRE_COMPILE_OPTIONS}
-        )
-
+target_compile_options(SAPPHIRE_RS_VULKAN PUBLIC ${SAPPHIRE_COMPILE_OPTIONS})
 
 set(PRELUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/preludes)
 set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)

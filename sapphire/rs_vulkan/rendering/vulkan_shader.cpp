@@ -5,9 +5,9 @@
 #include <fstream>
 
 #include <rs_vulkan/rendering/vulkan_render_server.h>
-#include <rs_vulkan/val/val_instance.h>
-#include <rs_vulkan/val/pipelines/val_shader_module.h>
-#include <rs_vulkan/val/pipelines/val_pipeline_builder.h>
+#include <val/val_instance.h>
+#include <val/pipelines/val_shader_module.h>
+#include <val/pipelines/val_pipeline_builder.h>
 
 #include <rs_vulkan/shaders/error.spv.vert.gen.h>
 #include <rs_vulkan/shaders/error.spv.frag.gen.h>

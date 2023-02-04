@@ -6,7 +6,7 @@
 
 #include <engine/rendering/render_target_data.h>
 
-#include <rs_vulkan/val/render_targets/val_render_target.h>
+#include <val/render_targets/val_render_target.h>
 
 class ValImageRenderTarget;
 class VulkanTexture;

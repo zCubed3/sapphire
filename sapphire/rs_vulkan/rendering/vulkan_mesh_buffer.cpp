@@ -14,8 +14,8 @@
 #include <rs_vulkan/rendering/vulkan_shader.h>
 #include <rs_vulkan/rendering/vulkan_material.h>
 #include <rs_vulkan/rendering/vulkan_texture.h>
-#include <rs_vulkan/val/val_instance.h>
-#include <rs_vulkan/val/pipelines/val_pipeline.h>
+#include <val/val_instance.h>
+#include <val/pipelines/val_pipeline.h>
 
 #include <vk_mem_alloc.h>
 

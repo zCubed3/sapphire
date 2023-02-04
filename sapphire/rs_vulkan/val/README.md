@@ -1,1 +1,0 @@
-# VAL - Vulkan Abstraction Layer

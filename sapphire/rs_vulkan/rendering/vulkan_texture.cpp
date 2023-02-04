@@ -1,8 +1,8 @@
 #include "vulkan_texture.h"
 
 #include <rs_vulkan/rendering/vulkan_render_server.h>
-#include <rs_vulkan/val/data/val_buffer.h>
-#include <rs_vulkan/val/images/val_image.h>
+#include <val/data/val_buffer.h>
+#include <val/images/val_image.h>
 
 #if defined(IMGUI_SUPPORT)
 #include <backends/imgui_impl_vulkan.h>
