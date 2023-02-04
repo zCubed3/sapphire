@@ -57,3 +57,23 @@ bool Win32Platform::folder_exists(const std::string &path) const {
     DWORD attributes = GetFileAttributesA(path.c_str());
     return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY);
 }
+
+// TODO: Make this unique to folders?
+// https://learn.microsoft.com/en-us/windows/win32/fileio/listing-the-files-in-a-directory
+std::vector<File> Win32Platform::get_files(const std::string &folder) const {
+    // TODO: Make sure the wildcard isn't present beforehand
+    std::string path = StringTools::join_paths(folder, "*");
+
+    WIN32_FIND_DATAA find_data;
+    HANDLE h_find = INVALID_HANDLE_VALUE;
+
+    h_find = FindFirstFileA(path.c_str(), &find_data);
+
+    if (h_find == INVALID_HANDLE_VALUE) {
+        return {};
+    }
+
+    do {
+        if (find_data.dwFileAttributes & FILE_ATTRIBUTE_)
+    } while (FindNextFile(h_find, &find_data) != 0)
+}

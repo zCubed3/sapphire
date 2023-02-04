@@ -16,6 +16,8 @@ public:
 
     bool file_exists(const std::string &path) const override;
     bool folder_exists(const std::string &path) const override;
+
+    std::vector<File> get_files(const std::string &folder) const override;
 };
 
 

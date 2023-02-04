@@ -2,6 +2,10 @@
 #define SAPPHIRE_PLATFORM_H
 
 #include <string>
+#include <vector>
+
+#include <engine/data/file.h>
+#include <engine/data/folder.h>
 
 // Describes a supported OS (aka Platform)
 // Also provides interfaces for certain OS features
@@ -18,6 +22,8 @@ public:
 
     virtual bool file_exists(const std::string &path) const = 0;
     virtual bool folder_exists(const std::string &path) const = 0;
+
+    virtual std::vector<File> get_files(const std::string &folder) const = 0;
 };
 
 

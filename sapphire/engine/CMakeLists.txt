@@ -59,6 +59,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "editor/data/editor_config.cpp"
         "editor/data/project.cpp"
         "editor/panels/panel.cpp"
+        "editor/panels/assets_panel.cpp"
         "editor/panels/actor_panel.cpp"
         "editor/panels/console_panel.cpp"
         "editor/panels/renderer_panel.cpp"
