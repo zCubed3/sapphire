@@ -37,14 +37,19 @@ void World::draw() {
 void World::enqueue_mesh_draw_object(MeshDrawObject *object) {
     if (object != nullptr) {
         // Check if the material's shader exists first
-        auto shader_iter = draw_tree.find(object->material->shader);
+        DrawObjectMaterialTree* target;
+        std::shared_ptr<Shader> shader = nullptr;
 
-        DrawObjectMaterialTree *target;
+        if (object->material != nullptr) {
+            shader = object->material->shader;
+        }
+
+        auto shader_iter = draw_tree.find(shader);
         if (shader_iter == draw_tree.end()) {
             DrawObjectMaterialTree tree = {};
-            draw_tree.emplace(object->material->shader, tree);
+            draw_tree.emplace(shader, tree);
 
-            target = &draw_tree[object->material->shader];
+            target = &draw_tree[shader];
         } else {
             target = &shader_iter->second;
         }

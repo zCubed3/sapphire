@@ -10,9 +10,6 @@
 
 #include <imgui.h>
 
-const int TILE_WIDTH = 24;
-const int TILE_HEIGHT = 24;
-
 const char *WorldPanel::get_title() {
     return "World";
 }
@@ -30,8 +27,6 @@ void WorldPanel::draw_actor_entry(Actor *p_actor) {
 }
 
 void WorldPanel::draw_contents(Engine* p_engine) {
-
-
     std::string world_name = "None";
 
     if (world != nullptr) {

@@ -278,11 +278,11 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
             env_texture_write_info.binding_index = 3;
             env_texture_write_info.val_image = ((VulkanTexture*)world->skybox->texture)->val_image;
             val_view_descriptor_info->write_binding(&env_texture_write_info);
-
-            val_view_descriptor_info->write_binding(&view_write_info);
-            val_view_descriptor_info->update_set(val_instance);
         }
     }
+
+    val_view_descriptor_info->write_binding(&view_write_info);
+    val_view_descriptor_info->update_set(val_instance);
 
     VulkanRenderTargetData *target_data = static_cast<VulkanRenderTargetData *>(p_target->rt_data);
 
@@ -308,7 +308,6 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
             // TODO: Make a dummy shader?
             VulkanShaderPass *error_shader_pass = reinterpret_cast<VulkanShaderPass*>(VulkanShader::error_shader->passes[0]);
 
-            /*
             vkCmdBindDescriptorSets(
                     val_active_render_target->vk_command_buffer,
                     VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -318,7 +317,6 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
                     &val_view_descriptor_info->val_descriptor_set->vk_descriptor_set,
                     0,
                     nullptr);
-                    */
 
             Rect rect = current_target->get_rect();
 
@@ -349,9 +347,11 @@ bool VulkanRenderServer::end_target(RenderTarget *p_target) {
     // TODO: Allow rendering without a world?
     if (p_target->world != nullptr) {
         for (const auto& shader_iter: p_target->world->draw_tree) {
+            /*
             if (shader_iter.first == nullptr) {
                 continue; // TODO: Restore error shader
             }
+            */
 
             VulkanShaderPass *shader_pass = nullptr;
 
