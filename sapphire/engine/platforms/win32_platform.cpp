@@ -73,7 +73,9 @@ std::vector<File> Win32Platform::get_files(const std::string &folder) const {
         return {};
     }
 
+    /*
     do {
         if (find_data.dwFileAttributes & FILE_ATTRIBUTE_)
     } while (FindNextFile(h_find, &find_data) != 0)
+*/
 }

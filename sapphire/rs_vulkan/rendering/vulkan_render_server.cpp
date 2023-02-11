@@ -308,6 +308,7 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
             // TODO: Make a dummy shader?
             VulkanShaderPass *error_shader_pass = reinterpret_cast<VulkanShaderPass*>(VulkanShader::error_shader->passes[0]);
 
+            /*
             vkCmdBindDescriptorSets(
                     val_active_render_target->vk_command_buffer,
                     VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -317,6 +318,7 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
                     &val_view_descriptor_info->val_descriptor_set->vk_descriptor_set,
                     0,
                     nullptr);
+                    */
 
             Rect rect = current_target->get_rect();
 
