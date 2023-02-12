@@ -16,13 +16,27 @@ const char *WorldPanel::get_title() {
 
 void WorldPanel::draw_actor_entry(Actor *p_actor) {
     ImGui::PushID(p_actor->id);
-    if (ImGui::Selectable(p_actor->name.c_str(), selected == p_actor)) {
+
+    int flags = 0;
+
+    if (selected == p_actor) {
+        flags |= ImGuiTreeNodeFlags_Selected;
+    }
+
+    bool open = ImGui::TreeNodeEx(p_actor->name.c_str(), flags);
+
+    if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
         selected = p_actor;
     }
+
     ImGui::PopID();
 
-    for (Actor* child: p_actor->children) {
-        draw_actor_entry(child);
+    if (open) {
+        for (Actor* child: p_actor->children) {
+            draw_actor_entry(child);
+        }
+
+        ImGui::TreePop();
     }
 }
 

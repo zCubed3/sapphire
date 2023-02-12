@@ -62,20 +62,45 @@ bool Win32Platform::folder_exists(const std::string &path) const {
 // https://learn.microsoft.com/en-us/windows/win32/fileio/listing-the-files-in-a-directory
 std::vector<File> Win32Platform::get_files(const std::string &folder) const {
     // TODO: Make sure the wildcard isn't present beforehand
-    std::string path = StringTools::join_paths(folder, "*");
+    std::string safe_path = StringTools::join_paths(folder, "");
+    std::string wildcard = StringTools::join_paths(safe_path, "*");
 
     WIN32_FIND_DATAA find_data;
     HANDLE h_find = INVALID_HANDLE_VALUE;
 
-    h_find = FindFirstFileA(path.c_str(), &find_data);
+    h_find = FindFirstFileA(wildcard.c_str(), &find_data);
 
     if (h_find == INVALID_HANDLE_VALUE) {
         return {};
     }
 
-    /*
+    std::vector<File> files;
+
     do {
-        if (find_data.dwFileAttributes & FILE_ATTRIBUTE_)
-    } while (FindNextFile(h_find, &find_data) != 0)
-*/
+        if (find_data.dwFileAttributes != INVALID_FILE_ATTRIBUTES) {
+            // TODO: Exclude hidden files?
+#if 0
+            if (find_data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) {
+                continue;
+            }
+#endif
+
+            bool is_folder = find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+
+            // Ignore . and .. folders
+            std::string file_name = find_data.cFileName;
+            if (file_name == "." || file_name == "..") {
+                continue;
+            }
+
+            File file {};
+            file.type = is_folder ? File::FILE_TYPE_FOLDER : File::FILE_TYPE_FILE;
+            file.path = safe_path + file_name;
+            file.name = file_name;
+
+            files.push_back(file);
+        }
+    } while (FindNextFile(h_find, &find_data) != 0);
+
+    return files;
 }

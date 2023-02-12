@@ -5,7 +5,6 @@
 #include <vector>
 
 #include <core/data/file.h>
-#include <core/data/folder.h>
 
 // Describes a supported OS (aka Platform)
 // Also provides interfaces for certain OS features

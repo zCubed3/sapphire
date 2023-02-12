@@ -7,6 +7,9 @@ set(SAPPHIRE_CORE_SOURCES
 
         "config/config_file.cpp"
 
+        "fs/virtual_file_system.cpp"
+        "fs/pak_file_system.cpp"
+
         "platforms/platform.cpp"
         )
 

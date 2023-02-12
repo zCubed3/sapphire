@@ -6,12 +6,14 @@
 #include <core/platforms/win32_platform.h>
 #endif
 
+#include <core/data/string_tools.h>
+#include <core/data/timing.h>
+#include <core/fs/pak_file_system.h>
 #include <engine/assets/asset_loader.h>
 #include <engine/assets/material_asset.h>
 #include <engine/assets/static_mesh_asset.h>
 #include <engine/assets/texture_asset.h>
 #include <engine/console/console.h>
-#include <core/data/string_tools.h>
 #include <engine/rendering/lighting/light.h>
 #include <engine/rendering/render_server.h>
 #include <engine/rendering/shader.h>
@@ -20,7 +22,6 @@
 #include <engine/rendering/window_render_target.h>
 #include <engine/scene/mesh_actor.h>
 #include <engine/scene/world.h>
-#include <core/data/timing.h>
 #include <engine/typing/class_registry.h>
 
 #include <glm.hpp>
@@ -37,8 +38,8 @@
 #endif
 
 #if defined(IMGUI_SUPPORT)
-#include <imgui.h>
 #include <backends/imgui_impl_sdl.h>
+#include <imgui.h>
 
 #include <engine/editor/editor.h>
 #endif

@@ -6,6 +6,7 @@
 #include <engine/engine.h>
 #include <engine/editor/data/project.h>
 #include <engine/editor/panels/actor_panel.h>
+#include <engine/editor/panels/assets_panel.h>
 #include <engine/editor/panels/console_panel.h>
 #include <engine/editor/panels/renderer_panel.h>
 #include <engine/editor/panels/world_panel.h>
@@ -26,6 +27,7 @@ bool Editor::initialize(Engine *p_engine) {
     actor_panel = new ActorPanel();
     renderer_panel = new RendererPanel();
     console_panel = new ConsolePanel();
+    assets_panel = new AssetsPanel();
 
     create_view_panel(p_engine);
 
@@ -204,6 +206,7 @@ bool Editor::draw_editor_gui(Engine *p_engine) {
     actor_panel->draw_panel(p_engine);
     renderer_panel->draw_panel(p_engine);
     console_panel->draw_panel(p_engine);
+    assets_panel->draw_panel(p_engine);
 
     actor_panel->world = world_panel->world;
     actor_panel->target = world_panel->selected;

@@ -4,29 +4,29 @@
 #include <engine/editor/data/editor_config.h>
 #include <engine/editor/data/project.h>
 
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
-#if defined(IMGUI_SUPPORT)
 class ActorPanel;
+class AssetsPanel;
 class WorldPanel;
 class WorldViewPanel;
 class RendererPanel;
 class ConsolePanel;
-#endif
 
 class Engine;
 class Project;
 
 class Editor {
 protected:
-    WorldPanel* world_panel = nullptr;
-    ActorPanel* actor_panel = nullptr;
-    RendererPanel * renderer_panel = nullptr;
-    ConsolePanel* console_panel = nullptr;
+    WorldPanel *world_panel = nullptr;
+    ActorPanel *actor_panel = nullptr;
+    RendererPanel *renderer_panel = nullptr;
+    ConsolePanel *console_panel = nullptr;
+    AssetsPanel *assets_panel = nullptr;
 
-    std::vector<WorldViewPanel*> view_panels;
+    std::vector<WorldViewPanel *> view_panels;
 
     std::string new_project_name;
     std::string new_project_folder;
@@ -43,7 +43,7 @@ public:
     bool draw_editor_gui(Engine *p_engine);
     bool create_view_panel(Engine *p_engine);
 
-    bool open_project(const std::string& path, Engine *p_engine);
+    bool open_project(const std::string &path, Engine *p_engine);
 };
 
 
