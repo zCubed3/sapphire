@@ -45,11 +45,11 @@ void RenderServer::initialize_imgui(WindowRenderTarget *p_target) {
     p_target->imgui_context = ImGui::CreateContext();
     ImGui::SetCurrentContext(p_target->imgui_context);
 
-    ImGuiStyle &style = ImGui::GetStyle();
+    //ImGuiStyle &style = ImGui::GetStyle();
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-    ImGui::StyleColorsClassic(&style);
+    //ImGui::StyleColorsClassic(&style);
 }
 
 void RenderServer::release_imgui(WindowRenderTarget *p_target) {

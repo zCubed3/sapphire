@@ -3,8 +3,6 @@
 
 #include <chrono>
 
-// TODO: Make an engine context class for this?
-
 class Timing {
 protected:
     static Timing *singleton;

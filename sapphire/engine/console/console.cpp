@@ -5,12 +5,12 @@
 //
 void help_command(const std::vector<std::string>& args) {
     if (args.empty()) {
-        Console::console_cout.write("Provide the name of a cvar or cfunc for help! Ex: 'help quit'").endl();
+        Console::log("Provide the name of a cvar or cfunc for help! Ex: 'help quit'");
     } else {
         auto iter = Console::entries.find(args[0]);
 
         if (iter != Console::entries.end()) {
-            Console::console_cout.write(iter->second.help).endl();
+            Console::log(iter->second.help);
         }
     }
 }
@@ -23,7 +23,7 @@ ConsoleStream Console::console_cout = {};
 
 void Console::add_cfunc(const std::string &name, CFuncCallback callback, const std::string& help) {
 #ifdef DEBUG
-    console_cout.write("Registered CFunc: ").write(name).endl();
+    log("Registered CFunc: " + name);
 #endif
 
     ConsoleEntry entry {};
@@ -37,7 +37,7 @@ void Console::add_cfunc(const std::string &name, CFuncCallback callback, const s
 
 void Console::add_cvar(const std::string &name, const std::string &value, const std::string& help) {
 #ifdef DEBUG
-    console_cout.write("Registered CVar: ").write(name).endl();
+    log("Registered CVar: " + name);
 #endif
 
     ConsoleEntry entry {};
@@ -51,7 +51,7 @@ void Console::add_cvar(const std::string &name, const std::string &value, const 
 
 void Console::execute(const std::vector<std::string> &args) {
     if (args.empty()) {
-        console_cout.write("args vector was empty!").endl();
+        log_warning("Args vector was empty!");
     }
 
     auto iter = entries.find(args[0]);
@@ -74,10 +74,22 @@ void Console::execute(const std::vector<std::string> &args) {
             }
         }
     } else {
-        console_cout.write("No entry found for '").write(args[0]).write("'!").endl();
+        log_warning("No entry found for '" + args[0] + "'!");
     }
 }
 
 void Console::register_defaults() {
     add_cfunc("help", help_command, "Provides info for the given command");
+}
+
+void Console::log(const std::string &message, ConsoleStream::MessageSeverity severity) {
+    console_cout.log_message(message, severity);
+}
+
+void Console::log_warning(const std::string &message) {
+    log(message, ConsoleStream::MESSAGE_SEVERITY_WARNING);
+}
+
+void Console::log_error(const std::string &message) {
+    log(message, ConsoleStream::MESSAGE_SEVERITY_ERROR);
 }

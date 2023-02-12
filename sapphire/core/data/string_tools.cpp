@@ -99,7 +99,6 @@ std::string StringTools::replace(const std::string &string, char c_old, char c_n
 }
 
 std::string StringTools::join_paths(const std::string &lhs, const std::string &rhs) {
-    // TODO: Windows \\ paths?
     // TODO: Cope with malformed paths?
     std::string stem = replace(lhs, '\\', '/');
     std::string file = rhs;

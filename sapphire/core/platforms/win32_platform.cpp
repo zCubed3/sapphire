@@ -18,7 +18,7 @@ const Win32Platform* Win32Platform::create_win32_platform() {
 
 // TODO: Version info?
 std::string Win32Platform::get_name() const {
-    return "Windows";
+    return "Microsoft Windows";
 }
 
 // TODO: Security attributes?
@@ -78,13 +78,6 @@ std::vector<File> Win32Platform::get_files(const std::string &folder) const {
 
     do {
         if (find_data.dwFileAttributes != INVALID_FILE_ATTRIBUTES) {
-            // TODO: Exclude hidden files?
-#if 0
-            if (find_data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) {
-                continue;
-            }
-#endif
-
             bool is_folder = find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 
             // Ignore . and .. folders
@@ -98,9 +91,33 @@ std::vector<File> Win32Platform::get_files(const std::string &folder) const {
             file.path = safe_path + file_name;
             file.name = file_name;
 
+            if (find_data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) {
+                file.flags |= File::FILE_FLAG_READONLY;
+            }
+
+            if (find_data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) {
+                file.flags |= File::FILE_FLAG_HIDDEN;
+            }
+
             files.push_back(file);
         }
     } while (FindNextFile(h_find, &find_data) != 0);
 
     return files;
+}
+
+bool Win32Platform::set_console_color(ConsoleColor color) const {
+    HANDLE console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    switch (color) {
+        case Platform::CONSOLE_COLOR_WHITE:
+            SetConsoleTextAttribute(console_handle, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            break;
+
+        case Platform::CONSOLE_COLOR_YELLOW:
+            SetConsoleTextAttribute(console_handle, FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN);
+            break;
+    }
+
+    return true;
 }

@@ -159,6 +159,7 @@ bool Editor::draw_editor_gui(Engine *p_engine) {
             ImGui::OpenPopup("Settings");
         }
 
+        // TODO: Move this to its own class?
         if (ImGui::BeginPopupModal("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
             if (ImGui::Button("Save & Close")) {
                 editor_config.save_config(this);
@@ -167,6 +168,10 @@ bool Editor::draw_editor_gui(Engine *p_engine) {
 
             if (ImGui::CollapsingHeader("Editor")) {
                 ImGui::Checkbox("Open Last Project", &editor_config.open_last_project);
+            }
+
+            if (ImGui::CollapsingHeader("Dear ImGui")) {
+                ImGui::ShowStyleEditor();
             }
 
             ImGui::EndPopup();

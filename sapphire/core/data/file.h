@@ -12,7 +12,14 @@ public:
         FILE_TYPE_FOLDER
     };
 
-    FileType type;
+    enum FileFlags {
+        FILE_FLAG_HIDDEN,
+        FILE_FLAG_READONLY
+    };
+
+    FileType type = FILE_TYPE_UNKNOWN;
+    uint32_t flags = 0;
+
     std::string path;
     std::string name;
 

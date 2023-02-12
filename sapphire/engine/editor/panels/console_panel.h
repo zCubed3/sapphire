@@ -3,6 +3,8 @@
 
 #if defined(IMGUI_SUPPORT)
 #include <vector>
+
+#include <engine/console/console.h>
 #include <engine/editor/panels/panel.h>
 
 class ConsolePanel : public Panel {
@@ -13,6 +15,7 @@ public:
 
 protected:
     std::string buffer;
+    bool ignore_severities[3];
 
     void draw_contents(Engine* p_engine) override;
 };

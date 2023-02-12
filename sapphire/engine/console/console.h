@@ -38,6 +38,10 @@ public:
     static void execute(const std::vector<std::string>& args);
 
     static void register_defaults();
+
+    static void log(const std::string& message, ConsoleStream::MessageSeverity severity = ConsoleStream::MESSAGE_SEVERITY_NONE);
+    static void log_warning(const std::string& message);
+    static void log_error(const std::string& message);
 };
 
 #endif

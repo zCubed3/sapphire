@@ -18,6 +18,8 @@ public:
     bool folder_exists(const std::string &path) const override;
 
     std::vector<File> get_files(const std::string &folder) const override;
+
+    bool set_console_color(ConsoleColor color) const override;
 };
 
 
