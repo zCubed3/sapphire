@@ -1,7 +1,7 @@
 #ifndef SAPPHIRE_WIN32_PLATFORM_H
 #define SAPPHIRE_WIN32_PLATFORM_H
 
-#include <engine/platforms/platform.h>
+#include <core/platforms/platform.h>
 
 class Win32Platform : public Platform {
 private:

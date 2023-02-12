@@ -1,19 +1,20 @@
 #include "vulkan_shader.h"
 
-#include <engine/config/config_file.h>
+#include <core/config/config_file.h>
 
 #include <fstream>
 
 #include <rs_vulkan/rendering/vulkan_render_server.h>
-#include <val/val_instance.h>
-#include <val/pipelines/val_shader_module.h>
-#include <val/pipelines/val_pipeline_builder.h>
 
 #include <rs_vulkan/shaders/error.spv.vert.gen.h>
 #include <rs_vulkan/shaders/error.spv.frag.gen.h>
 
 #include <rs_vulkan/shaders/depth_pass.spv.vert.gen.h>
 #include <rs_vulkan/shaders/depth_pass.spv.frag.gen.h>
+
+#include <val/val_instance.h>
+#include <val/pipelines/val_shader_module.h>
+#include <val/pipelines/val_pipeline_builder.h>
 
 #ifdef DEBUG
 #include <iostream>

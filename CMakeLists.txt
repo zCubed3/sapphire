@@ -44,13 +44,17 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set(SAPPHIRE_DEFINITIONS "_HAS_EXCEPTIONS=0" "_CRT_SECURE_NO_WARNINGS")
 endif()
 
-#
-# Projects
-#
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     message("Debug build!")
     list(APPEND SAPPHIRE_DEFINITIONS "DEBUG")
 endif()
+
+#
+# Projects
+#
+
+# Core: Depends on nothing but the OS
+add_subdirectory(${CODE_DIR}/core)
 
 # TODO: Null driver to remove SDL dependency?
 add_subdirectory(${THIRD_PARTY_DIR}/SDL)
@@ -69,7 +73,7 @@ endif()
 if (RS_VULKAN_SUPPORT)
     message("Compiling Sapphire with Vulkan Render Server support!")
 
-    list(APPEND ENGINE_LINK_LIBRARIES SAPPHIRE_RS_VULKAN)
+    list(APPEND ENGINE_LINK_LIBRARIES SapphireVulkanRS)
     list(APPEND ENGINE_DEFINITIONS RS_VULKAN_SUPPORT)
 
     add_subdirectory(${CODE_DIR}/rs_vulkan)

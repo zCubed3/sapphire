@@ -19,10 +19,6 @@ set(SAPPHIRE_ENGINE_SOURCES
 
         "console/console.cpp"
 
-        "platforms/platform.cpp"
-
-        "config/config_file.cpp"
-
         "scene/actor.cpp"
         "scene/mesh_actor.cpp"
         "scene/world.cpp"
@@ -30,12 +26,6 @@ set(SAPPHIRE_ENGINE_SOURCES
         "scene/transform.cpp"
 
         "typing/class_registry.cpp"
-
-        "data/color.cpp"
-        "data/rect.cpp"
-        "data/string_tools.cpp"
-        "data/size_tools.cpp"
-        "data/timing.cpp"
 
         "math/angle_math.cpp"
 
@@ -73,13 +63,9 @@ set(SAPPHIRE_ENGINE_SOURCES
         "resources.rc"
         )
 
-if (WIN32)
-    list(APPEND SAPPHIRE_ENGINE_SOURCES "platforms/win32_platform.cpp")
-endif()
+add_executable(SapphireEngine ${SAPPHIRE_ENGINE_SOURCES})
 
-add_executable(SAPPHIRE_ENGINE ${SAPPHIRE_ENGINE_SOURCES})
-
-target_include_directories(SAPPHIRE_ENGINE PUBLIC
+target_include_directories(SapphireEngine PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CODE_DIR}
         ${THIRD_PARTY_DIR}/SDL/include
@@ -88,21 +74,22 @@ target_include_directories(SAPPHIRE_ENGINE PUBLIC
         ${THIRD_PARTY_DIR}/stb
         )
 
-target_compile_definitions(SAPPHIRE_ENGINE PUBLIC
+target_compile_definitions(SapphireEngine PUBLIC
         ${SAPPHIRE_DEFINITIONS}
         ${ENGINE_DEFINITIONS}
         )
 
-target_link_libraries(SAPPHIRE_ENGINE PUBLIC
+target_link_libraries(SapphireEngine PUBLIC
         ${ENGINE_LINK_LIBRARIES}
+        SapphireCore
         SDL2
         SDL2main
         )
 
-target_compile_options(SAPPHIRE_ENGINE PUBLIC
+target_compile_options(SapphireEngine PUBLIC
         ${SAPPHIRE_COMPILE_OPTIONS}
         )
 
-set_target_properties(SAPPHIRE_ENGINE PROPERTIES
+set_target_properties(SapphireEngine PROPERTIES
         OUTPUT_NAME "sapphire"
         )

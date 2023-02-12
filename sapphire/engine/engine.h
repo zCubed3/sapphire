@@ -1,7 +1,8 @@
 #ifndef SAPPHIRE_ENGINE_H
 #define SAPPHIRE_ENGINE_H
 
-#include <engine/config/config_file.h>
+#include <core/config/config_file.h>
+
 #include <engine/scene/universe.h>
 
 #include <vector>

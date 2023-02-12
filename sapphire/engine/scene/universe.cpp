@@ -1,7 +1,7 @@
 #include "universe.h"
 
 #include <engine/engine.h>
-#include <engine/data/timing.h>
+#include <core/data/timing.h>
 
 void Universe::add_world(const std::shared_ptr<World> &world) {
     loaded_worlds.push_back(world);

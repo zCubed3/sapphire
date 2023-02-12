@@ -3,7 +3,7 @@
 #include <SDL.h>
 
 #ifdef WIN32
-#include <engine/platforms/win32_platform.h>
+#include <core/platforms/win32_platform.h>
 #endif
 
 #include <engine/assets/asset_loader.h>
@@ -11,7 +11,7 @@
 #include <engine/assets/static_mesh_asset.h>
 #include <engine/assets/texture_asset.h>
 #include <engine/console/console.h>
-#include <engine/data/string_tools.h>
+#include <core/data/string_tools.h>
 #include <engine/rendering/lighting/light.h>
 #include <engine/rendering/render_server.h>
 #include <engine/rendering/shader.h>
@@ -20,7 +20,7 @@
 #include <engine/rendering/window_render_target.h>
 #include <engine/scene/mesh_actor.h>
 #include <engine/scene/world.h>
-#include <engine/data/timing.h>
+#include <core/data/timing.h>
 #include <engine/typing/class_registry.h>
 
 #include <glm.hpp>

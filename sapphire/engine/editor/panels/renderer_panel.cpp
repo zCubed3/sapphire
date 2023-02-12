@@ -5,7 +5,7 @@
 #include <imgui.h>
 
 #include <engine/rendering/render_server.h>
-#include <engine/data/timing.h>
+#include <core/data/timing.h>
 
 const char *RendererPanel::get_title() {
     return "Renderer";

@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include <sysinfoapi.h>
 
-#include <engine/data/string_tools.h>
+#include <core/data/string_tools.h>
 
 const Win32Platform* Win32Platform::create_win32_platform() {
     const Win32Platform* existing = reinterpret_cast<const Win32Platform*>(get_singleton());

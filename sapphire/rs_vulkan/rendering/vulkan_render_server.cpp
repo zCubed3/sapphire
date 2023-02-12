@@ -9,7 +9,7 @@
 #include <SDL_vulkan.h>
 
 #include <engine/assets/mesh_asset.h>
-#include <engine/data/size_tools.h>
+#include <core/data/size_tools.h>
 #include <engine/rendering/buffers/view_buffer.h>
 #include <engine/rendering/render_target.h>
 #include <engine/rendering/texture_render_target.h>

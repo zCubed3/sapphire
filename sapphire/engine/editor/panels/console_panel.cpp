@@ -8,7 +8,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 #include <engine/rendering/render_server.h>
-#include <engine/data/timing.h>
+#include <core/data/timing.h>
 
 const char *ConsolePanel::get_title() {
     return "Console";

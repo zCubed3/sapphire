@@ -29,15 +29,15 @@ if (IMGUI_SUPPORT)
     list(APPEND SAPPHIRE_RS_VULKAN_INCLUDE_DIRS "${THIRD_PARTY_DIR}/imgui")
 endif()
 
-add_library(SAPPHIRE_RS_VULKAN STATIC ${SAPPHIRE_RS_VULKAN_SOURCES})
+add_library(SapphireVulkanRS STATIC ${SAPPHIRE_RS_VULKAN_SOURCES})
 
-target_include_directories(SAPPHIRE_RS_VULKAN PUBLIC ${SAPPHIRE_RS_VULKAN_INCLUDE_DIRS})
+target_include_directories(SapphireVulkanRS PUBLIC ${SAPPHIRE_RS_VULKAN_INCLUDE_DIRS})
 
-target_link_libraries(SAPPHIRE_RS_VULKAN PUBLIC VAL)
+target_link_libraries(SapphireVulkanRS PUBLIC VAL)
 
-target_compile_definitions(SAPPHIRE_RS_VULKAN PUBLIC ${SAPPHIRE_DEFINITIONS})
+target_compile_definitions(SapphireVulkanRS PUBLIC ${SAPPHIRE_DEFINITIONS})
 
-target_compile_options(SAPPHIRE_RS_VULKAN PUBLIC ${SAPPHIRE_COMPILE_OPTIONS})
+target_compile_options(SapphireVulkanRS PUBLIC ${SAPPHIRE_COMPILE_OPTIONS})
 
 set(PRELUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/preludes)
 set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
@@ -57,4 +57,4 @@ add_custom_target(SAPPHIRE_RS_VULKAN_GEN_HEADERS
         py ${GEN_SCRIPT} ${SHADER_DIR}/depth_pass.frag.spv ${SHADER_DIR}/depth_pass.spv.frag.gen.h
         )
 
-add_dependencies(SAPPHIRE_RS_VULKAN SAPPHIRE_RS_VULKAN_GEN_HEADERS)
+add_dependencies(SapphireVulkanRS SAPPHIRE_RS_VULKAN_GEN_HEADERS)

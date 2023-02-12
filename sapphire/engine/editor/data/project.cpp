@@ -1,6 +1,6 @@
 #include "project.h"
 
-#include <engine/data/string_tools.h>
+#include <core/data/string_tools.h>
 
 void Project::open_project(const std::string &path) {
     config.read_from_path(path);

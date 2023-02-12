@@ -3,8 +3,8 @@
 #include <fstream>
 
 #include <engine/assets/material_asset.h>
-#include <engine/config/config_file.h>
-#include <engine/platforms/platform.h>
+#include <core/config/config_file.h>
+#include <core/platforms/platform.h>
 #include <engine/rendering/render_server.h>
 #include <engine/rendering/material.h>
 #include <engine/rendering/shader.h>

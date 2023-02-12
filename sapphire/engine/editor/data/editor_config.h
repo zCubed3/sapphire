@@ -1,7 +1,7 @@
 #ifndef SAPPHIRE_EDITOR_CONFIG_H
 #define SAPPHIRE_EDITOR_CONFIG_H
 
-#include <engine/config/config_file.h>
+#include <core/config/config_file.h>
 
 #include <string>
 

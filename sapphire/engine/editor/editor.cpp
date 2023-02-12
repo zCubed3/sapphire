@@ -1,9 +1,9 @@
 #include "editor.h"
 
-#include <engine/platforms/platform.h>
-#include <engine/data/string_tools.h>
-#include <engine/engine.h>
+#include <core/platforms/platform.h>
+#include <core/data/string_tools.h>
 
+#include <engine/engine.h>
 #include <engine/editor/data/project.h>
 #include <engine/editor/panels/actor_panel.h>
 #include <engine/editor/panels/console_panel.h>
