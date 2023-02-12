@@ -5,7 +5,7 @@ import sys
 import os
 import hashlib
 
-verbose = False
+verbose = True
 
 in_path = sys.argv[1]
 out_path = sys.argv[2]
@@ -40,6 +40,9 @@ if mode == "binary":
 
 with open(sys.argv[1], open_flags) as src_file:
     source = src_file.read()
+
+    if mode == "text":
+        source = source.encode("ascii")
 
 # Hash the source to make sure it has changed
 source_hash = hashlib.md5(source).hexdigest()

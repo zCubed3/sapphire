@@ -19,8 +19,10 @@ set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 #
 
 # TODO: Replace this with "headless mode"
+option(RS_OPENGL4_SUPPORT "Compiles and links OpenGL4 Render Server support into the engine" ON)
 option(RS_VULKAN_SUPPORT "Compiles and links Vulkan Render Server support into the engine" ON)
 
+#set(RS_OPENGL4_SUPPORT OFF)
 #set(RS_VULKAN_SUPPORT OFF)
 
 option(IMGUI_SUPPORT "Compiles ImGui support into the engine" ON)
@@ -68,6 +70,15 @@ endif()
 
 if (IMGUI_SUPPORT)
     list(APPEND SAPPHIRE_DEFINITIONS IMGUI_SUPPORT)
+endif()
+
+if (RS_OPENGL4_SUPPORT)
+    message("Compiling Sapphire with OpenGL4 Render Server support!")
+
+    list(APPEND ENGINE_LINK_LIBRARIES SapphireOpenGL4RS)
+    list(APPEND ENGINE_DEFINITIONS RS_OPENGL4_SUPPORT)
+
+    add_subdirectory(${CODE_DIR}/rs_opengl4)
 endif()
 
 if (RS_VULKAN_SUPPORT)
