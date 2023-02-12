@@ -34,6 +34,7 @@ set(SAPPHIRE_ENGINE_SOURCES
         "data/color.cpp"
         "data/rect.cpp"
         "data/string_tools.cpp"
+        "data/size_tools.cpp"
         "data/timing.cpp"
 
         "math/angle_math.cpp"

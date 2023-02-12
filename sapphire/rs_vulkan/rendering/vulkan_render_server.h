@@ -42,6 +42,9 @@ public:
     ValVertexInputBuilder val_default_vertex_input;
     ValRenderTarget *val_active_render_target = nullptr;
 
+    ValBuffer* val_ubo_pool_buffer;
+    ValBuffer* val_ssbo_pool_buffer;
+
     ~VulkanRenderServer() override;
 
     void register_rs_asset_loaders() override;

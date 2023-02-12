@@ -21,11 +21,9 @@ VulkanGraphicsBuffer::VulkanGraphicsBuffer(size_t size, UsageIntent usage) {
             break;
     }
 
-    val_buffer = new ValBuffer(
-            size,
-            usage_flags,
-            VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
-            vulkan_rs->val_instance);
+    // TODO: Use SSBO pool
+    val_buffer = vulkan_rs->val_ubo_pool_buffer;
+    val_buffer_section = vulkan_rs->val_ubo_pool_buffer->allocate_section(size);
 }
 
 VulkanGraphicsBuffer::~VulkanGraphicsBuffer() {
@@ -53,5 +51,5 @@ VulkanGraphicsBuffer::~VulkanGraphicsBuffer() {
 void VulkanGraphicsBuffer::write(void *data, size_t size) {
     const VulkanRenderServer *vulkan_rs = reinterpret_cast<const VulkanRenderServer*>(RenderServer::get_singleton());
 
-    val_buffer->write(data, vulkan_rs->val_instance);
+    val_buffer->write(data, val_buffer_section, vulkan_rs->val_instance);
 }

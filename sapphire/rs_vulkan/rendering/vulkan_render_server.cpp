@@ -9,6 +9,7 @@
 #include <SDL_vulkan.h>
 
 #include <engine/assets/mesh_asset.h>
+#include <engine/data/size_tools.h>
 #include <engine/rendering/buffers/view_buffer.h>
 #include <engine/rendering/render_target.h>
 #include <engine/rendering/texture_render_target.h>
@@ -205,6 +206,13 @@ bool VulkanRenderServer::initialize(SDL_Window *p_window) {
 
     singleton = this;
 
+    ValBufferCreateInfo ubo_create_info {};
+    ubo_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    ubo_create_info.size = SizeTools::kib_to_bytes(12);
+    ubo_create_info.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+
+    val_ubo_pool_buffer = ValBuffer::create_buffer(&ubo_create_info, val_instance);
+
     //
     // Placeholders
     //
@@ -252,11 +260,13 @@ bool VulkanRenderServer::begin_target(RenderTarget *p_target) {
     //VulkanGraphicsBuffer* world_buffer = reinterpret_cast<VulkanGraphicsBuffer*>(p_target->view_buffer->buffer);
 
     ValDescriptorSetWriteInfo view_write_info{};
+    view_write_info.val_buffer_section = view_buffer->val_buffer_section;
     view_write_info.val_buffer = view_buffer->val_buffer;
 
     if (p_target->light != nullptr) {
         ValDescriptorSetWriteInfo light_write_info{};
         light_write_info.binding_index = 2;
+        light_write_info.val_buffer_section = ((VulkanGraphicsBuffer*)p_target->light->buffer)->val_buffer_section;
         light_write_info.val_buffer = ((VulkanGraphicsBuffer*)p_target->light->buffer)->val_buffer;
 
         ValDescriptorSetWriteInfo light_texture_write_info{};
@@ -382,6 +392,7 @@ bool VulkanRenderServer::end_target(RenderTarget *p_target) {
                     }
 
                     ValDescriptorSetWriteInfo object_write_info{};
+                    object_write_info.val_buffer_section = object_ubo->val_buffer_section;
                     object_write_info.val_buffer = object_ubo->val_buffer;
 
                     object_ubo->val_descriptor_set->write_binding(&object_write_info);

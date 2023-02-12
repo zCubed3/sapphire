@@ -3,11 +3,13 @@
 
 #include <engine/rendering/buffers/graphics_buffer.h>
 
+class ValBufferSection;
 class ValBuffer;
 class ValDescriptorSet;
 
 class VulkanGraphicsBuffer : public GraphicsBuffer {
 public:
+    ValBufferSection *val_buffer_section = nullptr;
     ValBuffer *val_buffer = nullptr;
     ValDescriptorSet *val_descriptor_set = nullptr;
 
