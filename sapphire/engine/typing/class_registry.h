@@ -6,6 +6,8 @@
 
 #include <unordered_map>
 
+#define CLASS_REGISTRY_INVALID_HASH (-1)
+
 class ClassRegistry {
 public:
     enum ClassRegisterStatus {
@@ -15,16 +17,14 @@ public:
 
     struct ClassEntry {
         const char* name = nullptr;
-        const char* parent_name = nullptr;
 
         size_t hash = static_cast<size_t>(-1);
         size_t parent_hash = static_cast<size_t>(-1);
     };
 
-protected:
+public:
     static std::unordered_map<size_t, ClassEntry> class_map;
 
-public:
     // TODO: Assertions?
     template<class T>
     static ClassRegisterStatus register_class() {
@@ -45,7 +45,6 @@ public:
         const char* parent_name = T::get_parent_class_name_static();
 
         if (parent_name != nullptr) {
-            entry.parent_name = parent_name;
             entry.parent_hash = T::get_parent_class_hash_static();
         }
 
@@ -53,18 +52,25 @@ public:
         return CLASS_REGISTER_SUCCESS;
     }
 
-    template<class TChild, class TParent>
-    static bool is_child_of(TChild* instance) {
+    template<class TParent>
+    static bool is_child_of(size_t child_hash) {
         // We need to traverse up the type tree if there isn't a match initially
-        size_t hash = TChild::get_class_hash();
-        size_t parent_hash = TParent::get_class_hash();
+        size_t hash = child_hash;
+        size_t parent_hash = TParent::get_class_hash_static();
 
         while (true) {
             if (hash == -1 || parent_hash == -1) {
                 return false;
             }
 
-            ClassEntry entry = class_map[hash];
+            auto entry_iter = class_map.find(hash);
+
+            if (entry_iter == class_map.end()) {
+                return false;
+            }
+
+            ClassEntry& entry = entry_iter->second;
+
             if (entry.parent_hash != parent_hash) {
                 hash = entry.parent_hash;
             } else {
@@ -81,6 +87,21 @@ public:
         } else {
             return nullptr;
         }
+    }
+
+    static ClassEntry get_type_parent(size_t hash) {
+        auto entry_iter = class_map.find(hash);
+
+        if (entry_iter == class_map.end()) {
+            return {};
+        } else {
+            return entry_iter->second;
+        }
+    }
+
+    template<class T>
+    static ClassEntry get_type_parent() {
+        return get_type_parent(T::get_parent_class_hash_static());
     }
 };
 

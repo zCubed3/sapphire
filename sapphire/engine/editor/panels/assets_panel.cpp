@@ -2,6 +2,8 @@
 
 #include <imgui.h>
 
+#include <engine/assets/asset_loader.h>
+
 const char *AssetsPanel::get_title() {
     return "Assets";
 }
@@ -33,6 +35,43 @@ void AssetsPanel::draw_contents(Engine *p_engine) {
     if (ImGui::Button("Refresh")) {
         // TODO: Make this relative to a project
         files = Platform::get_singleton()->get_files("./");
+    }
+
+    // TODO: Also move this to its own panel
+    for (auto pair: ClassRegistry::class_map) {
+        if (ImGui::TreeNode(pair.second.name)) {
+            ImGui::BulletText("Hash = %zu", pair.second.hash);
+
+            if (pair.second.parent_hash != CLASS_REGISTRY_INVALID_HASH) {
+                if (ImGui::TreeNode("Parent")) {
+                    ClassRegistry::ClassEntry entry = ClassRegistry::get_type_parent(pair.second.parent_hash);
+
+                    if (entry.hash != -1) {
+                        ImGui::BulletText("Parent Hash = %zu", entry.hash);
+                        ImGui::BulletText("%s", entry.name);
+                    }
+
+                    ImGui::TreePop();
+                }
+            } else {
+                ImGui::BulletText("Is base class!");
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    ImGui::Spacing();
+
+    // TODO: Move this to its own panel
+    for (AssetLoader* loader: AssetLoader::loaders) {
+        if (ImGui::TreeNode(loader->get_class_name())) {
+            for (const auto &pair: loader->asset_cache) {
+                ImGui::Text("%s", pair.first.c_str());
+            }
+
+            ImGui::TreePop();
+        }
     }
 
     for (File& file: files) {

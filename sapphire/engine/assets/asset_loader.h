@@ -15,24 +15,23 @@ class AssetLoader {
     REFLECT_BASE_CLASS(AssetLoader);
 
 protected:
-    static std::vector<AssetLoader *> loaders;
-
     virtual void load_placeholders();
     virtual void unload_placeholders();
 
     virtual void release_cache();
     virtual std::shared_ptr<Asset> cache_asset(const std::string& name, Asset* p_asset);
 
+public:
+    static std::vector<AssetLoader *> loaders;
+
     std::unordered_map<std::string, std::shared_ptr<Asset>> asset_cache;
 
-public:
     virtual std::vector<std::string> get_extensions() = 0;
 
     virtual std::shared_ptr<Asset> get_asset(const std::string& name);
 
     virtual std::shared_ptr<Asset> load_from_path(const std::string &path, const std::string& extension) = 0;
 
-public:
     static std::shared_ptr<Asset> load_asset(const std::string &path);
 
     static void load_all_placeholders();
