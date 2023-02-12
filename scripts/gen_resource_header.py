@@ -5,7 +5,7 @@ import sys
 import os
 import hashlib
 
-verbose = True
+verbose = False
 
 in_path = sys.argv[1]
 out_path = sys.argv[2]
@@ -83,7 +83,7 @@ if not matching:
             out_file.write("\n};")
 
         if mode == "text":
-            source_repr = repr(source)
+            source_repr = repr(source).removeprefix('b')
             source_repr = source_repr.removeprefix("'").removesuffix("'")
 
             out_file.write(f"const char {source_name.upper()}_CONTENTS[] = \"{source_repr}\";")

@@ -17,7 +17,8 @@ public:
     void * get_imgui_handle() override;
 #endif
 
-    void load_bytes(unsigned char *bytes, int width, int height, int channels) override;
+    void load_bytes(unsigned char *bytes) override;
+    void load_faces(const std::vector<CubemapFace> &faces, unsigned char *shared_bytes, int shared_width, int shared_height) override;
 };
 
 

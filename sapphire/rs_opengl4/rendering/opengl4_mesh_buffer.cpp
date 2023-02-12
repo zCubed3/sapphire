@@ -83,28 +83,19 @@ OpenGL4MeshBuffer::OpenGL4MeshBuffer(MeshAsset *p_mesh_asset) {
     delete[] vertices;
 }
 
-void OpenGL4MeshBuffer::render(ObjectBuffer *p_object_buffer, Material *p_material) {
-    OpenGL4Shader *gl_shader = nullptr;
-
-    if (p_material != nullptr) {
-        p_material->bind();
-        gl_shader = reinterpret_cast<OpenGL4Shader *>(p_material->shader);
-    }
-
-    if (gl_shader == nullptr) {
-        gl_shader = OpenGL4Shader::error_shader;
-    }
-
+void OpenGL4MeshBuffer::draw(ObjectBuffer *p_object_buffer, std::shared_ptr<Material> p_material) {
     // Get the current render target
     const OpenGL4RenderServer *rs_opengl4 = reinterpret_cast<const OpenGL4RenderServer *>(RenderServer::get_singleton());
     RenderTarget *current_target = rs_opengl4->get_current_target();
 
-    uint32_t view_handle = gl_shader->get_uniform_block("SAPPHIRE_VIEW_DATA");
-    uint32_t object_handle = gl_shader->get_uniform_block("SAPPHIRE_OBJECT_DATA");
+    // TODO: Move this to the render server
+    //uint32_t view_handle = gl_shader->get_uniform_block("SAPPHIRE_VIEW_DATA");
+    //uint32_t object_handle = gl_shader->get_uniform_block("SAPPHIRE_OBJECT_DATA");
 
-    OpenGL4GraphicsBuffer *view_ubo = reinterpret_cast<OpenGL4GraphicsBuffer *>(current_target->view_buffer->buffer);
-    OpenGL4GraphicsBuffer *object_ubo = reinterpret_cast<OpenGL4GraphicsBuffer *>(p_object_buffer->buffer);
+    //OpenGL4GraphicsBuffer *view_ubo = reinterpret_cast<OpenGL4GraphicsBuffer *>(current_target->view_buffer->buffer);
+    //OpenGL4GraphicsBuffer *object_ubo = reinterpret_cast<OpenGL4GraphicsBuffer *>(p_object_buffer->buffer);
 
+    /*
     glUniformBlockBinding(gl_shader->shader_handle, view_handle, 0);
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, view_ubo->buffer_handle);
 
@@ -112,6 +103,7 @@ void OpenGL4MeshBuffer::render(ObjectBuffer *p_object_buffer, Material *p_materi
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, object_ubo->buffer_handle);
 
     glUseProgram(gl_shader->shader_handle);
+     */
 
     glBindVertexArray(vao);
 

@@ -2,6 +2,7 @@
 #define SAPPHIRE_OPENGL4_RENDER_SERVER_H
 
 #include <engine/rendering/render_server.h>
+#include <engine/rendering/shader.h>
 
 class OpenGL4RenderServer : public RenderServer {
 protected:
@@ -18,6 +19,11 @@ protected:
     SDL_Window *window = nullptr;
 
 public:
+    // Cached states (useful on CPU bound systems)
+    bool write_depth = true;
+    ShaderPass::CullMode cull_mode = ShaderPass::CULL_MODE_BACK;
+    ShaderPass::DepthOp depth_op = ShaderPass::DEPTH_OP_LESS;
+
     void register_rs_asset_loaders() override;
 
     const char* get_name() const override;
@@ -34,7 +40,7 @@ public:
     bool begin_target(RenderTarget *p_target) override;
     bool end_target(RenderTarget *p_target) override;
 
-    GraphicsBuffer *create_graphics_buffer(size_t size) const override;
+    GraphicsBuffer * create_graphics_buffer(size_t size, GraphicsBuffer::UsageIntent usage) const override;
     Shader *create_shader() const override;
     Texture * create_texture() const override;
     Material *create_material() const override;

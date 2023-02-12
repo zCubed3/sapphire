@@ -17,7 +17,7 @@ protected:
 public:
     OpenGL4MeshBuffer(MeshAsset *p_mesh_asset);
 
-    void render(ObjectBuffer* p_object_buffer, Material *p_material) override;
+    void draw(ObjectBuffer *p_object_buffer, std::shared_ptr<Material> p_material) override;
 };
 
 

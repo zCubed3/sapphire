@@ -5,7 +5,7 @@
 
 class OpenGL4Material : public Material {
 public:
-    void bind() override;
+    bool bind_material(ShaderPass *p_shader_pass) override;
 };
 
 
