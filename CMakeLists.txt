@@ -22,6 +22,8 @@ set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 #option(RS_OPENGL4_SUPPORT "Compiles and links OpenGL4 Render Server support into the engine" ON)
 option(RS_VULKAN_SUPPORT "Compiles and links Vulkan Render Server support into the engine" ON)
 
+option(COMPILE_TOOLS "Compiles tool applications" ON)
+
 #set(RS_OPENGL4_SUPPORT OFF)
 #set(RS_VULKAN_SUPPORT OFF)
 
@@ -79,6 +81,17 @@ if (RS_VULKAN_SUPPORT)
     list(APPEND ENGINE_DEFINITIONS RS_VULKAN_SUPPORT)
 
     add_subdirectory(${CODE_DIR}/rs_vulkan)
+endif()
+
+if (COMPILE_TOOLS)
+    message("Compile Sapphire tools!")
+
+    set(OLD_BIN_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools)
+
+    add_subdirectory(${CODE_DIR}/tools/obj2sebm)
+
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OLD_BIN_DIR})
 endif()
 
 add_subdirectory(${CODE_DIR}/engine)

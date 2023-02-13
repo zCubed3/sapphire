@@ -30,31 +30,13 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
     ValInstance* val_instance = rs_instance->val_instance;
 
     // TODO: Make the staging buffer more async?
-    Vertex *vertices = new Vertex[p_mesh_asset->get_vertex_count()];
+    uint32_t vertex_count = 0;
 
-    uint32_t *triangles = p_mesh_asset->get_triangle_data(nullptr);
-    glm::vec3 *positions = p_mesh_asset->get_position_data(nullptr);
-    glm::vec3 *normals = p_mesh_asset->get_normal_data(nullptr);
-    glm::vec2 *tex_coords = p_mesh_asset->get_uv0_data(nullptr);
+    MeshAsset::Vertex *vertices = p_mesh_asset->get_vertex_data(&vertex_count);
+    MeshAsset::index_t *indexes = p_mesh_asset->get_index_data(&index_count);
 
-    tri_count = p_mesh_asset->get_triangle_count();
-
-    for (uint32_t v = 0; v < p_mesh_asset->get_vertex_count(); v++) {
-        if (positions != nullptr) {
-            vertices[v].position = positions[v];
-        }
-
-        if (normals != nullptr) {
-            vertices[v].normal = normals[v];
-        }
-
-        if (tex_coords != nullptr) {
-            vertices[v].uv0 = tex_coords[v];
-        }
-    }
-
-    uint32_t vbo_size = sizeof(Vertex) * p_mesh_asset->get_vertex_count();
-    uint32_t ibo_size = sizeof(uint32_t) * p_mesh_asset->get_triangle_count();
+    uint32_t vbo_size = sizeof(MeshAsset::Vertex) * p_mesh_asset->get_vertex_count();
+    uint32_t ibo_size = sizeof(MeshAsset::index_t) * p_mesh_asset->get_index_count();
 
     sub_ibo_offset = vbo_size;
 
@@ -62,7 +44,7 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
     ValStagingBuffer* mbo_staging = new ValStagingBuffer(mbo_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, val_instance);
 
     mbo_staging->write(vertices, val_instance, 0, vbo_size);
-    mbo_staging->write(triangles, val_instance, vbo_size, ibo_size);
+    mbo_staging->write(indexes, val_instance, vbo_size, ibo_size);
 
     VkCommandBuffer command_buffer = rs_instance->begin_upload();
 
@@ -108,5 +90,5 @@ void VulkanMeshBuffer::draw(ObjectBuffer* p_object_buffer, std::shared_ptr<Mater
 
     vkCmdBindIndexBuffer(active_command_buffer, val_mbo->vk_buffer, sub_ibo_offset, VK_INDEX_TYPE_UINT32);
 
-    vkCmdDrawIndexed(active_command_buffer, tri_count, 1, 0, 0, 0);
+    vkCmdDrawIndexed(active_command_buffer, index_count, 1, 0, 0, 0);
 }
