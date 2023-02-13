@@ -17,6 +17,7 @@ class AssetLoader {
 protected:
     virtual void load_placeholders();
     virtual void unload_placeholders();
+    virtual void register_classes();
 
     virtual void release_cache();
     virtual std::shared_ptr<Asset> cache_asset(const std::string& name, Asset* p_asset);
@@ -42,7 +43,11 @@ public:
     template<class T>
     static void register_loader() {
         ClassRegistry::register_class<T>();
-        loaders.push_back(new T());
+
+        AssetLoader* loader_instance = new T();
+        loader_instance->register_classes();
+
+        loaders.push_back(loader_instance);
     }
 };
 

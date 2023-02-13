@@ -6,6 +6,10 @@
 
 #include <unordered_map>
 
+#ifdef DEBUG
+#include <engine/console/console.h>
+#endif
+
 #define CLASS_REGISTRY_INVALID_HASH (-1)
 
 class ClassRegistry {
@@ -47,6 +51,13 @@ public:
         if (parent_name != nullptr) {
             entry.parent_hash = T::get_parent_class_hash_static();
         }
+
+#ifdef DEBUG
+        std::string register_message = "ClassRegistry: Registered " + std::string(entry.name);
+        register_message += " (" + std::to_string(entry.hash) + ")";
+
+        Console::log(register_message);
+#endif
 
         class_map.emplace(entry.hash, entry);
         return CLASS_REGISTER_SUCCESS;

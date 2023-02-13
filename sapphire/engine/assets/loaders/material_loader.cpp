@@ -13,6 +13,10 @@ std::vector<std::string> MaterialLoader::get_extensions() {
     return {"semd", "bsemd"};
 }
 
+void MaterialLoader::register_classes() {
+    ClassRegistry::register_class<MaterialAsset>();
+}
+
 void MaterialLoader::release_cache() {
     AssetLoader::release_cache();
     Shader::release_cache();

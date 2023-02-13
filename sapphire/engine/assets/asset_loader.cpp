@@ -7,29 +7,20 @@
 #include <engine/assets/loaders/texture_loader.h>
 
 #include <engine/assets/asset.h>
-#include <engine/assets/texture_asset.h>
-#include <engine/assets/material_asset.h>
 
 std::vector<AssetLoader *> AssetLoader::loaders = {};
 
-void AssetLoader::load_placeholders() {
-
-}
-
-void AssetLoader::unload_placeholders() {
-
-}
+void AssetLoader::load_placeholders() {}
+void AssetLoader::unload_placeholders() {}
+void AssetLoader::register_classes() {}
 
 void AssetLoader::register_engine_asset_loaders() {
+    ClassRegistry::register_class<Asset>();
     ClassRegistry::register_class<AssetLoader>();
 
     register_loader<MeshLoader>();
     register_loader<MaterialLoader>();
     register_loader<TextureLoader>();
-
-    //ClassRegistry::register_class<Asset>();
-    //ClassRegistry::register_class<TextureAsset>();
-    //ClassRegistry::register_class<MaterialAsset>();
 }
 
 void AssetLoader::release_cache() {

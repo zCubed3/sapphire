@@ -10,6 +10,8 @@ class MaterialLoader : public AssetLoader {
     REFLECT_CLASS(MaterialLoader, AssetLoader);
 
 protected:
+    void register_classes() override;
+
     void release_cache() override;
 
 public:
