@@ -9,7 +9,7 @@
 #include <vector>
 
 class ActorPanel;
-class AssetsPanel;
+class AssetPanel;
 class WorldPanel;
 class WorldViewPanel;
 class RendererPanel;
@@ -24,7 +24,7 @@ protected:
     ActorPanel *actor_panel = nullptr;
     RendererPanel *renderer_panel = nullptr;
     ConsolePanel *console_panel = nullptr;
-    AssetsPanel *assets_panel = nullptr;
+    AssetPanel *assets_panel = nullptr;
 
     std::vector<WorldViewPanel *> view_panels;
 

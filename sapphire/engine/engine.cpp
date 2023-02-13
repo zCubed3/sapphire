@@ -139,7 +139,7 @@ bool Engine::initialize() {
 
     AssetLoader::load_all_placeholders();
 
-#if defined(IMGUI_SUPPORT)
+#if defined(BUILD_AS_EDITOR)
     editor = new Editor();
     editor->initialize(this);
 #endif

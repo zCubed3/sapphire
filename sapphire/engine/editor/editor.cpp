@@ -3,14 +3,14 @@
 #include <core/platforms/platform.h>
 #include <core/data/string_tools.h>
 
-#include <engine/engine.h>
 #include <engine/editor/data/project.h>
 #include <engine/editor/panels/actor_panel.h>
-#include <engine/editor/panels/assets_panel.h>
+#include <engine/editor/panels/asset_panel.h>
 #include <engine/editor/panels/console_panel.h>
 #include <engine/editor/panels/renderer_panel.h>
 #include <engine/editor/panels/world_panel.h>
 #include <engine/editor/panels/world_view_panel.h>
+#include <engine/engine.h>
 
 #include <SDL.h>
 
@@ -27,7 +27,7 @@ bool Editor::initialize(Engine *p_engine) {
     actor_panel = new ActorPanel();
     renderer_panel = new RendererPanel();
     console_panel = new ConsolePanel();
-    assets_panel = new AssetsPanel();
+    assets_panel = new AssetPanel();
 
     create_view_panel(p_engine);
 

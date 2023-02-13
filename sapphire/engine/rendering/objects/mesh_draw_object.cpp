@@ -16,5 +16,7 @@ void MeshDrawObject::update_buffer(ObjectBufferData& data) {
 }
 
 void MeshDrawObject::draw() {
-    mesh_buffer->draw(object_buffer, material);
+    if (mesh_buffer != nullptr) {
+        mesh_buffer->draw(object_buffer, material);
+    }
 }

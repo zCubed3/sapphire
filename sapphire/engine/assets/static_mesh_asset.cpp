@@ -84,35 +84,37 @@ void StaticMeshAsset::create_primitives() {
 StaticMeshAsset *StaticMeshAsset::primitive_quad = nullptr;
 StaticMeshAsset *StaticMeshAsset::primitive_cube = nullptr;
 
-StaticMeshAsset::StaticMeshAsset(Vertex *vertex_data, size_t vertex_count, index_t *index_data, size_t index_count) {
+StaticMeshAsset::StaticMeshAsset(const std::vector<Vertex> &vertex_data, const std::vector<index_t> &index_data) {
     this->vertex_data = vertex_data;
-    this->vertex_count = vertex_count;
     this->index_data = index_data;
-    this->index_count = index_count;
+}
+
+void StaticMeshAsset::draw_editor_gui() {
+
 }
 
 MeshAsset::Vertex *StaticMeshAsset::get_vertex_data(uint32_t *p_length) {
     if (p_length != nullptr) {
-        *p_length = vertex_count;
+        *p_length = vertex_data.size();
     }
 
-    return vertex_data;
+    return vertex_data.data();
 }
 
 MeshAsset::index_t *StaticMeshAsset::get_index_data(uint32_t *p_length) {
     if (p_length != nullptr) {
-        *p_length = index_count;
+        *p_length = index_data.size();
     }
 
-    return index_data;
+    return index_data.data();
 }
 
 uint32_t StaticMeshAsset::get_vertex_count() {
-    return static_cast<uint32_t>(vertex_count);
+    return static_cast<uint32_t>(vertex_data.size());
 }
 
 uint32_t StaticMeshAsset::get_index_count() {
-    return static_cast<uint32_t>(index_count);
+    return static_cast<uint32_t>(index_data.size());
 }
 
 void StaticMeshAsset::draw(ObjectBuffer *p_object_buffer, Material *p_material) {

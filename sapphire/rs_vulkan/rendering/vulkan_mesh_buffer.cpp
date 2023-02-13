@@ -35,8 +35,8 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
     MeshAsset::Vertex *vertices = p_mesh_asset->get_vertex_data(&vertex_count);
     MeshAsset::index_t *indexes = p_mesh_asset->get_index_data(&index_count);
 
-    uint32_t vbo_size = sizeof(MeshAsset::Vertex) * p_mesh_asset->get_vertex_count();
-    uint32_t ibo_size = sizeof(MeshAsset::index_t) * p_mesh_asset->get_index_count();
+    uint32_t vbo_size = sizeof(MeshAsset::Vertex) * vertex_count;
+    uint32_t ibo_size = sizeof(MeshAsset::index_t) * index_count;
 
     sub_ibo_offset = vbo_size;
 
@@ -56,8 +56,6 @@ VulkanMeshBuffer::VulkanMeshBuffer(MeshAsset *p_mesh_asset) {
 
     mbo_staging->release(val_instance);
     delete mbo_staging;
-    
-    delete[] vertices;
 }
 
 VulkanMeshBuffer::~VulkanMeshBuffer() {

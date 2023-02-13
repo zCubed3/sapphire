@@ -1,12 +1,12 @@
-#ifndef SAPPHIRE_ASSETS_PANEL_H
-#define SAPPHIRE_ASSETS_PANEL_H
+#ifndef SAPPHIRE_ASSET_PANEL_H
+#define SAPPHIRE_ASSET_PANEL_H
 
 #include <engine/editor/panels/panel.h>
 
 #include <core/platforms/platform.h>
 
-class AssetsPanel : public Panel {
-    REFLECT_CLASS(AssetsPanel, Panel)
+class AssetPanel : public Panel {
+    REFLECT_CLASS(AssetPanel, Panel)
 
 public:
     const char * get_title() override;

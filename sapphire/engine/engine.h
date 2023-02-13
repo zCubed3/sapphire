@@ -23,7 +23,10 @@ class WindowRenderTarget;
 class Asset;
 class MeshAsset;
 class MaterialAsset;
+
+#if defined(BUILD_AS_EDITOR)
 class Editor;
+#endif
 
 class Engine {
 public:
@@ -41,8 +44,9 @@ public:
     // TODO: Temporary, lighting needs an overhaul
     Light* light = nullptr;
 
-    // TODO: If editor
+#if defined(BUILD_AS_EDITOR)
     Editor* editor = nullptr;
+#endif
 
 #if defined(DEBUG)
     World* world = nullptr;

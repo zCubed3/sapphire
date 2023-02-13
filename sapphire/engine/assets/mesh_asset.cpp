@@ -5,3 +5,7 @@
 MeshAsset::~MeshAsset() {
     // TODO: Reset the buffer
 }
+
+void MeshAsset::draw_editor_gui() {
+
+}

@@ -13,6 +13,8 @@ class MeshBuffer;
 class ObjectBuffer;
 
 class MeshAsset : public Asset {
+    REFLECT_CLASS(MeshAsset, Asset)
+
 public:
     typedef uint32_t index_t;
 
@@ -23,10 +25,13 @@ public:
         glm::vec2 uv0;
     };
 
-    // TODO: Asset safety so dangling pointers can't happen
     std::shared_ptr<MeshBuffer> buffer = nullptr;
 
     ~MeshAsset() override;
+
+#if defined(BUILD_AS_EDITOR)
+    void draw_editor_gui() override;
+#endif
 
     virtual Vertex *get_vertex_data(uint32_t *p_length) = 0;
     virtual index_t *get_index_data(uint32_t *p_length) = 0;

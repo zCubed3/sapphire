@@ -1,6 +1,7 @@
 #ifndef SAPPHIRE_SIZE_TOOLS_H
 #define SAPPHIRE_SIZE_TOOLS_H
 
+#include <cstdlib>
 
 class SizeTools {
 public:

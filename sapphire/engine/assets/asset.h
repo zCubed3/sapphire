@@ -7,9 +7,11 @@ class Asset {
     REFLECT_BASE_CLASS(Asset)
 
 public:
-    virtual void draw_editor_gui() = 0;
-
     virtual ~Asset() = default;
+
+#if defined(BUILD_AS_EDITOR)
+    virtual void draw_editor_gui();
+#endif
 };
 
 #endif

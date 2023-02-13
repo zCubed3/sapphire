@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(sapphire)
 
-set(CMAKE_CXX_STANDARD 14)
+# TODO: Allow using other CXX standards (for ports?)
+set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${CMAKE_CXX_COMPILER_ID}-${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_BUILD_TYPE}/")
 set(CMAKE_PDB_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
@@ -21,6 +22,8 @@ set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 # TODO: Replace this with "headless mode"
 #option(RS_OPENGL4_SUPPORT "Compiles and links OpenGL4 Render Server support into the engine" ON)
 option(RS_VULKAN_SUPPORT "Compiles and links Vulkan Render Server support into the engine" ON)
+
+option(BUILD_AS_EDITOR "Compiles the engine as the editor and not standlone" ON)
 
 option(COMPILE_TOOLS "Compiles tool applications" ON)
 
@@ -46,6 +49,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 
     set(SAPPHIRE_COMPILE_OPTIONS)
     set(SAPPHIRE_DEFINITIONS "_HAS_EXCEPTIONS=0" "_CRT_SECURE_NO_WARNINGS")
+
+    if (DISABLE_RTTI)
+        string(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+    endif()
 endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
@@ -57,18 +64,16 @@ endif()
 # Projects
 #
 
+if (BUILD_AS_EDITOR)
+    list(APPEND SAPPHIRE_DEFINITIONS "BUILD_AS_EDITOR")
+endif()
+
 # Core: Depends on nothing but the OS
 add_subdirectory(${CODE_DIR}/core)
 
 # TODO: Null driver to remove SDL dependency?
 add_subdirectory(${THIRD_PARTY_DIR}/SDL)
 list(APPEND SAPPHIRE_DEFINITIONS "SDL_SUPPORT" "GLM_FORCE_DEPTH_ZERO_TO_ONE")
-
-if (DISABLE_RTTI)
-    if (WIN32)
-        string(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
-    endif()
-endif()
 
 if (IMGUI_SUPPORT)
     list(APPEND SAPPHIRE_DEFINITIONS IMGUI_SUPPORT)

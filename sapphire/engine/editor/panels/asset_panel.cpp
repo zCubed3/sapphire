@@ -1,14 +1,14 @@
-#include "assets_panel.h"
+#include "asset_panel.h"
 
 #include <imgui.h>
 
 #include <engine/assets/asset_loader.h>
 
-const char *AssetsPanel::get_title() {
-    return "Assets";
+const char *AssetPanel::get_title() {
+    return "Asset";
 }
 
-void AssetsPanel::draw_file_recursive(File &file) {
+void AssetPanel::draw_file_recursive(File &file) {
     if (file.type == File::FILE_TYPE_FOLDER) {
         int flags = ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow;
         bool open = ImGui::TreeNodeEx(file.name.c_str(), flags);
@@ -31,7 +31,7 @@ void AssetsPanel::draw_file_recursive(File &file) {
     }
 }
 
-void AssetsPanel::draw_contents(Engine *p_engine) {
+void AssetPanel::draw_contents(Engine *p_engine) {
     if (ImGui::Button("Refresh")) {
         // TODO: Make this relative to a project
         files = Platform::get_singleton()->get_files("./");

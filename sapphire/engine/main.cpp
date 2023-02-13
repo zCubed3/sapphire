@@ -1,3 +1,5 @@
+#include <SDL.h>
+
 #include <engine/engine.h>
 
 #include <typing/class_registry.h>

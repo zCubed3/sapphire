@@ -15,11 +15,8 @@ protected:
     static StaticMeshAsset *primitive_quad;
     static StaticMeshAsset *primitive_cube;
 
-    MeshAsset::Vertex *vertex_data = nullptr;
-    MeshAsset::index_t *index_data = nullptr;
-
-    size_t vertex_count = 0;
-    size_t index_count = 0;
+    std::vector<MeshAsset::Vertex> vertex_data;
+    std::vector<MeshAsset::index_t> index_data;
 
 public:
     enum Primitive {
@@ -27,7 +24,9 @@ public:
         PRIMITIVE_CUBE
     };
 
-    StaticMeshAsset(Vertex* vertex_data, size_t vertex_count, index_t* index_data, size_t index_count);
+    StaticMeshAsset(const std::vector<Vertex>& vertex_data, const std::vector<index_t>& index_data);
+
+    void draw_editor_gui() override;
 
     Vertex *get_vertex_data(uint32_t *p_length) override;
     index_t *get_index_data(uint32_t *p_length) override;

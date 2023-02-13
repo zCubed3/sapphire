@@ -9,6 +9,8 @@
 #include <val/pipelines/val_pipeline.h>
 #include <val/images/val_image.h>
 
+#include <memory>
+
 #ifdef DEBUG
 #include <iostream>
 #endif

@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <vector>
 
 class ConfigFile;
 class TextureAsset;
