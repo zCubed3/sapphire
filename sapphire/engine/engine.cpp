@@ -225,6 +225,7 @@ void Engine::set_window_title(const std::string &title) {
 #if defined(DEBUG)
 bool Engine::create_test_world() {
     mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.obj"));
+    //mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.sebm"));
     material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test.semd"));
 
     skybox_mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test_skybox.obj"));

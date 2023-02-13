@@ -8,7 +8,7 @@
 // Mesh that is loaded from a file at runtime
 class StaticMeshAsset : public MeshAsset {
 protected:
-    friend class OBJLoader;
+    friend class MeshLoader;
 
     static void create_primitives();
 

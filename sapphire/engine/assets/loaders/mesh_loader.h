@@ -1,5 +1,5 @@
-#ifndef SAPPHIRE_OBJ_LOADER_H
-#define SAPPHIRE_OBJ_LOADER_H
+#ifndef SAPPHIRE_MESH_LOADER_H
+#define SAPPHIRE_MESH_LOADER_H
 
 #include <glm.hpp>
 
@@ -7,7 +7,9 @@
 
 #include <engine/assets/asset_loader.h>
 
-class OBJLoader : public AssetLoader {
+class MeshLoader : public AssetLoader {
+    REFLECT_CLASS(MeshLoader, AssetLoader)
+
 protected:
     void load_placeholders() override;
 

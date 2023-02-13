@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <engine/assets/loaders/material_loader.h>
-#include <engine/assets/loaders/obj_loader.h>
+#include <engine/assets/loaders/mesh_loader.h>
 #include <engine/assets/loaders/texture_loader.h>
 
 #include <engine/assets/asset.h>
@@ -21,7 +21,9 @@ void AssetLoader::unload_placeholders() {
 }
 
 void AssetLoader::register_engine_asset_loaders() {
-    register_loader<OBJLoader>();
+    ClassRegistry::register_class<AssetLoader>();
+
+    register_loader<MeshLoader>();
     register_loader<MaterialLoader>();
     register_loader<TextureLoader>();
 
