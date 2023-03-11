@@ -45,6 +45,8 @@ set(SAPPHIRE_ENGINE_SOURCES
         "rendering/objects/mesh_draw_object.cpp"
         "rendering/lighting/light.cpp"
 
+        "tasks/worker_pool.cpp"
+
         # TODO: Move this under "if editor"
         "editor/editor.cpp"
         "editor/data/editor_config.cpp"

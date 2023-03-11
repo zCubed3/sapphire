@@ -15,7 +15,7 @@ const char *ConsolePanel::get_title() {
 }
 
 void ConsolePanel::draw_contents(Engine* p_engine) {
-    if (ImGui::Button("Ignores")) {
+    if (ImGui::Button("Filters")) {
         ImGui::OpenPopup("Severities");
     }
 

@@ -9,6 +9,7 @@
 #include <engine/assets/asset.h>
 
 std::vector<AssetLoader *> AssetLoader::loaders = {};
+WorkerPool AssetLoader::loader_pool = WorkerPool();
 
 void AssetLoader::load_placeholders() {}
 void AssetLoader::unload_placeholders() {}
@@ -25,7 +26,7 @@ void AssetLoader::register_engine_asset_loaders() {
 
 void AssetLoader::release_cache() {
     for (auto& pair: asset_cache) {
-        if (pair.second.unique()) {
+        if (pair.second.use_count() == 1) {
             pair.second.reset();
         } else { // Yes I am aware this isn't good to do, but I have no other option
             delete pair.second.get();

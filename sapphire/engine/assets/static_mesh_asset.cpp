@@ -81,8 +81,11 @@ void StaticMeshAsset::create_primitives() {
     */
 }
 
+std::shared_ptr<StaticMeshAsset> StaticMeshAsset::missing_model = nullptr;
 StaticMeshAsset *StaticMeshAsset::primitive_quad = nullptr;
 StaticMeshAsset *StaticMeshAsset::primitive_cube = nullptr;
+
+StaticMeshAsset::StaticMeshAsset() = default;
 
 StaticMeshAsset::StaticMeshAsset(const std::vector<Vertex> &vertex_data, const std::vector<index_t> &index_data) {
     this->vertex_data = vertex_data;
@@ -91,6 +94,14 @@ StaticMeshAsset::StaticMeshAsset(const std::vector<Vertex> &vertex_data, const s
 
 void StaticMeshAsset::draw_editor_gui() {
 
+}
+
+void StaticMeshAsset::set_vertex_data(const std::vector<Vertex> &vertex_data) {
+    this->vertex_data = vertex_data;
+}
+
+void StaticMeshAsset::set_index_data(const std::vector<index_t> &index_data) {
+    this->index_data = index_data;
 }
 
 MeshAsset::Vertex *StaticMeshAsset::get_vertex_data(uint32_t *p_length) {

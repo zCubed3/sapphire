@@ -19,14 +19,20 @@ protected:
     std::vector<MeshAsset::index_t> index_data;
 
 public:
+    static std::shared_ptr<StaticMeshAsset> missing_model;
+
     enum Primitive {
         PRIMITIVE_QUAD,
         PRIMITIVE_CUBE
     };
 
+    StaticMeshAsset();
     StaticMeshAsset(const std::vector<Vertex>& vertex_data, const std::vector<index_t>& index_data);
 
     void draw_editor_gui() override;
+
+    void set_vertex_data(const std::vector<Vertex>& vertex_data);
+    void set_index_data(const std::vector<index_t>& index_data);
 
     Vertex *get_vertex_data(uint32_t *p_length) override;
     index_t *get_index_data(uint32_t *p_length) override;
