@@ -26,7 +26,7 @@
 #include <rs_vulkan/rendering/vulkan_shader.h>
 #include <rs_vulkan/rendering/vulkan_texture.h>
 
-#include <val/pipelines/val_pipeline.h>
+#include <val/pipelines/val_pipeline.hpp>
 #include <val/render_targets/val_image_render_target.h>
 
 #if defined(IMGUI_SUPPORT)

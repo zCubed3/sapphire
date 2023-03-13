@@ -3,11 +3,11 @@
 
 #include <engine/rendering/render_server.hpp>
 
+#include <val/pipelines/val_descriptor_set_builder.hpp>
+#include <val/pipelines/val_render_pass_builder.hpp>
+#include <val/pipelines/val_vertex_input_builder.hpp>
 #include <val/render_targets/val_render_target.h>
-#include <val/pipelines/val_render_pass_builder.h>
-#include <val/pipelines/val_vertex_input_builder.h>
-#include <val/pipelines/val_descriptor_set_builder.h>
-#include <val/val_instance.h>
+#include <val/val_instance.hpp>
 
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>

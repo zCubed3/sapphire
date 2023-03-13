@@ -72,7 +72,10 @@ target_include_directories(SapphireEngine PUBLIC
         ${THIRD_PARTY_DIR}/glm/glm
         ${THIRD_PARTY_DIR}/imgui
         ${THIRD_PARTY_DIR}/stb
+        ${VAL_INCLUDE_DIRS}
         )
+
+message("VAL = ${VAL_INCLUDE_DIRS}")
 
 target_compile_definitions(SapphireEngine PUBLIC
         ${SAPPHIRE_DEFINITIONS}
@@ -84,6 +87,7 @@ target_link_libraries(SapphireEngine PUBLIC
         SapphireCore
         SDL2
         SDL2main
+        VAL
         )
 
 target_compile_options(SapphireEngine PUBLIC

@@ -9,13 +9,13 @@
 #include <engine/rendering/render_target.hpp>
 #include <engine/rendering/texture.hpp>
 
-#include <rs_vulkan/rendering/vulkan_render_server.h>
 #include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
-#include <rs_vulkan/rendering/vulkan_shader.h>
 #include <rs_vulkan/rendering/vulkan_material.h>
+#include <rs_vulkan/rendering/vulkan_render_server.h>
+#include <rs_vulkan/rendering/vulkan_shader.h>
 #include <rs_vulkan/rendering/vulkan_texture.h>
-#include <val/val_instance.h>
-#include <val/pipelines/val_pipeline.h>
+#include <val/pipelines/val_pipeline.hpp>
+#include <val/val_instance.hpp>
 
 #include <vk_mem_alloc.h>
 

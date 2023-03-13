@@ -2,8 +2,8 @@
 
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 
-#include <val/data/val_buffer.h>
-#include <val/images/val_image.h>
+#include <val/data/val_buffer.hpp>
+#include <val/images/val_image.hpp>
 #include <vulkan/vulkan.h>
 
 #if defined(IMGUI_SUPPORT)

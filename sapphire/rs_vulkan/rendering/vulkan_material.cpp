@@ -6,8 +6,8 @@
 #include <rs_vulkan/rendering/vulkan_shader.h>
 #include <rs_vulkan/rendering/vulkan_texture.h>
 
-#include <val/pipelines/val_pipeline.h>
-#include <val/images/val_image.h>
+#include <val/images/val_image.hpp>
+#include <val/pipelines/val_pipeline.hpp>
 
 #include <memory>
 

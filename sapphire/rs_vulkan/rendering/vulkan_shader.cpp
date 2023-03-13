@@ -12,9 +12,9 @@
 #include <rs_vulkan/shaders/depth_pass.spv.vert.gen.h>
 #include <rs_vulkan/shaders/depth_pass.spv.frag.gen.h>
 
-#include <val/val_instance.h>
-#include <val/pipelines/val_shader_module.h>
-#include <val/pipelines/val_pipeline_builder.h>
+#include <val/pipelines/val_pipeline_builder.hpp>
+#include <val/pipelines/val_shader_module.hpp>
+#include <val/val_instance.hpp>
 
 #ifdef DEBUG
 #include <iostream>
