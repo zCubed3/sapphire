@@ -29,7 +29,7 @@ public:
 
     ~MeshAsset() override;
 
-#if defined(BUILD_AS_EDITOR)
+#if defined(SAPPHIRE_EDITOR)
     void draw_editor_gui() override;
 #endif
 

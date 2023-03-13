@@ -24,7 +24,7 @@ class Asset;
 class MeshAsset;
 class MaterialAsset;
 
-#if defined(BUILD_AS_EDITOR)
+#if defined(SAPPHIRE_EDITOR)
 class Editor;
 #endif
 
@@ -44,7 +44,7 @@ public:
     // TODO: Temporary, lighting needs an overhaul
     Light* light = nullptr;
 
-#if defined(BUILD_AS_EDITOR)
+#if defined(SAPPHIRE_EDITOR)
     Editor* editor = nullptr;
 #endif
 

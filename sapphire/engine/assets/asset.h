@@ -9,7 +9,7 @@ class Asset {
 public:
     virtual ~Asset() = default;
 
-#if defined(BUILD_AS_EDITOR)
+#if defined(SAPPHIRE_EDITOR)
     virtual void draw_editor_gui();
 #endif
 };

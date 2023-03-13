@@ -139,7 +139,7 @@ bool Engine::initialize() {
 
     AssetLoader::load_all_placeholders();
 
-#if defined(BUILD_AS_EDITOR)
+#if defined(SAPPHIRE_EDITOR)
     editor = new Editor();
     editor->initialize(this);
 #endif
@@ -224,8 +224,8 @@ void Engine::set_window_title(const std::string &title) {
 
 #if defined(DEBUG)
 bool Engine::create_test_world() {
-    mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.obj"));
-    //mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.sebm"));
+    //mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.obj"));
+    mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test.sebm"));
     material = std::reinterpret_pointer_cast<MaterialAsset>(AssetLoader::load_asset("test.semd"));
 
     skybox_mesh = std::reinterpret_pointer_cast<MeshAsset>(AssetLoader::load_asset("test_skybox.obj"));

@@ -1,6 +1,6 @@
 #include "asset.h"
 
-#if defined(BUILD_AS_EDITOR)
+#if defined(SAPPHIRE_EDITOR)
 void Asset::draw_editor_gui() {
 
 }

@@ -49,6 +49,23 @@ void RenderServer::initialize_imgui(WindowRenderTarget *p_target) {
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
+    // Load some common fonts (if they exist)
+    if (Platform::get_singleton()->file_exists("./data/fonts/NotoSans.ttf")) {
+        io.Fonts->AddFontFromFileTTF("./data/fonts/NotoSans.ttf", 16.0f);
+    }
+
+#if defined(IMGUI_ENABLE_FREETYPE)
+    if (Platform::get_singleton()->file_exists("./data/fonts/NotoEmoji.ttf")) {
+        ImWchar ranges[] = { 0x1, 0x1FFFF, 0 };
+        ImFontConfig cfg;
+
+        cfg.OversampleH = cfg.OversampleV = 1;
+        cfg.MergeMode = true;
+        cfg.FontBuilderFlags |= ImGuiFreeTypeBuilderFlags_LoadColor;
+        io.Fonts->AddFontFromFileTTF("./data/fonts/NotoEmoji.ttf", 16.0f, &cfg, ranges);
+    }
+#endif
+
     //ImGui::StyleColorsClassic(&style);
 }
 
