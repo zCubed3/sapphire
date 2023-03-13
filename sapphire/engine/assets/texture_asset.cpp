@@ -1,6 +1,6 @@
-#include "texture_asset.h"
+#include "texture_asset.hpp"
 
-#include <engine/rendering/texture.h>
+#include <engine/rendering/texture.hpp>
 
 TextureAsset::~TextureAsset() {
     delete texture;

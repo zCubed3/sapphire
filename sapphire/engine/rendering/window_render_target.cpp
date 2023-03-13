@@ -2,7 +2,7 @@
 
 #include <SDL.h>
 
-#include <scene/world.h>
+#include <scene/world.hpp>
 
 WindowRenderTarget::WindowRenderTarget(SDL_Window *p_window) {
     this->window = p_window;

@@ -1,9 +1,9 @@
-#include "world.h"
+#include "world.hpp"
 
-#include <engine/scene/actor.h>
-#include <engine/rendering/shader.h>
-#include <engine/rendering/material.h>
-#include <engine/rendering/objects/mesh_draw_object.h>
+#include <engine/rendering/material.hpp>
+#include <engine/rendering/objects/mesh_draw_object.hpp>
+#include <engine/rendering/shader.hpp>
+#include <engine/scene/actor.hpp>
 
 void World::add_actor(Actor *p_actor) {
     if (p_actor != nullptr) {

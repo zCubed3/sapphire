@@ -4,7 +4,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-#include <engine/rendering/render_target_data.h>
+#include <engine/rendering/render_target_data.hpp>
 
 #include <val/render_targets/val_render_target.h>
 

@@ -1,8 +1,8 @@
 #include <SDL.h>
 
-#include <engine/engine.h>
+#include "engine.hpp"
 
-#include <typing/class_registry.h>
+#include <typing/class_registry.hpp>
 
 int main(int argc, char **argv) {
     Engine engine;

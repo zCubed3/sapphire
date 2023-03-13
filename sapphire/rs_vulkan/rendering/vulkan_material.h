@@ -1,7 +1,7 @@
 #ifndef SAPPHIRE_VULKAN_MATERIAL_H
 #define SAPPHIRE_VULKAN_MATERIAL_H
 
-#include <engine/rendering/material.h>
+#include <engine/rendering/material.hpp>
 
 class ValDescriptorSet;
 

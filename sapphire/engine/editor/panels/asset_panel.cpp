@@ -1,8 +1,8 @@
-#include "asset_panel.h"
+#include "asset_panel.hpp"
 
 #include <imgui.h>
 
-#include <engine/assets/asset_loader.h>
+#include <engine/assets/asset_loader.hpp>
 
 const char *AssetPanel::get_title() {
     return "Asset";

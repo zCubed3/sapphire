@@ -1,13 +1,13 @@
-#include "mesh_actor.h"
+#include "mesh_actor.hpp"
 
-#include <engine/scene/world.h>
+#include <engine/scene/world.hpp>
 
-#include <engine/assets/material_asset.h>
-#include <engine/assets/mesh_asset.h>
-#include <engine/rendering/buffers/object_buffer.h>
-#include <engine/rendering/objects/mesh_draw_object.h>
-#include <engine/rendering/render_server.h>
-#include <engine/rendering/render_target.h>
+#include <engine/assets/material_asset.hpp>
+#include <engine/assets/mesh_asset.hpp>
+#include <engine/rendering/buffers/object_buffer.hpp>
+#include <engine/rendering/objects/mesh_draw_object.hpp>
+#include <engine/rendering/render_server.hpp>
+#include <engine/rendering/render_target.hpp>
 
 MeshActor::MeshActor() {
     draw_object = new MeshDrawObject();

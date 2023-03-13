@@ -1,8 +1,8 @@
-#include "light.h"
+#include "light.hpp"
 
-#include <engine/rendering/render_server.h>
+#include <engine/rendering/render_server.hpp>
 #include <engine/rendering/texture_render_target.h>
-#include <engine/scene/world.h>
+#include <engine/scene/world.hpp>
 
 Light::Light() {
     const RenderServer* rs_instance = RenderServer::get_singleton();

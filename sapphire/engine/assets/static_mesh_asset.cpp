@@ -1,9 +1,9 @@
-#include "static_mesh_asset.h"
+#include "static_mesh_asset.hpp"
 
 #include <cstring>
 
-#include <engine/rendering/buffers/mesh_buffer.h>
-#include <engine/rendering/render_server.h>
+#include <engine/rendering/buffers/mesh_buffer.hpp>
+#include <engine/rendering/render_server.hpp>
 
 void StaticMeshAsset::create_primitives() {
     /*

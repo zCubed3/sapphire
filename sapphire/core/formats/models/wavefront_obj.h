@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include <core/data/vectors.h>
+#include <core/data/vectors.hpp>
 
 // Wavefront obj (aka .obj file)
 class WavefrontOBJ {

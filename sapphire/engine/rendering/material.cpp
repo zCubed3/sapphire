@@ -1,7 +1,7 @@
-#include "material.h"
+#include "material.hpp"
 
-#include <engine/assets/asset_loader.h>
-#include <core/config/config_file.h>
+#include <core/config/config_file.hpp>
+#include <engine/assets/asset_loader.hpp>
 
 bool Material::make_from_semd(ConfigFile *p_semd_file) {
     ConfigFile::ConfigSection& param_section = p_semd_file->get_section("Parameters");

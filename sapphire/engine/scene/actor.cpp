@@ -1,8 +1,8 @@
-#include "actor.h"
+#include "actor.hpp"
 
 #include <random>
 
-#include <math/angle_math.h>
+#include <math/angle_math.hpp>
 
 #include <gtc/type_ptr.hpp>
 

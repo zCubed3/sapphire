@@ -13,11 +13,11 @@ set(SAPPHIRE_CORE_SOURCES
         "fs/virtual_file_system.cpp"
         "fs/pak_file_system.cpp"
 
-        "platforms/platform.cpp"
+        "os/platform.cpp"
         )
 
 if (WIN32)
-    list(APPEND SAPPHIRE_CORE_SOURCES "platforms/win32_platform.cpp")
+    list(APPEND SAPPHIRE_CORE_SOURCES "os/win32_platform.cpp")
 endif()
 
 add_library(SapphireCore STATIC ${SAPPHIRE_CORE_SOURCES})

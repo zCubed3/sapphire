@@ -1,4 +1,4 @@
-#include "timing.h"
+#include "timing.hpp"
 
 Timing* Timing::singleton = nullptr;
 

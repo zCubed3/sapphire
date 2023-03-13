@@ -1,4 +1,4 @@
-#include "graphics_buffer.h"
+#include "graphics_buffer.hpp"
 
 GraphicsBuffer::~GraphicsBuffer() {
 

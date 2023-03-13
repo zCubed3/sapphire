@@ -1,6 +1,6 @@
-#include "editor_config.h"
+#include "editor_config.hpp"
 
-#include <engine/editor/editor.h>
+#include "editor/editor.hpp"
 
 void EditorConfig::load_config(Editor *p_editor) {
     file.set_string("sLastProject", "History", "");

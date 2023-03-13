@@ -8,16 +8,16 @@
 #include <SDL.h>
 #include <SDL_vulkan.h>
 
-#include <engine/assets/mesh_asset.h>
-#include <core/data/size_tools.h>
-#include <engine/rendering/buffers/view_buffer.h>
-#include <engine/rendering/render_target.h>
+#include <core/data/size_tools.hpp>
+#include <engine/assets/mesh_asset.hpp>
+#include <engine/assets/texture_asset.hpp>
+#include <engine/rendering/buffers/view_buffer.hpp>
+#include <engine/rendering/lighting/light.hpp>
+#include <engine/rendering/objects/mesh_draw_object.hpp>
+#include <engine/rendering/render_target.hpp>
 #include <engine/rendering/texture_render_target.h>
 #include <engine/rendering/window_render_target.h>
-#include <engine/rendering/lighting/light.h>
-#include <engine/rendering/objects/mesh_draw_object.h>
-#include <engine/scene/world.h>
-#include <engine/assets/texture_asset.h>
+#include <engine/scene/world.hpp>
 
 #include <rs_vulkan/rendering/vulkan_graphics_buffer.h>
 #include <rs_vulkan/rendering/vulkan_material.h>

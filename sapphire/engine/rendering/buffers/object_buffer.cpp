@@ -1,6 +1,6 @@
-#include "object_buffer.h"
+#include "object_buffer.hpp"
 
-#include <engine/rendering/render_server.h>
+#include <engine/rendering/render_server.hpp>
 
 ObjectBuffer::ObjectBuffer() {
     const RenderServer* rs_instance = RenderServer::get_singleton();

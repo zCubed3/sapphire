@@ -1,12 +1,12 @@
-#include "asset_loader.h"
+#include "asset_loader.hpp"
 
 #include <iostream>
 
-#include <engine/assets/loaders/material_loader.h>
-#include <engine/assets/loaders/mesh_loader.h>
-#include <engine/assets/loaders/texture_loader.h>
+#include <engine/assets/loaders/material_loader.hpp>
+#include <engine/assets/loaders/mesh_loader.hpp>
+#include <engine/assets/loaders/texture_loader.hpp>
 
-#include <engine/assets/asset.h>
+#include <engine/assets/asset.hpp>
 
 std::vector<AssetLoader *> AssetLoader::loaders = {};
 WorkerPool AssetLoader::loader_pool = WorkerPool();

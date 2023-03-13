@@ -2,12 +2,12 @@
 
 #include <vulkan/vulkan.h>
 
-#include <engine/assets/material_asset.h>
-#include <engine/assets/mesh_asset.h>
-#include <engine/assets/texture_asset.h>
-#include <engine/rendering/buffers/object_buffer.h>
-#include <engine/rendering/render_target.h>
-#include <engine/rendering/texture.h>
+#include <engine/assets/material_asset.hpp>
+#include <engine/assets/mesh_asset.hpp>
+#include <engine/assets/texture_asset.hpp>
+#include <engine/rendering/buffers/object_buffer.hpp>
+#include <engine/rendering/render_target.hpp>
+#include <engine/rendering/texture.hpp>
 
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #include <rs_vulkan/rendering/vulkan_graphics_buffer.h>

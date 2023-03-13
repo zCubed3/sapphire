@@ -1,6 +1,6 @@
-#include "config_file.h"
+#include "config_file.hpp"
 
-#include <core/data/string_tools.h>
+#include <core/data/string_tools.hpp>
 
 #include <fstream>
 #include <sstream>

@@ -1,6 +1,6 @@
 #include "vulkan_shader.h"
 
-#include <core/config/config_file.h>
+#include <core/config/config_file.hpp>
 
 #include <fstream>
 

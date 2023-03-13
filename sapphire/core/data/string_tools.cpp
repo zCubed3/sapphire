@@ -1,4 +1,4 @@
-#include "string_tools.h"
+#include "string_tools.hpp"
 
 std::vector<std::string> StringTools::split(const std::string& string, char delimiter) {
     std::string dupe = string;

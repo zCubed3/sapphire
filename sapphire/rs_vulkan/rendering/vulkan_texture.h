@@ -1,7 +1,7 @@
 #ifndef SAPPHIRE_VULKAN_TEXTURE_H
 #define SAPPHIRE_VULKAN_TEXTURE_H
 
-#include <engine/rendering/texture.h>
+#include <engine/rendering/texture.hpp>
 
 class ValImage;
 class ValDescriptorSet;

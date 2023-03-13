@@ -1,7 +1,7 @@
 #ifndef SAPPHIRE_WINDOW_TARGET_H
 #define SAPPHIRE_WINDOW_TARGET_H
 
-#include "render_target.h"
+#include "render_target.hpp"
 
 #if defined(IMGUI_SUPPORT)
 #include <imgui.h>

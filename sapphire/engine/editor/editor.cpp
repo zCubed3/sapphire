@@ -1,16 +1,16 @@
-#include "editor.h"
+#include "editor.hpp"
 
-#include <core/platforms/platform.h>
-#include <core/data/string_tools.h>
+#include <core/data/string_tools.hpp>
+#include <core/os/platform.hpp>
 
-#include <engine/editor/data/project.h>
-#include <engine/editor/panels/actor_panel.h>
-#include <engine/editor/panels/asset_panel.h>
-#include <engine/editor/panels/console_panel.h>
-#include <engine/editor/panels/renderer_panel.h>
-#include <engine/editor/panels/world_panel.h>
-#include <engine/editor/panels/world_view_panel.h>
-#include <engine/engine.h>
+#include "engine.hpp"
+#include <engine/editor/data/project.hpp>
+#include <engine/editor/panels/actor_panel.hpp>
+#include <engine/editor/panels/asset_panel.hpp>
+#include <engine/editor/panels/console_panel.hpp>
+#include <engine/editor/panels/renderer_panel.hpp>
+#include <engine/editor/panels/world_panel.hpp>
+#include <engine/editor/panels/world_view_panel.hpp>
 
 #include <SDL.h>
 

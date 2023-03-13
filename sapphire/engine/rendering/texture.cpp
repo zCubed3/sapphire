@@ -1,11 +1,11 @@
-#include "texture.h"
+#include "texture.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include <core/data/string_tools.h>
-#include <core/config/config_file.h>
-#include <core/platforms/platform.h>
+#include <core/config/config_file.hpp>
+#include <core/data/string_tools.hpp>
+#include <core/os/platform.hpp>
 
 Texture::Dimensions Texture::get_dimensions() const {
     return dimensions;

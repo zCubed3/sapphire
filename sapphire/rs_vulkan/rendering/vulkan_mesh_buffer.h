@@ -1,9 +1,9 @@
 #ifndef SAPPHIRE_VULKAN_MESH_BUFFER_H
 #define SAPPHIRE_VULKAN_MESH_BUFFER_H
 
-#include <engine/rendering/buffers/mesh_buffer.h>
-#include <vulkan/vulkan.h>
+#include <engine/rendering/buffers/mesh_buffer.hpp>
 #include <vector>
+#include <vulkan/vulkan.h>
 
 class MeshAsset;
 

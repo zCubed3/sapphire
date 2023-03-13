@@ -1,14 +1,14 @@
-#include "console_panel.h"
+#include "console_panel.hpp"
 
 #if defined(IMGUI_SUPPORT)
 
-#include <engine/console/console.h>
+#include "console/console.hpp"
 
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
-#include <engine/rendering/render_server.h>
-#include <core/data/timing.h>
+#include <core/data/timing.hpp>
+#include <engine/rendering/render_server.hpp>
 
 const char *ConsolePanel::get_title() {
     return "Console";

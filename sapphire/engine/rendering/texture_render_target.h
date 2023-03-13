@@ -1,7 +1,7 @@
 #ifndef SAPPHIRE_TEXTURE_RENDER_TARGET_H
 #define SAPPHIRE_TEXTURE_RENDER_TARGET_H
 
-#include <engine/rendering/render_target.h>
+#include <engine/rendering/render_target.hpp>
 
 class Texture;
 

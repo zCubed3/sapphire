@@ -1,10 +1,10 @@
-#include "texture_loader.h"
+#include "texture_loader.hpp"
 
-#include <core/platforms/platform.h>
-#include <core/config/config_file.h>
-#include <engine/assets/texture_asset.h>
-#include <engine/rendering/render_server.h>
-#include <engine/rendering/texture.h>
+#include <core/config/config_file.hpp>
+#include <core/os/platform.hpp>
+#include <engine/assets/texture_asset.hpp>
+#include <engine/rendering/render_server.hpp>
+#include <engine/rendering/texture.hpp>
 
 std::vector<std::string> TextureLoader::get_extensions() {
     return {"setd"};

@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include <core/data/vectors.h>
+#include <core/data/vectors.hpp>
 
 // Default SEBM identifier
 const uint32_t SEBM_IDENT = 0x4D424553;

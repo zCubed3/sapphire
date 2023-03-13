@@ -1,7 +1,7 @@
 #ifndef SAPPHIRE_VULKAN_SHADER_H
 #define SAPPHIRE_VULKAN_SHADER_H
 
-#include <engine/rendering/shader.h>
+#include <engine/rendering/shader.hpp>
 #include <vector>
 #include <vulkan/vulkan.h>
 

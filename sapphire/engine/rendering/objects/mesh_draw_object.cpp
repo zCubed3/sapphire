@@ -1,10 +1,10 @@
-#include "mesh_draw_object.h"
+#include "mesh_draw_object.hpp"
 
-#include <engine/rendering/material.h>
-#include <engine/rendering/buffers/mesh_buffer.h>
+#include <engine/rendering/buffers/mesh_buffer.hpp>
+#include <engine/rendering/material.hpp>
 
 #if DEBUG
-#include <engine/assets/static_mesh_asset.h>
+#include <engine/assets/static_mesh_asset.hpp>
 #endif
 
 MeshDrawObject::MeshDrawObject() {

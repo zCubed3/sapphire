@@ -1,8 +1,8 @@
-#include "shader.h"
+#include "shader.hpp"
 
-#include <core/config/config_file.h>
+#include <core/config/config_file.hpp>
 
-#include <core/data/string_tools.h>
+#include <core/data/string_tools.hpp>
 
 bool ShaderPass::make_from_sesd(ConfigFile *p_sesd_file) {
     write_depth = p_sesd_file->try_get_int("bWriteDepth", name, 1);

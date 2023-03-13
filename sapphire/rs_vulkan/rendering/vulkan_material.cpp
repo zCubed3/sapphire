@@ -1,6 +1,6 @@
 #include "vulkan_material.h"
 
-#include <engine/assets/texture_asset.h>
+#include <engine/assets/texture_asset.hpp>
 
 #include <rs_vulkan/rendering/vulkan_render_server.h>
 #include <rs_vulkan/rendering/vulkan_shader.h>

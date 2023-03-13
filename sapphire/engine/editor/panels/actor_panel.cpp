@@ -1,8 +1,8 @@
-#include "actor_panel.h"
+#include "actor_panel.hpp"
 
 #if defined(IMGUI_SUPPORT)
 
-#include <engine/scene/actor.h>
+#include <engine/scene/actor.hpp>
 
 #include <imgui.h>
 

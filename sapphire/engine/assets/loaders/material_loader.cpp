@@ -1,13 +1,13 @@
-#include "material_loader.h"
+#include "material_loader.hpp"
 
 #include <fstream>
 
-#include <engine/assets/material_asset.h>
-#include <core/config/config_file.h>
-#include <core/platforms/platform.h>
-#include <engine/rendering/render_server.h>
-#include <engine/rendering/material.h>
-#include <engine/rendering/shader.h>
+#include <core/config/config_file.hpp>
+#include <core/os/platform.hpp>
+#include <engine/assets/material_asset.hpp>
+#include <engine/rendering/material.hpp>
+#include <engine/rendering/render_server.hpp>
+#include <engine/rendering/shader.hpp>
 
 std::vector<std::string> MaterialLoader::get_extensions() {
     return {"semd", "bsemd"};

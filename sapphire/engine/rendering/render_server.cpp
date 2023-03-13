@@ -1,11 +1,13 @@
-#include "render_server.h"
+#include "render_server.hpp"
 
-#include <engine/assets/mesh_asset.h>
-#include <engine/rendering/buffers/mesh_buffer.h>
-#include <engine/rendering/buffers/object_buffer.h>
-#include <engine/rendering/render_target.h>
+#include <engine/assets/mesh_asset.hpp>
+#include <engine/rendering/buffers/mesh_buffer.hpp>
+#include <engine/rendering/buffers/object_buffer.hpp>
+#include <engine/rendering/objects/mesh_draw_object.hpp>
+#include <engine/rendering/render_target.hpp>
 #include <engine/rendering/window_render_target.h>
-#include <engine/rendering/objects/mesh_draw_object.h>
+
+#include <core/os/platform.hpp>
 
 #if defined(IMGUI_SUPPORT)
 #include <imgui.h>

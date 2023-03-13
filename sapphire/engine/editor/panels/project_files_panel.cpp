@@ -1,4 +1,4 @@
-#include "project_files_panel.h"
+#include "project_files_panel.hpp"
 
 const char *ProjectFilesPanel::get_title() {
     return "Project Files";

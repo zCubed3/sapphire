@@ -1,8 +1,8 @@
-#include "render_target.h"
+#include "render_target.hpp"
 
-#include <engine/rendering/render_server.h>
-#include <engine/rendering/render_target_data.h>
-#include <engine/scene/world.h>
+#include <engine/rendering/render_server.hpp>
+#include <engine/rendering/render_target_data.hpp>
+#include <engine/scene/world.hpp>
 
 #include <gtc/matrix_transform.hpp>
 

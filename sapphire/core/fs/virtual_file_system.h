@@ -1,7 +1,7 @@
 #ifndef SAPPHIRE_VIRTUAL_FILE_SYSTEM_H
 #define SAPPHIRE_VIRTUAL_FILE_SYSTEM_H
 
-#include <data/file.h>
+#include <data/file.hpp>
 
 #include <vector>
 #include <string>

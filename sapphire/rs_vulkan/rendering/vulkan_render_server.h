@@ -1,7 +1,7 @@
 #ifndef SAPPHIRE_VULKAN_RENDER_SERVER_H
 #define SAPPHIRE_VULKAN_RENDER_SERVER_H
 
-#include <engine/rendering/render_server.h>
+#include <engine/rendering/render_server.hpp>
 
 #include <val/render_targets/val_render_target.h>
 #include <val/pipelines/val_render_pass_builder.h>

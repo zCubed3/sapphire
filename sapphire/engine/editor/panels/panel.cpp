@@ -1,4 +1,4 @@
-#include "panel.h"
+#include "panel.hpp"
 
 #if defined(IMGUI_SUPPORT)
 

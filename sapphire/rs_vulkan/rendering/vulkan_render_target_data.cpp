@@ -1,6 +1,6 @@
 #include "vulkan_render_target_data.h"
 
-#include <engine/rendering/render_target.h>
+#include <engine/rendering/render_target.hpp>
 #include <engine/rendering/texture_render_target.h>
 
 #include <rs_vulkan/rendering/vulkan_render_server.h>

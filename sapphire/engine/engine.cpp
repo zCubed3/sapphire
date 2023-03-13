@@ -1,28 +1,28 @@
-#include "engine.h"
+#include "engine.hpp"
 
 #include <SDL.h>
 
 #ifdef WIN32
-#include <core/platforms/win32_platform.h>
+#include <core/os/win32_platform.hpp>
 #endif
 
-#include <core/data/string_tools.h>
-#include <core/data/timing.h>
+#include "console/console.hpp"
+#include <core/data/string_tools.hpp>
+#include <core/data/timing.hpp>
 #include <core/fs/pak_file_system.h>
-#include <engine/assets/asset_loader.h>
-#include <engine/assets/material_asset.h>
-#include <engine/assets/static_mesh_asset.h>
-#include <engine/assets/texture_asset.h>
-#include <engine/console/console.h>
-#include <engine/rendering/lighting/light.h>
-#include <engine/rendering/render_server.h>
-#include <engine/rendering/shader.h>
-#include <engine/rendering/texture.h>
+#include <engine/assets/asset_loader.hpp>
+#include <engine/assets/material_asset.hpp>
+#include <engine/assets/static_mesh_asset.hpp>
+#include <engine/assets/texture_asset.hpp>
+#include <engine/rendering/lighting/light.hpp>
+#include <engine/rendering/render_server.hpp>
+#include <engine/rendering/shader.hpp>
+#include <engine/rendering/texture.hpp>
 #include <engine/rendering/texture_render_target.h>
 #include <engine/rendering/window_render_target.h>
-#include <engine/scene/mesh_actor.h>
-#include <engine/scene/world.h>
-#include <engine/typing/class_registry.h>
+#include <engine/scene/mesh_actor.hpp>
+#include <engine/scene/world.hpp>
+#include <engine/typing/class_registry.hpp>
 
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
@@ -41,7 +41,7 @@
 #include <backends/imgui_impl_sdl.h>
 #include <imgui.h>
 
-#include <engine/editor/editor.h>
+#include "editor/editor.hpp"
 #endif
 
 void Engine::initialize_configs() {

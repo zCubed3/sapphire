@@ -1,4 +1,4 @@
-#include "color.h"
+#include "color.hpp"
 
 Color::Color(float r, float g, float b, float a) {
     backing[0] = r;

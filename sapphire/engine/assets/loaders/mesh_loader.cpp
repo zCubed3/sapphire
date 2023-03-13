@@ -1,13 +1,14 @@
-#include "mesh_loader.h"
+#include "mesh_loader.hpp"
 
+#include <iostream>
 #include <fstream>
 
+#include <core/data/string_tools.hpp>
 #include <core/formats/models/binary_mesh.h>
 #include <core/formats/models/wavefront_obj.h>
-#include <core/data/string_tools.h>
 
-#include <engine/assets/static_mesh_asset.h>
-#include <engine/rendering/render_server.h>
+#include <engine/assets/static_mesh_asset.hpp>
+#include <engine/rendering/render_server.hpp>
 
 void MeshLoader::load_placeholders() {
     StaticMeshAsset::create_primitives();

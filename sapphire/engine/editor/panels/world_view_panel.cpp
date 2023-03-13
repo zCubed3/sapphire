@@ -1,10 +1,10 @@
-#include "world_view_panel.h"
+#include "world_view_panel.hpp"
 
 #if defined(IMGUI_SUPPORT)
-#include <engine/rendering/render_server.h>
-#include <engine/rendering/texture.h>
+#include <engine/rendering/render_server.hpp>
+#include <engine/rendering/texture.hpp>
 
-#include <engine/scene/world.h>
+#include <engine/scene/world.hpp>
 
 #include <imgui.h>
 

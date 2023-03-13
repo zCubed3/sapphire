@@ -1,4 +1,4 @@
-#include "size_tools.h"
+#include "size_tools.hpp"
 
 size_t SizeTools::bytes_to_kib(size_t bytes) {
     return bytes / 1024;

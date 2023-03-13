@@ -1,6 +1,6 @@
-#include "material_asset.h"
+#include "material_asset.hpp"
 
-#include <engine/rendering/material.h>
+#include <engine/rendering/material.hpp>
 
 MaterialAsset::~MaterialAsset() {
     // TODO: Reset the material

@@ -1,12 +1,12 @@
-#include "world_panel.h"
+#include "world_panel.hpp"
 
-#include <engine/engine.h>
-#include <engine/scene/universe.h>
+#include "engine.hpp"
+#include <engine/scene/universe.hpp>
 
 #if defined(IMGUI_SUPPORT)
 
-#include <engine/scene/actor.h>
-#include <engine/scene/world.h>
+#include <engine/scene/actor.hpp>
+#include <engine/scene/world.hpp>
 
 #include <imgui.h>
 

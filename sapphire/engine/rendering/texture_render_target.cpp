@@ -1,6 +1,6 @@
 #include "texture_render_target.h"
 
-#include <engine/rendering/render_target_data.h>
+#include <engine/rendering/render_target_data.hpp>
 
 TextureRenderTarget::TextureRenderTarget(int width, int height, UsageIntent usage_intent) {
     rect = {0, 0, width, height};

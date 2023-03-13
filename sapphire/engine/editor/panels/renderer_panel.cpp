@@ -1,11 +1,11 @@
-#include "renderer_panel.h"
+#include "renderer_panel.hpp"
 
 #if defined(IMGUI_SUPPORT)
 
 #include <imgui.h>
 
-#include <engine/rendering/render_server.h>
-#include <core/data/timing.h>
+#include <core/data/timing.hpp>
+#include <engine/rendering/render_server.hpp>
 
 const char *RendererPanel::get_title() {
     return "Renderer";
