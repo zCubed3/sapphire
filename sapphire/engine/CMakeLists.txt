@@ -1,6 +1,8 @@
 #
 # Engine
 #
+
+# TODO: GLOB these
 set(SAPPHIRE_ENGINE_SOURCES
         "${THIRD_PARTY_DIR}/imgui/imgui.cpp"
         "${THIRD_PARTY_DIR}/imgui/imgui_draw.cpp"
@@ -22,6 +24,8 @@ set(SAPPHIRE_ENGINE_SOURCES
 
         "console/console.cpp"
 
+        "engine.cpp"
+
         #"scene/actor.cpp"
         #"scene/mesh_actor.cpp"
         #"scene/world.cpp"
@@ -32,7 +36,8 @@ set(SAPPHIRE_ENGINE_SOURCES
 
         "math/angle_math.cpp"
 
-
+        "rendering/render_server.cpp"
+        "rendering/window.cpp"
 
         # TODO: Move this under "if editor"
         #"editor/editor.cpp"
