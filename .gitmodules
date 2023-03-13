@@ -16,3 +16,6 @@
 [submodule "sapphire/engine/val"]
 	path = sapphire/engine/val
 	url = https://github.com/zCubed3/val.git
+[submodule "sapphire/val"]
+	path = sapphire/val
+	url = https://github.com/zCubed3/val.git

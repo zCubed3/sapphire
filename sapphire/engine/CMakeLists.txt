@@ -1,15 +1,4 @@
 #
-# Dependencies
-#
-set(VAL_SDL_PATH ${THIRD_PARTY_DIR}/SDL/include)
-
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    set(VAL_DEBUG ON)
-endif()
-
-add_subdirectory(val)
-
-#
 # Engine
 #
 set(SAPPHIRE_ENGINE_SOURCES
@@ -74,8 +63,6 @@ target_include_directories(SapphireEngine PUBLIC
         ${THIRD_PARTY_DIR}/stb
         ${VAL_INCLUDE_DIRS}
         )
-
-message("VAL = ${VAL_INCLUDE_DIRS}")
 
 target_compile_definitions(SapphireEngine PUBLIC
         ${SAPPHIRE_DEFINITIONS}

@@ -54,6 +54,15 @@ endif()
 # Core: Depends on nothing but the OS
 add_subdirectory(${CODE_DIR}/core)
 
+# VAL: Our vulkan abstraction layer
+set(VAL_SDL_PATH ${THIRD_PARTY_DIR}/SDL/include)
+
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set(VAL_DEBUG ON)
+endif()
+
+add_subdirectory(${CODE_DIR}/val)
+
 # TODO: Null driver to remove SDL dependency?
 add_subdirectory(${THIRD_PARTY_DIR}/SDL)
 
