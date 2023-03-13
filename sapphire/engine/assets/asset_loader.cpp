@@ -9,7 +9,6 @@
 #include <engine/assets/asset.hpp>
 
 std::vector<AssetLoader *> AssetLoader::loaders = {};
-WorkerPool AssetLoader::loader_pool = WorkerPool();
 
 void AssetLoader::load_placeholders() {}
 void AssetLoader::unload_placeholders() {}

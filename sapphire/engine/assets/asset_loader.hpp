@@ -6,7 +6,6 @@
 #include <vector>
 #include <memory>
 
-#include <engine/tasks/worker_pool.hpp>
 #include <engine/typing/class_registry.hpp>
 
 class Asset;
@@ -25,7 +24,6 @@ protected:
 
 public:
     static std::vector<AssetLoader *> loaders;
-    static WorkerPool loader_pool; // TODO: Move this to engine?
 
     std::unordered_map<std::string, std::shared_ptr<Asset>> asset_cache;
 

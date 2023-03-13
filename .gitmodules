@@ -13,6 +13,6 @@
 [submodule "third_party/imgui"]
 	path = third_party/imgui
 	url = https://github.com/ocornut/imgui.git
-[submodule "sapphire/rs_vulkan/VAL"]
-	path = sapphire/rs_vulkan/VAL
-	url = https://github.com/zCubed3/VAL.git
+[submodule "sapphire/engine/val"]
+	path = sapphire/engine/val
+	url = https://github.com/zCubed3/val.git

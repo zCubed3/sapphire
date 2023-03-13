@@ -55,12 +55,8 @@ bool Engine::initialize_rendering() {
     std::string user_render_server = engine_config.try_get_string("sRenderServer", "Rendering", "Vulkan");
 
     if (StringTools::compare(user_render_server, "vulkan")) {
-#ifdef RS_VULKAN_SUPPORT
         render_server = new VulkanRenderServer();
         return true;
-#else
-        std::cout << "Error: Vulkan support was not compiled into the engine!" << std::endl;
-#endif
     }
 
     if (render_server == nullptr) {

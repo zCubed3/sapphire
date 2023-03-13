@@ -20,7 +20,7 @@ set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 #
 
 # TODO: Make Vulkan non-optional
-set(RS_VULKAN_SUPPORT ON)
+#set(RS_VULKAN_SUPPORT ON)
 
 option(SAPPHIRE_AS_EDITOR "Compiles the engine as the editor and not standalone" ON)
 option(SAPPHIRE_BUILD_TOOLS "Compiles tool applications" ON)
