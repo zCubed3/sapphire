@@ -9,7 +9,6 @@
 #include "console/console.hpp"
 #include <core/data/string_tools.hpp>
 #include <core/data/timing.hpp>
-#include <core/fs/pak_file_system.h>
 #include <engine/assets/asset_loader.hpp>
 #include <engine/assets/material_asset.hpp>
 #include <engine/assets/static_mesh_asset.hpp>
@@ -28,10 +27,6 @@
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 #include <gtx/quaternion.hpp>
-
-#ifdef RS_OPENGL4_SUPPORT
-#include <rs_opengl4/rendering/opengl4_render_server.h>
-#endif
 
 #ifdef RS_VULKAN_SUPPORT
 #include <rs_vulkan/rendering/vulkan_render_server.h>
@@ -65,15 +60,6 @@ bool Engine::initialize_rendering() {
         return true;
 #else
         std::cout << "Error: Vulkan support was not compiled into the engine!" << std::endl;
-#endif
-    }
-
-    if (StringTools::compare(user_render_server, "opengl4")) {
-#ifdef RS_OPENGL4_SUPPORT
-        render_server = new OpenGL4RenderServer();
-        return true;
-#else
-        std::cout << "Error: OpenGL 4 support was not compiled into the engine!" << std::endl;
 #endif
     }
 
