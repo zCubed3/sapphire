@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(Sapphire)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -10,9 +10,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 set(ROOT_DIR ${CMAKE_SOURCE_DIR})
-set(SCRIPT_DIR ${CMAKE_SOURCE_DIR}/scripts)
-set(CODE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sapphire)
-set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
+set(SCRIPT_DIR ${ROOT_DIR}/scripts)
+set(CODE_DIR ${ROOT_DIR})
+set(THIRD_PARTY_DIR ${ROOT_DIR}/third_party)
 
 #
 # Variables
@@ -25,36 +25,27 @@ endif()
 # Options
 #
 
+# TODO
+
 #
-# Compiler things
+# Compile definitions
 #
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     message("Debug build!")
     list(APPEND SAPPHIRE_DEFINITIONS "DEBUG")
 endif()
 
-#
-# Projects
-#
-
-# Core: Depends on nothing but the OS
-add_subdirectory(${CODE_DIR}/core)
-
-# TODO: Null driver to remove SDL dependency?
-add_subdirectory(${THIRD_PARTY_DIR}/SDL)
-list(APPEND SAPPHIRE_DEFINITIONS "SDL_SUPPORT" "GLM_FORCE_DEPTH_ZERO_TO_ONE")
-
 if (IMGUI_SUPPORT)
     list(APPEND SAPPHIRE_DEFINITIONS IMGUI_SUPPORT)
 endif()
 
-if (RS_VULKAN_SUPPORT)
-    message("Compiling Sapphire with Vulkan Render Server support!")
+#
+# Dependencies
+#
+add_subdirectory(${THIRD_PARTY_DIR}/SDL)
+add_subdirectory(${THIRD_PARTY_DIR}/VulkanMemoryAllocator)
 
-    list(APPEND ENGINE_LINK_LIBRARIES SapphireVulkanRS)
-    list(APPEND ENGINE_DEFINITIONS RS_VULKAN_SUPPORT)
-
-    add_subdirectory(${CODE_DIR}/rs_vulkan)
-endif()
-
+#
+# Projects
+#
 add_subdirectory(${CODE_DIR}/engine)
