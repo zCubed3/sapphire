@@ -22,28 +22,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <engine.hpp>
-#include "platform_init.hpp"
+#ifndef SAPPHIRE_PROVIDER_RELEASABLE_HPP
+#define SAPPHIRE_PROVIDER_RELEASABLE_HPP
 
-#include <iostream>
+#include <functional>
 
-int Sapphire::sapphire_init(int argc, char** argv) {
-    Sapphire::Engine::EngineConfig config;
+namespace Sapphire::Graphics {
+    class VulkanProvider;
 
-    Sapphire::Engine engine;
+    class IProviderReleasable {
+    protected:
+        virtual std::function<void(VulkanProvider*)> get_release_func() = 0;
 
-    try {
-        engine.initialize(config);
-    }
-    catch (std::exception e) {
-        std::cout << "Encountered an exception when initializing the engine!\n\n" << e.what() << std::endl;
-        return 1;
-    }
-
-    // TODO: Engine exit conditions
-    while (1) {
-        engine.tick();
-    }
-
-    return 0;
+    public:
+        virtual void release(VulkanProvider *p_provider);
+    };
 }
+
+
+#endif//SAPPHIRE_PROVIDER_RELEASABLE_HPP

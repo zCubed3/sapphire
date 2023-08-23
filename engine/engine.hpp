@@ -91,6 +91,7 @@ namespace Sapphire {
         // The config to initialize the engine with
         struct EngineConfig {
             RequestedPipeline graphics = RequestedPipeline::Standard;
+
             int window_width = 1024;
             int window_height = 768;
 
@@ -106,11 +107,10 @@ namespace Sapphire {
         static Engine* get_instance();
 
         // Initializes the engine
-        // TODO: Add init arguments
         void initialize(const EngineConfig& config);
 
-        // Runs the engine
-        void run();
+        // Steps the engine forward one frame
+        void tick();
 
         //
         // Getters

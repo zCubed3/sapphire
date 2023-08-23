@@ -40,6 +40,9 @@ namespace Sapphire {
     protected:
         void validate_window();
 
+        // Did something change on this window?
+        bool dirty = false;
+
         SDL_Window *handle = nullptr;
         Graphics::WindowRenderTarget *target = nullptr;
 
@@ -60,12 +63,22 @@ namespace Sapphire {
         void set_render_target(Graphics::WindowRenderTarget *p_target);
 
         //
+        // Frame management
+        //
+        void begin_frame(Engine *p_engine);
+        void end_frame(Engine *p_engine);
+
+        void render(Engine *p_engine);
+        void present(Engine *p_engine);
+
+        //
         // Setters
         //
         void set_width(int width);
         void set_height(int height);
         void set_title(const std::string &title);
         void set_resizable(bool resizable);
+        void mark_dirty();
 
         //
         // Getters

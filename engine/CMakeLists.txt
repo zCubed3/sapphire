@@ -8,6 +8,7 @@ set(SAPPHIRE_ENGINE_SOURCES
     "graphics/render_target.cpp"
     "graphics/render_pass.cpp"
     "graphics/vulkan_provider.cpp"
+    "graphics/provider_releasable.cpp"
     "graphics/targets/window_render_target.cpp"
 )
 

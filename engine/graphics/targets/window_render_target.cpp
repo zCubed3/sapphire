@@ -33,28 +33,72 @@ SOFTWARE.
 
 using namespace Sapphire;
 
-void Graphics::WindowRenderTargetData::release(Graphics::VulkanProvider *p_provider) {
+std::function<void(Graphics::VulkanProvider*)> Graphics::WindowRenderTargetData::get_release_func() {
+    return
+        [
+            vk_swapchain = vk_swapchain,
+            vk_images = vk_images,
+            vk_image_views = vk_image_views
+        ]
+        (VulkanProvider* p_provider) mutable -> void
+        {
+            if (vk_swapchain != nullptr) {
+                vkDestroySwapchainKHR(p_provider->get_vk_device(), vk_swapchain, nullptr);
+            }
+
+            // Windows do not need to destroy their framebuffer images
+            // TODO: Destroy depth buffers
+
+            for (VkImageView vk_image_view: vk_image_views) {
+                vkDestroyImageView(p_provider->get_vk_device(), vk_image_view, nullptr);
+            }
+        };
+}
+
+VkExtent2D Graphics::WindowRenderTarget::get_vk_extent() {
+    return rt_data.vk_extent;
+}
+
+VkRenderPass Graphics::WindowRenderTarget::get_vk_render_pass(Sapphire::Graphics::VulkanProvider *p_provider) {
     if (p_provider == nullptr) {
         throw std::runtime_error("p_provider is nullptr!");
     }
 
-    if (vk_swapchain != nullptr) {
-        vkDestroySwapchainKHR(p_provider->get_vk_device(), vk_swapchain, nullptr);
-    }
+    return p_provider->get_render_pass_window();
+}
 
-    for (VkImage vk_image : vk_images) {
-        vkDestroyImage(p_provider->get_vk_device(), vk_image, nullptr);
-    }
+VkFramebuffer Graphics::WindowRenderTarget::get_vk_framebuffer(Sapphire::Graphics::VulkanProvider *p_provider) {
+    vkAcquireNextImageKHR(
+            p_provider->get_vk_device(),
+            rt_data.vk_swapchain,
+            UINT64_MAX,
+            p_provider->get_image_available_semaphore(),
+            VK_NULL_HANDLE,
+            &rt_data.vk_frame_index);
 
-    for (VkImageView vk_image_view : vk_image_views) {
-        vkDestroyImageView(p_provider->get_vk_device(), vk_image_view, nullptr);
-    }
+    return rt_data.vk_framebuffers[rt_data.vk_frame_index];
+}
+
+std::function<void(Graphics::VulkanProvider*)> Graphics::WindowRenderTarget::get_release_func() {
+    return [=](VulkanProvider* p_provider) mutable{
+        rt_data.release(p_provider);
+
+        if (vk_command_buffer != nullptr) {
+            // TODO: Safer command buffer allocation?
+            p_provider->free_command_buffer(VulkanProvider::QueueType::Graphics, vk_command_buffer);
+        }
+
+        if (vk_surface != nullptr) {
+            vkDestroySurfaceKHR(p_provider->get_vk_instance(), vk_surface, nullptr);
+        }
+    };
 }
 
 Graphics::WindowRenderTarget::WindowRenderTarget(VkSurfaceKHR vk_surface) {
     this->vk_surface = vk_surface;
 }
 
+// TODO: Not call this initialize()?
 void Graphics::WindowRenderTarget::initialize(Engine *p_engine, Window *p_owner) {
     if (p_engine == nullptr) {
         throw std::runtime_error("p_engine is nullptr!");
@@ -79,17 +123,25 @@ void Graphics::WindowRenderTarget::initialize(Engine *p_engine, Window *p_owner)
     }
 }
 
-void Graphics::WindowRenderTarget::release(Graphics::VulkanProvider *p_provider) {
-    if (vk_command_buffer != nullptr) {
-        // TODO: Safer command buffer allocation?
-        p_provider->free_command_buffer(VulkanProvider::QueueType::Graphics, vk_command_buffer);
+void Graphics::WindowRenderTarget::present(Graphics::VulkanProvider *p_provider) {
+    if (p_provider == nullptr) {
+        throw std::runtime_error("p_provider is nullptr!");
     }
 
-    if (vk_surface != nullptr) {
-        vkDestroySurfaceKHR(p_provider->get_vk_instance(), vk_surface, nullptr);
-    }
+    VkSemaphore vk_semaphore_render_finished = p_provider->get_render_finished_semaphore();
+    VulkanProvider::Queue queue = p_provider->get_queue(VulkanProvider::QueueType::Present);
 
-    rt_data.release(p_provider);
+    VkPresentInfoKHR present_info{};
+    present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    present_info.waitSemaphoreCount = 1;
+    present_info.pWaitSemaphores = &vk_semaphore_render_finished;
+
+    present_info.swapchainCount = 1;
+    present_info.pSwapchains = &rt_data.vk_swapchain;
+    present_info.pImageIndices = &rt_data.vk_frame_index;
+
+    vkQueuePresentKHR(queue.vk_queue, &present_info);
 }
 
 void Graphics::WindowRenderTarget::set_rt_data(Sapphire::Graphics::WindowRenderTargetData rt_data) {
@@ -102,16 +154,4 @@ Graphics::WindowRenderTargetData Graphics::WindowRenderTarget::get_rt_data() {
 
 VkSurfaceKHR Graphics::WindowRenderTarget::get_vk_surface() {
     return vk_surface;
-}
-
-VkFramebuffer Graphics::WindowRenderTarget::get_vk_framebuffer(Sapphire::Graphics::VulkanProvider *p_provider) {
-    vkAcquireNextImageKHR(
-            p_provider->get_vk_device(),
-            rt_data.vk_swapchain,
-            UINT64_MAX,
-            p_provider->get_image_available_semaphore(),
-            VK_NULL_HANDLE,
-            &rt_data.vk_frame_index);
-
-    return rt_data.vk_framebuffers[rt_data.vk_frame_index];
 }

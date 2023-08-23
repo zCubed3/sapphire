@@ -73,18 +73,29 @@ void Engine::initialize(const EngineConfig& config) {
     }
 
     // TODO: Is this stupidly dangerous?
+    // Maybe?
     singleton = this;
 }
 
-void Engine::run() {
-    while (1) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-
+void Engine::tick() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        // TODO: Other windows
+        if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+            main_window->mark_dirty();
         }
-
-
     }
+
+    vk_provider->begin_frame();
+
+    main_window->begin_frame(this);
+    main_window->end_frame(this);
+
+    main_window->render(this);
+
+    main_window->present(this);
+
+    vk_provider->end_frame();
 }
 
 //

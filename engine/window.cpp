@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include <SDL.h>
 
+#include <engine.hpp>
 #include <graphics/targets/window_render_target.hpp>
 
 #include <stdexcept>
@@ -65,6 +66,63 @@ void Window::set_render_target(Graphics::WindowRenderTarget *p_target) {
 }
 
 //
+// Frame management
+//
+void Window::begin_frame(Engine *p_engine) {
+    if (p_engine == nullptr) {
+        throw std::runtime_error("p_engine was nullptr!");
+    }
+
+    if (target == nullptr) {
+        throw std::runtime_error("target was nullptr!");
+    }
+
+    // Recreate the swapchain if dirty
+    if (dirty) {
+        target->initialize(p_engine, this);
+        dirty = false;
+    }
+
+    target->begin_target(p_engine->get_vk_provider());
+}
+
+void Window::end_frame(Engine *p_engine) {
+    if (p_engine == nullptr) {
+        throw std::runtime_error("p_engine was nullptr!");
+    }
+
+    if (target == nullptr) {
+        throw std::runtime_error("target was nullptr!");
+    }
+
+    target->end_target(p_engine->get_vk_provider());
+}
+
+void Window::render(Engine *p_engine) {
+    if (p_engine == nullptr) {
+        throw std::runtime_error("p_engine was nullptr!");
+    }
+
+    if (target == nullptr) {
+        throw std::runtime_error("target was nullptr!");
+    }
+
+    target->render(p_engine->get_vk_provider());
+}
+
+void Window::present(Engine *p_engine) {
+    if (p_engine == nullptr) {
+        throw std::runtime_error("p_engine was nullptr!");
+    }
+
+    if (target == nullptr) {
+        throw std::runtime_error("target was nullptr!");
+    }
+
+    target->present(p_engine->get_vk_provider());
+}
+
+//
 // Setters
 //
 void Window::set_width(int width) {
@@ -93,6 +151,10 @@ void Window::set_resizable(bool resizable) {
 
     this->resizable = resizable;
     SDL_SetWindowResizable(handle, static_cast<SDL_bool>(resizable));
+}
+
+void Window::mark_dirty() {
+    dirty = true;
 }
 
 //

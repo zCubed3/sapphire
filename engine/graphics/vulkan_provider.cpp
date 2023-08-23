@@ -688,22 +688,6 @@ VkFence Graphics::VulkanProvider::create_vk_fence() {
     return vk_fence;
 }
 
-Graphics::VulkanProvider::Queue Graphics::VulkanProvider::get_queue(Graphics::VulkanProvider::QueueType type) {
-    switch (type) {
-        case QueueType::Transfer:
-            return queue_transfer;
-
-        case QueueType::Graphics:
-            return queue_graphics;
-
-        case QueueType::Present:
-            return queue_present;
-
-        default:
-            throw std::runtime_error("Unknown queue type!");
-    }
-}
-
 // TODO: Unify render target code
 VkSurfaceKHR Graphics::VulkanProvider::create_vk_surface(Sapphire::Window *p_window) {
     if (p_window == nullptr) {
@@ -913,6 +897,15 @@ void Graphics::VulkanProvider::free_command_buffer(QueueType queue_type, VkComma
     vkFreeCommandBuffers(vk_device, queue.vk_pool, 1, &vk_command_buffer);
 }
 
+void Graphics::VulkanProvider::reset_render_fence() {
+    VkResult result = vkResetFences(vk_device, 1, &vk_render_fence);
+
+    if (result != VK_SUCCESS) {
+        LOG_GRAPHICS("vkResetFences failed with error code (" << result << ")");
+        throw std::runtime_error("vkResetFences failed! Please check the log above for more info!");
+    }
+}
+
 void Graphics::VulkanProvider::initialize(Sapphire::Engine *p_engine) {
     if (p_engine == nullptr) {
         throw std::runtime_error("p_engine was nullptr!");
@@ -955,82 +948,7 @@ void Graphics::VulkanProvider::initialize(Sapphire::Engine *p_engine) {
 
     p_engine->main_window->set_render_target(window_rt);
 
-    // TODO: TEMP TEMP TEMP
-    VkCommandBufferBeginInfo buffer_begin_info{};
-    buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-    VkCommandBuffer vk_command_buffer = window_rt->get_vk_command_buffer();
-
-    vkBeginCommandBuffer(vk_command_buffer, &buffer_begin_info);
-
     WindowRenderTargetData rt_data = window_rt->get_rt_data();
-
-    VkRenderPassBeginInfo render_pass_info{};
-    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    render_pass_info.renderPass = vk_render_pass_window;
-    render_pass_info.framebuffer = window_rt->get_vk_framebuffer(this);
-
-    render_pass_info.renderArea.offset = {0, 0};
-    render_pass_info.renderArea.extent = rt_data.vk_extent;
-
-    std::vector<VkClearValue> clear_values;
-
-    if (1) {
-        VkClearValue clear_value{};
-        clear_value.color = {1, 0, 0, 1};
-
-        clear_values.push_back(clear_value);
-    }
-
-    render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
-    render_pass_info.pClearValues = clear_values.data();
-
-    vkCmdBeginRenderPass(vk_command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
-
-    vkCmdEndRenderPass(vk_command_buffer);
-
-    vkEndCommandBuffer(vk_command_buffer);
-
-    VkSubmitInfo submit_info{};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-    VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-
-    if (1) {
-        submit_info.waitSemaphoreCount = 1;
-        submit_info.pWaitSemaphores = &vk_image_available_semaphore;
-        submit_info.pWaitDstStageMask = wait_stages;
-
-        submit_info.signalSemaphoreCount = 1;
-        submit_info.pSignalSemaphores = &vk_render_finished_semaphore;
-    } else {
-        submit_info.waitSemaphoreCount = 0;
-        submit_info.signalSemaphoreCount = 0;
-    }
-
-    submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &vk_command_buffer;
-
-    if (vkQueueSubmit(queue_graphics.vk_queue, 1, &submit_info, vk_render_fence) != VK_SUCCESS) {
-
-    }
-
-    if (1) {
-        vkQueueWaitIdle(queue_graphics.vk_queue);
-    }
-
-    VkPresentInfoKHR present_info{};
-    present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-    present_info.waitSemaphoreCount = 1;
-    present_info.pWaitSemaphores = &vk_render_finished_semaphore;
-
-    present_info.swapchainCount = 1;
-    present_info.pSwapchains = &rt_data.vk_swapchain;
-    present_info.pImageIndices = &rt_data.vk_frame_index;
-
-    vkQueuePresentKHR(queue_present.vk_queue, &present_info);
 }
 
 VkInstance Graphics::VulkanProvider::get_vk_instance() {
@@ -1047,4 +965,59 @@ VkSemaphore Graphics::VulkanProvider::get_image_available_semaphore() {
 
 VkSemaphore Graphics::VulkanProvider::get_render_finished_semaphore() {
     return vk_render_finished_semaphore;
+}
+
+VkFence Graphics::VulkanProvider::get_render_fence() {
+    return vk_render_fence;
+}
+
+VkRenderPass Graphics::VulkanProvider::get_render_pass_window() {
+    return vk_render_pass_window;
+}
+
+Graphics::VulkanProvider::Queue Graphics::VulkanProvider::get_queue(Graphics::VulkanProvider::QueueType type) {
+    switch (type) {
+        case QueueType::Transfer:
+            return queue_transfer;
+
+        case QueueType::Graphics:
+            return queue_graphics;
+
+        case QueueType::Present:
+            return queue_present;
+
+        default:
+            throw std::runtime_error("Unknown queue type!");
+    }
+}
+
+void Graphics::VulkanProvider::begin_frame() {
+    // Clear out any queued destructions
+    for (const auto& release : deferred_releases) {
+        release(this);
+    }
+
+    deferred_releases.clear();
+    defer_release = true;
+}
+
+void Graphics::VulkanProvider::end_frame() {
+    defer_release = false;
+}
+
+void Graphics::VulkanProvider::await_frame() {
+    VulkanProvider::Queue queue = get_queue(VulkanProvider::QueueType::Graphics);
+
+    if (vk_device != nullptr && vk_render_fence != nullptr) {
+        vkWaitForFences(vk_device, 1, &vk_render_fence, VK_TRUE, UINT64_MAX);
+        reset_render_fence();
+    }
+}
+
+bool Graphics::VulkanProvider::get_defer_release() const {
+    return defer_release;
+}
+
+void Graphics::VulkanProvider::enqueue_release(const ReleaseFunction& function) {
+    deferred_releases.emplace_back(function);
 }

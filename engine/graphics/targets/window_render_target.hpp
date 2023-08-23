@@ -41,7 +41,7 @@ namespace Sapphire {
 namespace Sapphire::Graphics {
     class VulkanProvider;
 
-    struct WindowRenderTargetData {
+    struct WindowRenderTargetData : public IProviderReleasable {
         uint32_t vk_frame_index = 0;
         VkExtent2D vk_extent;
         VkSurfaceCapabilitiesKHR vk_capabilities;
@@ -50,7 +50,8 @@ namespace Sapphire::Graphics {
         std::vector<VkImageView> vk_image_views {};
         std::vector<VkFramebuffer> vk_framebuffers {};
 
-        void release(VulkanProvider *p_provider);
+    protected:
+        std::function<void (VulkanProvider *)> get_release_func() override;
     };
 
     class WindowRenderTarget : public RenderTarget {
@@ -58,19 +59,24 @@ namespace Sapphire::Graphics {
         VkSurfaceKHR vk_surface = nullptr;
         WindowRenderTargetData rt_data;
 
+        VkExtent2D get_vk_extent() override;
+        VkRenderPass get_vk_render_pass(VulkanProvider *p_provider) override;
+        VkFramebuffer get_vk_framebuffer(VulkanProvider *p_provider) override;
+
+        std::function<void(VulkanProvider*)> get_release_func() override;
+
     public:
         WindowRenderTarget() = default;
         WindowRenderTarget(VkSurfaceKHR vk_surface);
 
         void initialize(Engine *p_engine, Window *p_owner);
-        void release(VulkanProvider* p_provider);
+
+        void present(VulkanProvider* p_provider);
 
         void set_rt_data(WindowRenderTargetData rt_data);
         WindowRenderTargetData get_rt_data();
 
         VkSurfaceKHR get_vk_surface();
-
-        VkFramebuffer get_vk_framebuffer(Sapphire::Graphics::VulkanProvider *p_provider) override;
     };
 }
 

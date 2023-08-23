@@ -30,6 +30,8 @@ SOFTWARE.
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 
+#include <functional>
+
 namespace Sapphire {
     class Engine;
     class Window;
@@ -41,6 +43,8 @@ namespace Sapphire::Graphics {
     // A wrapper around Vulkan instance creation / management
     class VulkanProvider {
     public:
+        using ReleaseFunction = std::function<void(VulkanProvider*)>;
+
         enum class QueueType {
             Unknown,
             Graphics,
@@ -48,7 +52,6 @@ namespace Sapphire::Graphics {
             Present
         };
 
-    protected:
         struct Queue {
             uint32_t family = -1;
             QueueType type = QueueType::Unknown;
@@ -63,6 +66,7 @@ namespace Sapphire::Graphics {
             VkPresentModeKHR vk_present_mode;
         };
 
+    protected:
         VkPhysicalDeviceFeatures vk_gpu_features;
         VkPhysicalDevice vk_gpu = nullptr;
         VkDevice vk_device = nullptr;
@@ -84,7 +88,11 @@ namespace Sapphire::Graphics {
         Queue queue_present;
         Queue queue_transfer;
 
+        bool defer_release = false;
+        std::vector<ReleaseFunction> deferred_releases;
+
         VkRenderPass vk_render_pass_window = nullptr;
+        // TODO: Image render pass
 
         bool validate_instance_extensions(const std::vector<const char *> &extensions, Engine *p_engine);
         bool validate_instance_layers(const std::vector<const char *> &layers, Engine *p_engine);
@@ -106,8 +114,6 @@ namespace Sapphire::Graphics {
         VkSemaphore create_vk_semaphore();
         VkFence create_vk_fence();
 
-        Queue get_queue(QueueType type);
-
     public:
         VkSurfaceKHR create_vk_surface(Window *p_window);
         void setup_window_render_target(WindowRenderTarget *p_target, Window *p_window);
@@ -115,12 +121,27 @@ namespace Sapphire::Graphics {
         VkCommandBuffer allocate_command_buffer(QueueType queue_type);
         void free_command_buffer(QueueType queue_type, VkCommandBuffer vk_command_buffer);
 
+        void reset_render_fence();
+
         void initialize(Engine *p_engine);
 
         VkInstance get_vk_instance();
         VkDevice get_vk_device();
         VkSemaphore get_image_available_semaphore();
         VkSemaphore get_render_finished_semaphore();
+        VkFence get_render_fence();
+        VkRenderPass get_render_pass_window();
+        Queue get_queue(QueueType type);
+
+        // Signals to the provider and renderer objects that we're now rendering
+        void begin_frame();
+        void end_frame();
+
+        void await_frame();
+
+        [[nodiscard]]
+        bool get_defer_release() const;
+        void enqueue_release(const ReleaseFunction& function);
     };
 }
 
