@@ -30,19 +30,23 @@ SOFTWARE.
 int Sapphire::sapphire_init(int argc, char** argv) {
     Sapphire::Engine::EngineConfig config;
 
-    Sapphire::Engine engine;
-
     try {
-        engine.initialize(config);
+        Sapphire::Engine engine(config);
+
+        bool run = true;
+
+        while (run) {
+            Engine::StepResult sr = engine.tick();
+
+            if (sr != Engine::StepResult::Success) {
+                run = false;
+                break;
+            }
+        }
     }
     catch (std::exception e) {
-        std::cout << "Encountered an exception when initializing the engine!\n\n" << e.what() << std::endl;
+        std::cout << "Encountered an unhandled exception when running the engine!\n\n" << e.what() << std::endl;
         return 1;
-    }
-
-    // TODO: Engine exit conditions
-    while (1) {
-        engine.tick();
     }
 
     return 0;

@@ -47,6 +47,13 @@ namespace Sapphire {
         static Engine* singleton;
 
     public:
+        // Engine step results
+        enum class StepResult : int {
+            Success,
+            UnknownFailure,
+            SDLQuit
+        };
+
         // Engine verbosity flags
         enum class VerbosityFlags : int {
             None = 0,
@@ -106,11 +113,26 @@ namespace Sapphire {
         // Regardless, this function
         static Engine* get_instance();
 
-        // Initializes the engine
-        void initialize(const EngineConfig& config);
+        //
+        // Ctor
+        //
+        Engine() = delete;
+        explicit Engine(const EngineConfig& config);
 
+        //
+        // Dtor
+        //
+        ~Engine();
+
+        //
+        // State
+        //
+    private:
+        void tick_graphics();
+
+    public:
         // Steps the engine forward one frame
-        void tick();
+        StepResult tick();
 
         //
         // Getters
@@ -118,11 +140,6 @@ namespace Sapphire {
         Graphics::VulkanProvider *get_vk_provider() const;
 
         bool has_verbosity(VerbosityFlags flag) const;
-
-        //
-        // Destructor
-        //
-        ~Engine();
     };
 }
 

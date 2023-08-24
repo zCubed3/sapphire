@@ -57,8 +57,7 @@ void Window::create_render_target(Engine *p_engine) {
         throw std::runtime_error("p_engine was nullptr!");
     }
 
-    target = new Graphics::WindowRenderTarget();
-    target->initialize(p_engine, this);
+    target = new Graphics::WindowRenderTarget(p_engine, this);
 }
 
 void Window::set_render_target(Graphics::WindowRenderTarget *p_target) {
@@ -79,7 +78,7 @@ void Window::begin_frame(Engine *p_engine) {
 
     // Recreate the swapchain if dirty
     if (dirty) {
-        target->initialize(p_engine, this);
+        target->recreate(p_engine->get_vk_provider(), this);
         dirty = false;
     }
 

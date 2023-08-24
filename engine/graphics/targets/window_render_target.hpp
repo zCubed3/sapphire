@@ -65,12 +65,17 @@ namespace Sapphire::Graphics {
 
         std::function<void(VulkanProvider*)> get_release_func() override;
 
+        void initialize(VulkanProvider *p_provider, Window *p_owner);
+
     public:
-        WindowRenderTarget() = default;
-        WindowRenderTarget(VkSurfaceKHR vk_surface);
+        WindowRenderTarget() = delete;
+        explicit WindowRenderTarget(Engine *p_engine, Window *p_owner);
+        explicit WindowRenderTarget(Engine *p_engine, Window *p_owner, VkSurfaceKHR vk_surface);
+        explicit WindowRenderTarget(VulkanProvider *p_provider, Window *p_owner);
+        explicit WindowRenderTarget(VulkanProvider *p_provider, Window *p_owner, VkSurfaceKHR vk_surface);
 
-        void initialize(Engine *p_engine, Window *p_owner);
-
+        // Recreates the window rt in place (saving allocations)
+        void recreate(VulkanProvider* p_provider, Window *p_owner);
         void present(VulkanProvider* p_provider);
 
         void set_rt_data(WindowRenderTargetData rt_data);

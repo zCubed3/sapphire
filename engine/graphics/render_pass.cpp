@@ -72,7 +72,7 @@ void Graphics::RenderPassBuilder::push_color_attachment(ColorAttachmentInfo atta
     push_attachment(attachment_info);
 }
 
-bool Graphics::RenderPassBuilder::push_depth_attachment(DepthStencilAttachmentInfo attachment_info) {
+void Graphics::RenderPassBuilder::push_depth_attachment(DepthStencilAttachmentInfo attachment_info) {
     if (has_depth_stencil) {
         throw std::runtime_error("Only one depth + stencil attachment is allowed!");
     }

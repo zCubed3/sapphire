@@ -86,7 +86,7 @@ namespace Sapphire::Graphics {
 
     public:
         void push_color_attachment(ColorAttachmentInfo attachment_info);
-        bool push_depth_attachment(DepthStencilAttachmentInfo attachment_info);
+        void push_depth_attachment(DepthStencilAttachmentInfo attachment_info);
 
         void push_subpass(SubPassInfo subpass_info);
         void push_subpass_dependency(DependencyInfo dependency_info);

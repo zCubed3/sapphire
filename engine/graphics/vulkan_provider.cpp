@@ -656,6 +656,57 @@ void Graphics::VulkanProvider::create_render_passes() {
     vk_render_pass_window = builder.build(this);
 }
 
+void Graphics::VulkanProvider::create_vk_vtx_info() {
+    vk_vtx_attributes.clear();
+
+    uint32_t offset = 0;
+    uint32_t stride = 0;
+
+    // TODO: Make a builder for this?
+
+    // Position data
+    {
+        VkVertexInputAttributeDescription description {};
+        description.binding = 0;
+        description.location = offset++;
+        description.format = VK_FORMAT_R32G32B32_SFLOAT;
+        description.offset = stride;
+
+        stride += sizeof(float) * 3;
+        vk_vtx_attributes.push_back(description);
+    }
+
+    // Normal data
+    {
+        VkVertexInputAttributeDescription description {};
+        description.binding = 0;
+        description.location = offset++;
+        description.format = VK_FORMAT_R32G32B32_SFLOAT;
+        description.offset = stride;
+
+        stride += sizeof(float) * 3;
+        vk_vtx_attributes.push_back(description);
+    }
+
+    // UV0 data
+    {
+        VkVertexInputAttributeDescription description {};
+        description.binding = 0;
+        description.location = offset++;
+        description.format = VK_FORMAT_R32G32_SFLOAT;
+        description.offset = stride;
+
+        stride += sizeof(float) * 2;
+        vk_vtx_attributes.push_back(description);
+    }
+
+    // Binding info
+    vk_vtx_binding = {};
+    vk_vtx_binding.binding = 0;
+    vk_vtx_binding.stride = stride;
+    vk_vtx_binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; // TODO: Instance rate?
+}
+
 VkSemaphore Graphics::VulkanProvider::create_vk_semaphore() {
     VkSemaphoreCreateInfo semaphore_create_info{};
     semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -941,14 +992,10 @@ void Graphics::VulkanProvider::initialize(Sapphire::Engine *p_engine) {
     determine_present_info();
 
     create_render_passes();
+    create_vk_vtx_info();
 
     // Finally, initialize the render target of the main window by hand
-    Graphics::WindowRenderTarget *window_rt = new Graphics::WindowRenderTarget(vk_surface);
-    window_rt->initialize(p_engine, p_engine->main_window);
-
-    p_engine->main_window->set_render_target(window_rt);
-
-    WindowRenderTargetData rt_data = window_rt->get_rt_data();
+    p_engine->main_window->set_render_target(new Graphics::WindowRenderTarget(this, p_engine->main_window, vk_surface));
 }
 
 VkInstance Graphics::VulkanProvider::get_vk_instance() {
@@ -989,6 +1036,14 @@ Graphics::VulkanProvider::Queue Graphics::VulkanProvider::get_queue(Graphics::Vu
         default:
             throw std::runtime_error("Unknown queue type!");
     }
+}
+
+VkVertexInputBindingDescription Graphics::VulkanProvider::get_vk_vtx_binding() {
+    return vk_vtx_binding;
+}
+
+std::vector<VkVertexInputAttributeDescription> Graphics::VulkanProvider::get_vk_vtx_attributes() {
+    return vk_vtx_attributes;
 }
 
 void Graphics::VulkanProvider::begin_frame() {

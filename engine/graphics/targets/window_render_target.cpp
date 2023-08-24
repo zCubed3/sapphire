@@ -94,33 +94,56 @@ std::function<void(Graphics::VulkanProvider*)> Graphics::WindowRenderTarget::get
     };
 }
 
-Graphics::WindowRenderTarget::WindowRenderTarget(VkSurfaceKHR vk_surface) {
-    this->vk_surface = vk_surface;
-}
-
-// TODO: Not call this initialize()?
-void Graphics::WindowRenderTarget::initialize(Engine *p_engine, Window *p_owner) {
-    if (p_engine == nullptr) {
-        throw std::runtime_error("p_engine is nullptr!");
+void Graphics::WindowRenderTarget::initialize(Graphics::VulkanProvider *p_provider, Window *p_owner) {
+    if (p_provider == nullptr) {
+        throw std::runtime_error("p_provider is nullptr!");
     }
 
     if (p_owner == nullptr) {
         throw std::runtime_error("p_owner is nullptr!");
     }
 
-    Graphics::VulkanProvider *provider = p_engine->get_vk_provider();
-
     // This assumes we haven't been given a surface beforehand
     // If your surface is nullptr after assigning it, something is wrong :P
     if (vk_surface == nullptr) {
-        provider->create_vk_surface(p_owner);
+       p_provider->create_vk_surface(p_owner);
     }
 
-    provider->setup_window_render_target(this, p_owner);
+    p_provider->setup_window_render_target(this, p_owner);
 
     if (vk_command_buffer == nullptr) {
-        vk_command_buffer = provider->allocate_command_buffer(VulkanProvider::QueueType::Graphics);
+        vk_command_buffer = p_provider->allocate_command_buffer(VulkanProvider::QueueType::Graphics);
     }
+}
+
+Graphics::WindowRenderTarget::WindowRenderTarget(Engine *p_engine, Window *p_owner) {
+    if (p_engine == nullptr) {
+        throw std::runtime_error("p_engine was nullptr!");
+    }
+
+    initialize(p_engine->get_vk_provider(), p_owner);
+}
+
+Graphics::WindowRenderTarget::WindowRenderTarget(Engine *p_engine, Window *p_owner, VkSurfaceKHR vk_surface) {
+    if (p_engine == nullptr) {
+        throw std::runtime_error("p_engine was nullptr!");
+    }
+
+    this->vk_surface = vk_surface;
+    initialize(p_engine->get_vk_provider(), p_owner);
+}
+
+Graphics::WindowRenderTarget::WindowRenderTarget(Graphics::VulkanProvider *p_provider, Sapphire::Window *p_owner) {
+    initialize(p_provider, p_owner);
+}
+
+Graphics::WindowRenderTarget::WindowRenderTarget(Graphics::VulkanProvider *p_provider, Sapphire::Window *p_owner, VkSurfaceKHR vk_surface) {
+    this->vk_surface = vk_surface;
+    initialize(p_provider, p_owner);
+}
+
+void Graphics::WindowRenderTarget::recreate(Graphics::VulkanProvider *p_provider, Window *p_owner) {
+    initialize(p_provider, p_owner);
 }
 
 void Graphics::WindowRenderTarget::present(Graphics::VulkanProvider *p_provider) {

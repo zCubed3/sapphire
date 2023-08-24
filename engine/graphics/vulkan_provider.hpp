@@ -88,6 +88,10 @@ namespace Sapphire::Graphics {
         Queue queue_present;
         Queue queue_transfer;
 
+        // TODO: User defined vertex data?
+        VkVertexInputBindingDescription vk_vtx_binding;
+        std::vector<VkVertexInputAttributeDescription> vk_vtx_attributes;
+
         bool defer_release = false;
         std::vector<ReleaseFunction> deferred_releases;
 
@@ -110,6 +114,7 @@ namespace Sapphire::Graphics {
         void create_vma_allocator(Engine *p_engine);
         void create_vk_descriptor_pool();
         void create_render_passes();
+        void create_vk_vtx_info();
 
         VkSemaphore create_vk_semaphore();
         VkFence create_vk_fence();
@@ -132,6 +137,8 @@ namespace Sapphire::Graphics {
         VkFence get_render_fence();
         VkRenderPass get_render_pass_window();
         Queue get_queue(QueueType type);
+        VkVertexInputBindingDescription get_vk_vtx_binding();
+        std::vector<VkVertexInputAttributeDescription> get_vk_vtx_attributes();
 
         // Signals to the provider and renderer objects that we're now rendering
         void begin_frame();

@@ -29,6 +29,7 @@ SOFTWARE.
 
 #include <window.hpp>
 
+#include <iostream>
 #include <stdexcept>
 
 #include <SDL.h>
@@ -45,7 +46,10 @@ Engine *Engine::get_instance() {
     return singleton;
 }
 
-void Engine::initialize(const EngineConfig& config) {
+//
+// Ctor
+//
+Engine::Engine(const EngineConfig& config) {
     if (singleton != nullptr) {
         // TODO: Allow multiple engine instances?
         throw std::runtime_error("Multiple engine instances are not allowed in the same process!");
@@ -77,17 +81,28 @@ void Engine::initialize(const EngineConfig& config) {
     singleton = this;
 }
 
-void Engine::tick() {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-        // TODO: Other windows
-        if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-            main_window->mark_dirty();
-        }
+//
+// Dtor
+//
+Engine::~Engine() {
+    if (singleton == this) {
+        singleton = nullptr;
     }
 
+    if (has_verbosity(VerbosityFlags::Engine)) {
+        LOG_ENGINE("Dtor called!");
+    }
+}
+
+//
+// State
+//
+void Engine::tick_graphics() {
     vk_provider->begin_frame();
 
+    //
+    // Main window
+    //
     main_window->begin_frame(this);
     main_window->end_frame(this);
 
@@ -95,7 +110,31 @@ void Engine::tick() {
 
     main_window->present(this);
 
+    //
+    // Child windows
+    //
+
+    // TODO: Child windows / render targets
+
     vk_provider->end_frame();
+}
+
+Engine::StepResult Engine::tick() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            return StepResult::SDLQuit;
+        }
+
+        // TODO: Other windows
+        if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+            main_window->mark_dirty();
+        }
+    }
+
+    tick_graphics();
+
+    return StepResult::Success;
 }
 
 //
@@ -107,13 +146,4 @@ Graphics::VulkanProvider *Engine::get_vk_provider() const {
 
 bool Engine::has_verbosity(Engine::VerbosityFlags flag) const {
     return verbosity_flags & static_cast<int>(flag);
-}
-
-//
-// Destructor
-//
-Engine::~Engine() {
-    if (singleton == this) {
-        singleton = nullptr;
-    }
 }
