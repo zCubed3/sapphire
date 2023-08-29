@@ -67,7 +67,7 @@ void Window::set_render_target(Graphics::WindowRenderTarget *p_target) {
 //
 // Frame management
 //
-void Window::begin_frame(Engine *p_engine) {
+Graphics::WindowRenderTarget *Window::begin_frame(Engine *p_engine) {
     if (p_engine == nullptr) {
         throw std::runtime_error("p_engine was nullptr!");
     }
@@ -83,6 +83,7 @@ void Window::begin_frame(Engine *p_engine) {
     }
 
     target->begin_target(p_engine->get_vk_provider());
+    return target;
 }
 
 void Window::end_frame(Engine *p_engine) {

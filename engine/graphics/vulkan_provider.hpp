@@ -25,12 +25,14 @@ SOFTWARE.
 #ifndef SAPPHIRE_VULKAN_PROVIDER_HPP
 #define SAPPHIRE_VULKAN_PROVIDER_HPP
 
-#include <vector>
-
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 
+#include <graphics/provider_releasable.hpp>
+
 #include <functional>
+#include <memory>
+#include <vector>
 
 namespace Sapphire {
     class Engine;
@@ -39,6 +41,9 @@ namespace Sapphire {
 
 namespace Sapphire::Graphics {
     class WindowRenderTarget;
+    class MemoryBlock;
+    class MemoryPool;
+    class StagingMemoryPool;
 
     // A wrapper around Vulkan instance creation / management
     class VulkanProvider {
@@ -64,6 +69,17 @@ namespace Sapphire::Graphics {
             VkColorSpaceKHR vk_colorspace;
             VkFormat vk_depth_format;
             VkPresentModeKHR vk_present_mode;
+        };
+
+        enum class AllocationType {
+            Mesh,
+            Texture,
+            Buffer
+        };
+
+        enum class UploadType {
+            Transfer,
+            Graphics
         };
 
     protected:
@@ -119,6 +135,18 @@ namespace Sapphire::Graphics {
         VkSemaphore create_vk_semaphore();
         VkFence create_vk_fence();
 
+        MemoryPool *mp_mesh = nullptr;
+        MemoryPool *mp_texture = nullptr;
+        MemoryPool *mp_buffer = nullptr;
+
+        StagingMemoryPool *smp_staging = nullptr;
+
+        const size_t MP_MESH_STRIDE_MB = 100;
+        const size_t MP_TEXTURE_STRIDE_MB = 100;
+        const size_t MP_BUFFER_STRIDE_MB = 100;
+
+        const size_t SMP_STAGING_STRIDE_MB = 128;
+
     public:
         VkSurfaceKHR create_vk_surface(Window *p_window);
         void setup_window_render_target(WindowRenderTarget *p_target, Window *p_window);
@@ -132,6 +160,7 @@ namespace Sapphire::Graphics {
 
         VkInstance get_vk_instance();
         VkDevice get_vk_device();
+        VmaAllocator get_vma_allocator();
         VkSemaphore get_image_available_semaphore();
         VkSemaphore get_render_finished_semaphore();
         VkFence get_render_fence();
@@ -140,15 +169,28 @@ namespace Sapphire::Graphics {
         VkVertexInputBindingDescription get_vk_vtx_binding();
         std::vector<VkVertexInputAttributeDescription> get_vk_vtx_attributes();
 
+        // Call before any rendering occurs
+        void flush();
+
         // Signals to the provider and renderer objects that we're now rendering
         void begin_frame();
         void end_frame();
 
         void await_frame();
 
+        // Begins an upload
+        // TODO: Make this cleaner?
+        VkCommandBuffer begin_upload(QueueType type);
+        void end_upload(QueueType queue_type, VkCommandBuffer vk_cmd_buffer);
+
+        // TODO: await_upload();
+        void await_upload();
+
         [[nodiscard]]
         bool get_defer_release() const;
         void enqueue_release(const ReleaseFunction& function);
+
+        std::shared_ptr<MemoryBlock> upload_memory(size_t size, void* src, AllocationType type);
     };
 }
 

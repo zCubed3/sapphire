@@ -37,11 +37,17 @@ SOFTWARE.
 #include <engine.hpp>
 #include <window.hpp>
 
+#include <data/size_tools.hpp>
+
+#include <graphics/memory_block.hpp>
 #include <graphics/render_pass.hpp>
 #include <graphics/targets/window_render_target.hpp>
 
 using namespace Sapphire;
 
+//
+// VulkanProvider
+//
 bool Graphics::VulkanProvider::validate_instance_extensions(const std::vector<const char*> &extensions, Sapphire::Engine *p_engine) {
     std::vector<const char*> missing_extensions {};
 
@@ -260,7 +266,7 @@ void Graphics::VulkanProvider::determine_present_info() {
         vk_present_modes.push_back(VK_PRESENT_MODE_FIFO_RELAXED_KHR);
     }
 
-    // We always want mailbox or immediate mode
+    // We always want mailbox or immediate mode even if we request vsync
     vk_present_modes.push_back(VK_PRESENT_MODE_MAILBOX_KHR);
     vk_present_modes.push_back(VK_PRESENT_MODE_IMMEDIATE_KHR);
 
@@ -599,6 +605,39 @@ void Graphics::VulkanProvider::create_vma_allocator(Sapphire::Engine *p_engine) 
         LOG_GRAPHICS("Error: vkCreateCommandPool failed with error code (" << result << ")");
         throw std::runtime_error("vkCreateCommandPool failed! Please check the log above for more info!");
     }
+
+    // We also pre-allocate our mesh, texture, and buffer block pools
+    // They're usually clusters of a certain size
+    // TODO: Allow the user to change the VRAM usage target?
+    // TODO: Change generic to user?
+    // TODO: Unify uniform and mesh blocks as per? https://developer.nvidia.com/vulkan-memory-management
+    mp_mesh = new MemoryPool(
+        this,
+        SizeTools::mib_to_bytes(MP_MESH_STRIDE_MB),
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+        0
+    );
+
+    mp_texture = new MemoryPool(
+        this,
+        SizeTools::mib_to_bytes(MP_TEXTURE_STRIDE_MB),
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+        0
+    );
+
+    mp_buffer = new MemoryPool(
+        this,
+        SizeTools::mib_to_bytes(MP_BUFFER_STRIDE_MB),
+        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        0
+    );
+
+    smp_staging = new StagingMemoryPool(
+        this,
+        SizeTools::mib_to_bytes(SMP_STAGING_STRIDE_MB),
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT
+    );
 }
 
 // TODO: Will these ever need to be increased?
@@ -1006,6 +1045,10 @@ VkDevice Graphics::VulkanProvider::get_vk_device() {
     return vk_device;
 }
 
+VmaAllocator Graphics::VulkanProvider::get_vma_allocator() {
+    return vma_allocator;
+}
+
 VkSemaphore Graphics::VulkanProvider::get_image_available_semaphore() {
     return vk_image_available_semaphore;
 }
@@ -1046,13 +1089,18 @@ std::vector<VkVertexInputAttributeDescription> Graphics::VulkanProvider::get_vk_
     return vk_vtx_attributes;
 }
 
-void Graphics::VulkanProvider::begin_frame() {
+void Graphics::VulkanProvider::flush() {
+    smp_staging->flush(this);
+
     // Clear out any queued destructions
     for (const auto& release : deferred_releases) {
         release(this);
     }
 
     deferred_releases.clear();
+}
+
+void Graphics::VulkanProvider::begin_frame() {
     defer_release = true;
 }
 
@@ -1069,10 +1117,68 @@ void Graphics::VulkanProvider::await_frame() {
     }
 }
 
+VkCommandBuffer Graphics::VulkanProvider::begin_upload(QueueType type) {
+    VkCommandBuffer vk_upload_buffer = allocate_command_buffer(type);
+
+    VkCommandBufferBeginInfo buffer_begin_info{};
+    buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    // TODO: Safety
+    vkBeginCommandBuffer(vk_upload_buffer, &buffer_begin_info);
+
+    return vk_upload_buffer;
+}
+
+// TODO: SAFETY!!!
+// TODO: NOT IMMEDIATELY SUBMIT!!!
+// TODO: SAFETY AROUND UPLOAD TEMP CMD BUFFERS
+void Graphics::VulkanProvider::end_upload(QueueType type, VkCommandBuffer vk_cmd_buffer) {
+    Queue queue = get_queue(type);
+
+    VkSubmitInfo submit_info{};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &vk_cmd_buffer;
+
+    vkEndCommandBuffer(vk_cmd_buffer);
+
+    // TODO: Multiple uploads at once?
+    vkQueueSubmit(queue.vk_queue, 1, &submit_info, VK_NULL_HANDLE);
+    vkQueueWaitIdle(queue.vk_queue);
+
+    free_command_buffer(type, vk_cmd_buffer);
+}
+
 bool Graphics::VulkanProvider::get_defer_release() const {
     return defer_release;
 }
 
 void Graphics::VulkanProvider::enqueue_release(const ReleaseFunction& function) {
     deferred_releases.emplace_back(function);
+}
+
+// Allocates the virtual block and provides owning VkBuffer
+// Memory can be allocated but not uploaded prior to usage, please use MemoryBlock::is_uploaded() first!
+std::shared_ptr<Graphics::MemoryBlock> Graphics::VulkanProvider::upload_memory(size_t size, void* src, AllocationType type) {
+    MemoryPool *mp_dst = nullptr;
+
+    switch (type) {
+        case AllocationType::Mesh:
+            mp_dst = mp_mesh;
+            break;
+
+        case AllocationType::Buffer:
+            mp_dst = mp_buffer;
+            break;
+
+        case AllocationType::Texture:
+            mp_dst = mp_texture;
+            break;
+    }
+
+    auto dst = mp_dst->alloc(size);
+    smp_staging->enqueue_upload(size, src, dst);
+
+    return dst;
 }

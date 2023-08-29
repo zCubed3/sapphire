@@ -91,20 +91,6 @@ void Graphics::RenderTarget::begin_target(Sapphire::Graphics::VulkanProvider *p_
 
     vkCmdBeginRenderPass(vk_command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
-    // TODO: TEMP TEMP TEMP!!!
-    if (shader == nullptr) {
-        std::vector<char> vertex_data(sizeof(HELLO_TRI_VERT_CONTENTS));
-        memcpy(vertex_data.data(), HELLO_TRI_VERT_CONTENTS, sizeof(HELLO_TRI_VERT_CONTENTS));
-
-        std::vector<char> fragment_data(sizeof(HELLO_TRI_FRAG_CONTENTS));
-        memcpy(fragment_data.data(), HELLO_TRI_FRAG_CONTENTS, sizeof(HELLO_TRI_FRAG_CONTENTS));
-
-        std::shared_ptr<ShaderModule> sm_vertex = std::make_shared<ShaderModule>(p_provider, ShaderModule::ModuleType::Vertex, vertex_data);
-        std::shared_ptr<ShaderModule> sm_fragment = std::make_shared<ShaderModule>(p_provider, ShaderModule::ModuleType::Fragment, fragment_data);
-
-        shader = new Graphics::Shader(p_provider, {}, sm_vertex, sm_fragment);
-    }
-
     VkExtent2D extent = get_vk_extent();
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -119,9 +105,6 @@ void Graphics::RenderTarget::begin_target(Sapphire::Graphics::VulkanProvider *p_
     scissor.offset = {0, 0};
     scissor.extent = extent;
     vkCmdSetScissor(vk_command_buffer, 0, 1, &scissor);
-
-    shader->bind(vk_command_buffer);
-    vkCmdDraw(vk_command_buffer, 3, 1, 0, 0);
 }
 
 void Graphics::RenderTarget::end_target(Sapphire::Graphics::VulkanProvider *p_provider) {

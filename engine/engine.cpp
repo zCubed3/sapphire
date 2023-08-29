@@ -26,6 +26,13 @@ SOFTWARE.
 
 #include <graphics/pipeline.hpp>
 #include <graphics/vulkan_provider.hpp>
+#include <graphics/mesh_buffer.hpp>
+#include <graphics/shader.hpp>
+#include <graphics/targets/window_render_target.hpp>
+
+// TODO: TEMP
+#include <shader_gen/hello_tri.spv.vert.gen.h>
+#include <shader_gen/hello_tri.spv.frag.gen.h>
 
 #include <window.hpp>
 
@@ -45,6 +52,10 @@ Engine *Engine::singleton = nullptr;
 Engine *Engine::get_instance() {
     return singleton;
 }
+
+// TODO: Temp
+Graphics::MeshBuffer* test_mesh;
+Graphics::Shader* test_shader;
 
 //
 // Ctor
@@ -74,6 +85,38 @@ Engine::Engine(const EngineConfig& config) {
 
         // We don't initialize the render target of the main window!
         // It is already initialized as part of the Vulkan bootstrapping process
+
+        // TODO: TEMP
+        // CLion's formatting is wonky asf here :)
+        std::vector<Graphics::MeshBuffer::Vertex> vertices
+        {
+            {
+                glm::vec3(-0.5, 0.5, 0.0)
+            },
+            {
+                glm::vec3(0.5, 0.5, 0.0)
+            },
+            {
+                glm::vec3(0.0, -0.5, 0.0)
+            },
+        };
+
+        std::vector<uint32_t> triangles{
+                0, 2, 1
+        };
+
+        test_mesh = new Graphics::MeshBuffer(vk_provider, vertices, triangles);
+
+        std::vector<char> vertex_data(sizeof(HELLO_TRI_VERT_CONTENTS));
+        memcpy(vertex_data.data(), HELLO_TRI_VERT_CONTENTS, sizeof(HELLO_TRI_VERT_CONTENTS));
+
+        std::vector<char> fragment_data(sizeof(HELLO_TRI_FRAG_CONTENTS));
+        memcpy(fragment_data.data(), HELLO_TRI_FRAG_CONTENTS, sizeof(HELLO_TRI_FRAG_CONTENTS));
+
+        std::shared_ptr<Graphics::ShaderModule> sm_vertex = std::make_shared<Graphics::ShaderModule>(vk_provider, Graphics::ShaderModule::ModuleType::Vertex, vertex_data);
+        std::shared_ptr<Graphics::ShaderModule> sm_fragment = std::make_shared<Graphics::ShaderModule>(vk_provider, Graphics::ShaderModule::ModuleType::Fragment, fragment_data);
+
+        test_shader = new Graphics::Shader(vk_provider, {}, sm_vertex, sm_fragment);
     }
 
     // TODO: Is this stupidly dangerous?
@@ -98,16 +141,22 @@ Engine::~Engine() {
 // State
 //
 void Engine::tick_graphics() {
+    // TODO: Better place for flush?
+    vk_provider->flush();
     vk_provider->begin_frame();
 
     //
     // Main window
     //
-    main_window->begin_frame(this);
+    auto active_rt = main_window->begin_frame(this);
+
+    // TODO: Rather than passing in the command buffers, maybe we should just pass around the render target?
+    test_shader->bind(active_rt->get_vk_command_buffer());
+    test_mesh->draw(active_rt->get_vk_command_buffer());
+
     main_window->end_frame(this);
 
     main_window->render(this);
-
     main_window->present(this);
 
     //

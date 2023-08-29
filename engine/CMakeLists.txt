@@ -2,6 +2,8 @@ set(SAPPHIRE_ENGINE_SOURCES
     "engine.cpp"
     "window.cpp"
 
+    "data/size_tools.cpp"
+
     "platforms/platform_init.cpp"
 
     "graphics/pipeline.cpp"
@@ -9,6 +11,8 @@ set(SAPPHIRE_ENGINE_SOURCES
     "graphics/render_target.cpp"
     "graphics/render_pass.cpp"
     "graphics/shader.cpp"
+    "graphics/memory_block.cpp"
+    "graphics/mesh_buffer.cpp"
     "graphics/vulkan_provider.cpp"
     "graphics/targets/window_render_target.cpp"
 )
@@ -42,6 +46,7 @@ target_include_directories(Sapphire PUBLIC
     ${Vulkan_INCLUDE_DIRS}
     VulkanMemoryAllocator
     ${SHADER_DIR}
+    ${THIRD_PARTY_DIR}/glm
 )
 
 target_link_libraries(Sapphire PUBLIC

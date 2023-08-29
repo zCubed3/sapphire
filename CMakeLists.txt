@@ -44,6 +44,7 @@ endif()
 #
 # Dependencies
 #
+add_subdirectory(${THIRD_PARTY_DIR}/glm)
 add_subdirectory(${THIRD_PARTY_DIR}/SDL)
 add_subdirectory(${THIRD_PARTY_DIR}/VulkanMemoryAllocator)
 

@@ -65,7 +65,9 @@ namespace Sapphire {
         //
         // Frame management
         //
-        void begin_frame(Engine *p_engine);
+
+        // TODO: Make this safer ffs!
+        Graphics::WindowRenderTarget* begin_frame(Engine *p_engine);
         void end_frame(Engine *p_engine);
 
         void render(Engine *p_engine);
