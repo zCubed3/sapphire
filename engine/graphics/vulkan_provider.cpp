@@ -41,7 +41,11 @@ SOFTWARE.
 
 #include <graphics/memory_block.hpp>
 #include <graphics/render_pass.hpp>
+#include <graphics/shader.hpp>
 #include <graphics/targets/window_render_target.hpp>
+
+#include <shader_gen/fallback.spv.vert.gen.h>
+#include <shader_gen/fallback.spv.frag.gen.h>
 
 using namespace Sapphire;
 
@@ -746,6 +750,25 @@ void Graphics::VulkanProvider::create_vk_vtx_info() {
     vk_vtx_binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; // TODO: Instance rate?
 }
 
+void Graphics::VulkanProvider::warm_fallbacks() {
+    //
+    // Engine fallback shader
+    //
+    {
+        std::vector<char> vertex_data(sizeof(FALLBACK_VERT_CONTENTS));
+        memcpy(vertex_data.data(), FALLBACK_VERT_CONTENTS, sizeof(FALLBACK_VERT_CONTENTS));
+
+        std::vector<char> fragment_data(sizeof(FALLBACK_FRAG_CONTENTS));
+        memcpy(fragment_data.data(), FALLBACK_FRAG_CONTENTS, sizeof(FALLBACK_FRAG_CONTENTS));
+
+        std::shared_ptr<ShaderModule> sm_vertex = std::make_shared<ShaderModule>(this, ShaderModule::ModuleType::Vertex, vertex_data);
+        std::shared_ptr<ShaderModule> sm_fragment = std::make_shared<ShaderModule>(this, ShaderModule::ModuleType::Fragment, fragment_data);
+
+        ShaderProperties props{};
+        shader_fallback = std::make_shared<Shader>(this, props, sm_vertex, sm_fragment);
+    }
+}
+
 VkSemaphore Graphics::VulkanProvider::create_vk_semaphore() {
     VkSemaphoreCreateInfo semaphore_create_info{};
     semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -1033,6 +1056,8 @@ void Graphics::VulkanProvider::initialize(Sapphire::Engine *p_engine) {
     create_render_passes();
     create_vk_vtx_info();
 
+    warm_fallbacks();
+
     // Finally, initialize the render target of the main window by hand
     p_engine->main_window->set_render_target(new Graphics::WindowRenderTarget(this, p_engine->main_window, vk_surface));
 }
@@ -1087,6 +1112,10 @@ VkVertexInputBindingDescription Graphics::VulkanProvider::get_vk_vtx_binding() {
 
 std::vector<VkVertexInputAttributeDescription> Graphics::VulkanProvider::get_vk_vtx_attributes() {
     return vk_vtx_attributes;
+}
+
+std::shared_ptr<Graphics::Shader> Graphics::VulkanProvider::get_shader_fallback() {
+    return shader_fallback;
 }
 
 void Graphics::VulkanProvider::flush() {

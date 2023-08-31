@@ -294,7 +294,7 @@ void Graphics::Shader::compile(VulkanProvider *p_provider, ShaderProperties prop
 
     // TODO: DESCRIPTOR SETS ASAP!!!
     std::vector<VkDescriptorSetLayout> vk_descriptor_set_layouts;
-
+    std::vector<VkPushConstantRange> vk_push_ranges;
     pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(vk_descriptor_set_layouts.size());
     pipeline_layout_create_info.pSetLayouts = vk_descriptor_set_layouts.data();
     pipeline_layout_create_info.pushConstantRangeCount = 0; // Optional

@@ -29,19 +29,25 @@ import os
 import sys
 import subprocess
 
-out_path = sys.argv[1]
-stage = sys.argv[2]
+lib_path = sys.argv[1]
+out_path = sys.argv[2]
+stage = sys.argv[3]
 
 temp_merge_path = out_path + ".merge_temp.glsl"
 
 source = ""
-for i in range(3, len(sys.argv)):
+for i in range(4, len(sys.argv)):
     with open(sys.argv[i], 'r') as src_file:
-        source += src_file.read()
+        source += src_file.read() + "\n\n"
 
 with open(temp_merge_path, "w") as merge_file:
     merge_file.write(source)
     merge_file.write("\n\n")
 
-subprocess.run(["glslc", f"-fshader-stage={stage}", "-o", out_path, temp_merge_path])
-os.remove(temp_merge_path)
+result = subprocess.run(["glslc", f"-fshader-stage={stage}", "-I", lib_path, "-o", out_path, temp_merge_path])
+
+if result.returncode == 0:
+    os.remove(temp_merge_path)
+else:
+    print("Compiling shader failed, please check for a .merge_temp.glsl file for debugging!")
+    sys.exit(1)

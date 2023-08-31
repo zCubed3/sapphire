@@ -27,11 +27,6 @@ SOFTWARE.
 #include <engine.hpp>
 #include <graphics/vulkan_provider.hpp>
 
-// TODO: TEMP TEMP TEMP
-#include <graphics/shader.hpp>
-#include <shader_gen/hello_tri.spv.vert.gen.h>
-#include <shader_gen/hello_tri.spv.frag.gen.h>
-
 #include <iostream>
 #include <vector>
 
@@ -40,9 +35,18 @@ Sapphire::Graphics::Shader *shader = nullptr;
 
 using namespace Sapphire;
 
+void Graphics::RenderTarget::recalculate_matrices() {
+
+}
+
 void Graphics::RenderTarget::begin_target(Sapphire::Graphics::VulkanProvider *p_provider) {
     if (p_provider == nullptr) {
         throw std::runtime_error("p_provider is nullptr!");
+    }
+
+    if (dirty_matrix) {
+        recalculate_matrices();
+        dirty_matrix = false;
     }
 
     // TODO: Not lock when other buffers are being processed?
@@ -162,7 +166,7 @@ void Graphics::RenderTarget::render(Sapphire::Graphics::VulkanProvider *p_provid
     vkQueueWaitIdle(queue.vk_queue);
 }
 
-VkCommandBuffer Graphics::RenderTarget::get_vk_command_buffer() {
+VkCommandBuffer Graphics::RenderTarget::get_vk_command_buffer() const {
     return vk_command_buffer;
 }
 
@@ -172,4 +176,9 @@ void Graphics::RenderTarget::set_clear_flags(int clear_flags) {
 
 int Graphics::RenderTarget::get_clear_flags() const {
     return clear_flags;
+}
+
+void Graphics::RenderTarget::set_view_position(glm::vec3 position) {
+    dirty_matrix = true;
+    transform.set_position(position);
 }

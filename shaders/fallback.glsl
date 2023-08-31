@@ -1,12 +1,23 @@
 #ifdef VERTEX
-
-// These are sapphire default vertex inputs
-// If you want to consume more data you can just add more locations
-layout(location = 0) in vec3 _VERT_POSITION;
-layout(location = 1) in vec3 _VERT_NORMAL;
-layout(location = 2) in vec2 _VERT_UV0;
+#define SAPPHIRE_NO_CBUFFERS
+#include "sapphire_lib/sapphire_common.glsl"
+#include "sapphire_lib/sapphire_input.glsl"
 
 void main() {
-
+    //vec4 world_pos = SAPPHIRE_CBUFFER_VIEW.world_to_camera * vec4(SAPPHIRE_VERT_POS, 1.0);
+    vec4 world_pos = vec4(SAPPHIRE_VERT_POS, 1.0);
+    gl_Position = world_pos;
 }
+
+#endif
+
+#ifdef FRAGMENT
+#define SAPPHIRE_NO_CBUFFERS
+#include "sapphire_lib/sapphire_common.glsl"
+#include "sapphire_lib/sapphire_output.glsl"
+
+void main() {
+    SAPPHIRE_OUT_COLOR = vec4(1.0, 0.0, 0.0, 1.0);
+}
+
 #endif

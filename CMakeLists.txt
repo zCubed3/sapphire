@@ -15,6 +15,7 @@ set(SCRIPT_DIR ${CODE_DIR}/scripts)
 set(SHADER_DIR ${CODE_DIR}/shaders)
 set(ENGINE_DIR ${CODE_DIR}/engine)
 set(THIRD_PARTY_DIR ${CODE_DIR}/third_party)
+set(SHADER_LIB_DIR ${SHADER_DIR})
 
 #
 # Variables

@@ -44,6 +44,7 @@ namespace Sapphire::Graphics {
     class MemoryBlock;
     class MemoryPool;
     class StagingMemoryPool;
+    class Shader;
 
     // A wrapper around Vulkan instance creation / management
     class VulkanProvider {
@@ -131,6 +132,7 @@ namespace Sapphire::Graphics {
         void create_vk_descriptor_pool();
         void create_render_passes();
         void create_vk_vtx_info();
+        void warm_fallbacks();
 
         VkSemaphore create_vk_semaphore();
         VkFence create_vk_fence();
@@ -146,6 +148,8 @@ namespace Sapphire::Graphics {
         const size_t MP_BUFFER_STRIDE_MB = 100;
 
         const size_t SMP_STAGING_STRIDE_MB = 128;
+
+        std::shared_ptr<Shader> shader_fallback = nullptr;
 
     public:
         VkSurfaceKHR create_vk_surface(Window *p_window);
@@ -168,6 +172,7 @@ namespace Sapphire::Graphics {
         Queue get_queue(QueueType type);
         VkVertexInputBindingDescription get_vk_vtx_binding();
         std::vector<VkVertexInputAttributeDescription> get_vk_vtx_attributes();
+        std::shared_ptr<Shader> get_shader_fallback();
 
         // Call before any rendering occurs
         void flush();

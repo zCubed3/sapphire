@@ -28,9 +28,12 @@ SOFTWARE.
 #include <vulkan/vulkan.h>
 
 #include <graphics/provider_releasable.hpp>
+#include <world/transform.hpp>
 
 namespace Sapphire::Graphics {
     class VulkanProvider;
+
+    // TODO: Move view data out of the render target?
 
     // A target / surface that can be drawn to
     // This encapsulates common behavior between render textures and OS windows!
@@ -52,9 +55,18 @@ namespace Sapphire::Graphics {
         VkClearColorValue clear_color = {0.1F, 0.1F, 0.1F, 1};
         VkClearDepthStencilValue clear_depth_stencil = {1.0F, 0};
 
+        World::Transform transform;
+        glm::mat4 projection;
+        glm::mat4 world_to_camera;
+        glm::mat4 camera_to_world;
+
+        bool dirty_matrix = false;
+
         virtual VkExtent2D get_vk_extent() = 0;
         virtual VkRenderPass get_vk_render_pass(VulkanProvider *p_provider) = 0;
         virtual VkFramebuffer get_vk_framebuffer(VulkanProvider *p_provider) = 0;
+
+        virtual void recalculate_matrices();
 
     public:
         virtual void begin_target(VulkanProvider *p_provider);
@@ -63,10 +75,17 @@ namespace Sapphire::Graphics {
         // Submits the recorded command buffer for rendering
         virtual void render(VulkanProvider *p_provider);
 
-        virtual VkCommandBuffer get_vk_command_buffer();
+        [[nodiscard]]
+        virtual VkCommandBuffer get_vk_command_buffer() const;
 
         void set_clear_flags(int clear_flags);
         int get_clear_flags() const;
+
+        //
+        // View manipulation
+        //
+        void set_view_position(glm::vec3 position);
+        glm::vec3 get_view_position() const;
     };
 }
 
