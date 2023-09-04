@@ -34,13 +34,12 @@ SOFTWARE.
 #define LOG_GRAPHICS_INLINE(MSG) (std::cout << "[GRAPHICS]: " << MSG)
 #define LOG_GRAPHICS(MSG) LOG_GRAPHICS_INLINE(MSG) << std::endl
 
+namespace ManaVK {
+    class ManaInstance;
+}
+
 namespace Sapphire {
     class Window;
-
-    namespace Graphics {
-        class VulkanProvider;
-        class Pipeline;
-    }
 
     class Engine {
     private:
@@ -87,8 +86,7 @@ namespace Sapphire {
 
         // TODO: Hide these behind getter only?
         Window *main_window = nullptr;
-        Graphics::VulkanProvider *vk_provider = nullptr;
-        Graphics::Pipeline *pipeline = nullptr;
+        ManaVK::ManaInstance *mana_instance = nullptr;
 
         enum class RequestedPipeline {
             None,
@@ -137,8 +135,6 @@ namespace Sapphire {
         //
         // Getters
         //
-        Graphics::VulkanProvider *get_vk_provider() const;
-
         bool has_verbosity(VerbosityFlags flag) const;
     };
 }

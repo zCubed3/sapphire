@@ -43,14 +43,9 @@ namespace Sapphire {
         // Did something change on this window?
         bool dirty = false;
 
-        SDL_Window *handle = nullptr;
-        Graphics::WindowRenderTarget *target = nullptr;
-
-        std::string title = "Sapphire Window";
-        int width = 1280;
-        int height = 720;
-        bool resizable = false;
-        int flags = 0;
+        // Our underlying renderer window
+        // TODO: If OpenGL / DX, swap this out for a more generic window?
+        ManaVK::ManaWindow window = nullptr;
 
     public:
         void initialize();

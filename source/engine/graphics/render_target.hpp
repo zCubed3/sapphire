@@ -25,8 +25,6 @@ SOFTWARE.
 #ifndef SAPPHIRE_RENDER_TARGET_HPP
 #define SAPPHIRE_RENDER_TARGET_HPP
 
-#include <vulkan/vulkan.h>
-
 #include <graphics/provider_releasable.hpp>
 #include <world/transform.hpp>
 

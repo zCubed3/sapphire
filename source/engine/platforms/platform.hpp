@@ -22,32 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <engine.hpp>
-#include "platform_init.hpp"
+#ifndef SAPPHIRE_PLATFORM_HPP
+#define SAPPHIRE_PLATFORM_HPP
 
-#include <iostream>
+#include <vector>
+#include <string>
 
-int Sapphire::sapphire_init(int argc, char** argv) {
-    Sapphire::Engine::EngineConfig config;
+namespace Sapphire {
+    class Platform {
+    public:
+        enum Severity {
+            Notice, Warning, Error
+        };
 
-    try {
-        Sapphire::Engine engine(config);
+    protected:
+        std::vector<std::string> argv;
 
-        bool run = true;
+    public:
+        virtual void display_os_popup(const std::string& title, const std::string& body, Severity severity = Severity::Error) = 0;
 
-        while (run) {
-            Engine::StepResult sr = engine.tick();
-
-            if (sr != Engine::StepResult::Success) {
-                run = false;
-                break;
-            }
-        }
-    }
-    catch (std::exception e) {
-        std::cout << "Encountered an unhandled exception when running the engine!\n\n" << e.what() << std::endl;
-        return 1;
-    }
-
-    return 0;
+        virtual int program_loop();
+    };
 }
+
+#endif//SAPPHIRE_PLATFORM_HPP

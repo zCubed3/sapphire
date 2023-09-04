@@ -10,11 +10,14 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 set(ROOT_DIR ${CMAKE_SOURCE_DIR})
-set(CODE_DIR ${ROOT_DIR})
-set(SCRIPT_DIR ${CODE_DIR}/scripts)
-set(SHADER_DIR ${CODE_DIR}/shaders)
-set(ENGINE_DIR ${CODE_DIR}/engine)
-set(THIRD_PARTY_DIR ${CODE_DIR}/third_party)
+
+set(BRANDING_DIR ${ROOT_DIR}/branding)
+set(SCRIPT_DIR ${ROOT_DIR}/scripts)
+set(SOURCE_DIR ${ROOT_DIR}/source)
+set(THIRD_PARTY_DIR ${ROOT_DIR}/third_party)
+
+set(SHADER_DIR ${SOURCE_DIR}/shaders)
+set(ENGINE_DIR ${SOURCE_DIR}/engine)
 set(SHADER_LIB_DIR ${SHADER_DIR})
 
 #
@@ -47,9 +50,8 @@ endif()
 #
 add_subdirectory(${THIRD_PARTY_DIR}/glm)
 add_subdirectory(${THIRD_PARTY_DIR}/SDL)
-add_subdirectory(${THIRD_PARTY_DIR}/VulkanMemoryAllocator)
 
 #
 # Projects
 #
-add_subdirectory(${CODE_DIR}/engine)
+add_subdirectory(${SOURCE_DIR})

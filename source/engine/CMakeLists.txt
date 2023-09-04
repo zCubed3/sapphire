@@ -1,22 +1,7 @@
 set(SAPPHIRE_ENGINE_SOURCES
-    "engine.cpp"
-    "window.cpp"
-
     "data/size_tools.cpp"
 
-    "platforms/platform_init.cpp"
-
-    "graphics/pipeline.cpp"
-    "graphics/provider_releasable.cpp"
-    "graphics/render_target.cpp"
-    "graphics/render_pass.cpp"
-    "graphics/shader.cpp"
-    "graphics/memory_block.cpp"
-    "graphics/mesh_buffer.cpp"
-    "graphics/vulkan_provider.cpp"
-    "graphics/targets/window_render_target.cpp"
-
-    "world/transform.cpp"
+    "platforms/platform.cpp"
 )
 
 # TODO: Filter out graphics stuff for NO_GRAPHICS builds
@@ -25,15 +10,11 @@ set(SAPPHIRE_ENGINE_SOURCES
 # Platform features
 #
 if (WIN32)
-    list(APPEND SAPPHIRE_ENGINE_SOURCES "platforms/win32/winmain.cpp")
+    list(APPEND SAPPHIRE_ENGINE_SOURCES
+        "platforms/win32/win32_platform.cpp"
+        "platforms/win32/winmain.cpp"
+    )
 endif ()
-
-#
-# Engine dependencies
-#
-find_package(Vulkan REQUIRED)
-
-# TODO: VOLK?
 
 #
 # Engine target
@@ -43,18 +24,16 @@ add_executable(Sapphire ${SAPPHIRE_ENGINE_SOURCES})
 target_compile_definitions(Sapphire PUBLIC ${SAPPHIRE_DEFINITIONS})
 
 target_include_directories(Sapphire PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${SOURCE_DIR}
     SDL2
-    ${Vulkan_INCLUDE_DIRS}
-    VulkanMemoryAllocator
     ${SHADER_DIR}
     ${THIRD_PARTY_DIR}/glm
+    Mana
 )
 
 target_link_libraries(Sapphire PUBLIC
     SDL2
-    ${Vulkan_LIBRARY}
-    VulkanMemoryAllocator
+    Mana
 )
 
 #if (WIN32)

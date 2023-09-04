@@ -24,11 +24,7 @@ SOFTWARE.
 
 #include "engine.hpp"
 
-#include <graphics/pipeline.hpp>
-#include <graphics/vulkan_provider.hpp>
-#include <graphics/mesh_buffer.hpp>
-#include <graphics/shader.hpp>
-#include <graphics/targets/window_render_target.hpp>
+#include <mana/mana_instance.hpp>
 
 #include <window.hpp>
 
@@ -49,9 +45,6 @@ Engine *Engine::get_instance() {
     return singleton;
 }
 
-// TODO: Temp
-Graphics::MeshBuffer* test_mesh;
-
 //
 // Ctor
 //
@@ -68,19 +61,11 @@ Engine::Engine(const EngineConfig& config) {
     // Initialize our chosen graphics stack window
     // A stack of "None" allocates no window unless requested
     if (config.graphics != RequestedPipeline::None) {
-        // First the window
-        main_window = new Window();
-        main_window->initialize();
-        main_window->set_title("Sapphire");
-        main_window->set_resizable(true);
+        mana_instance = new ManaVK::ManaInstance();
 
-        // Creates our VulkanProvider for pipelines
-        vk_provider = new Graphics::VulkanProvider();
-        vk_provider->initialize(this);
+        // We don't initialize our main window, it's initialized by Mana itself
 
-        // We don't initialize the render target of the main window!
-        // It is already initialized as part of the Vulkan bootstrapping process
-
+        /*
         // TODO: TEMP
         // CLion's formatting is wonky asf here :)
         std::vector<Graphics::MeshBuffer::Vertex> vertices
@@ -101,6 +86,7 @@ Engine::Engine(const EngineConfig& config) {
         };
 
         test_mesh = new Graphics::MeshBuffer(vk_provider, vertices, triangles);
+         */
     }
 
     // TODO: Is this stupidly dangerous?
@@ -126,8 +112,8 @@ Engine::~Engine() {
 //
 void Engine::tick_graphics() {
     // TODO: Better place for flush?
-    vk_provider->flush();
-    vk_provider->begin_frame();
+    //vk_provider->flush();
+    //vk_provider->begin_frame();
 
     //
     // Main window
@@ -135,8 +121,8 @@ void Engine::tick_graphics() {
     auto active_rt = main_window->begin_frame(this);
 
     // TODO: Rather than passing in the command buffers, maybe we should just pass around the render target?
-    vk_provider->get_shader_fallback()->bind(active_rt->get_vk_command_buffer());
-    test_mesh->draw(active_rt->get_vk_command_buffer());
+    //vk_provider->get_shader_fallback()->bind(active_rt->get_vk_command_buffer());
+    //test_mesh->draw(active_rt->get_vk_command_buffer());
 
     main_window->end_frame(this);
 
@@ -149,7 +135,7 @@ void Engine::tick_graphics() {
 
     // TODO: Child windows / render targets
 
-    vk_provider->end_frame();
+    //vk_provider->end_frame();
 }
 
 Engine::StepResult Engine::tick() {
@@ -173,10 +159,6 @@ Engine::StepResult Engine::tick() {
 //
 // Getters
 //
-Graphics::VulkanProvider *Engine::get_vk_provider() const {
-    return vk_provider;
-}
-
 bool Engine::has_verbosity(Engine::VerbosityFlags flag) const {
     return verbosity_flags & static_cast<int>(flag);
 }
