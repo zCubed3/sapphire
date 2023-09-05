@@ -23,3 +23,5 @@ SOFTWARE.
 */
 
 #include "pipeline.hpp"
+
+using namespace Sapphire;

@@ -1,0 +1,46 @@
+#
+# SEDF Test File
+#
+# Syntax displayed here is being drafted, it is not complete yet!
+#
+
+# In Sapphire an asset reference can and will be swapped out with a reference to the "optimized" asset
+# This is on purpose, to avoid using an expensive file that is meant for modification, and instead only for reading
+# e.g. the source below will be replaced with a reference to the path's hash
+# The cached files will detect if the asset has changed before loading it though!
+
+[Sapphire::Texture->DevSky]
+eShape = ShapeCube
+
+# Beware if you use a combo image! (like the commented out members)
+# You must set the x and y offsets per face like so
+# But also must set the size of 1 face
+#
+# This goes in the segment definition...
+#
+# refSource = "engine://dev_sky.png"
+# iFaceWidth = 1024
+# iFaceHeight = 1024
+#
+# This goes per face...
+#
+# iOffsetX = 1024
+# iOffsetY = 0
+
+[Sapphire::Texture->DevTexture::Left]
+refSource = "engine://dev_sky/left.png"
+
+[Sapphire::Texture->DevTexture::Right]
+refSource = "engine://dev_sky/right.png"
+
+[Sapphire::Texture->DevTexture::Up]
+refSource = "engine://dev_sky/up.png"
+
+[Sapphire::Texture->DevTexture::Down]
+refSource = "engine://dev_sky/down.png"
+
+[Sapphire::Texture->DevTexture::Front]
+refSource = "engine://dev_sky/front.png"
+
+[Sapphire::Texture->DevTexture::Back]
+refSource = "engine://dev_sky/back.png"

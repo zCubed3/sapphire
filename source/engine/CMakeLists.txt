@@ -1,6 +1,9 @@
 set(SAPPHIRE_ENGINE_SOURCES
     "data/size_tools.cpp"
 
+    "graphics/pipeline.cpp"
+    "graphics/pipelines/debug_pipeline.cpp"
+
     "platforms/platform.cpp"
 )
 

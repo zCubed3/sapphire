@@ -22,24 +22,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef SAPPHIRE_PIPELINE_HPP
-#define SAPPHIRE_PIPELINE_HPP
+#ifndef SAPPHIRE_DEBUG_PIPELINE_HPP
+#define SAPPHIRE_DEBUG_PIPELINE_HPP
 
-#include <memory>
-
-#include <mana/mana_pipeline.hpp>
-
-namespace ManaVK {
-    class ManaPipeline;
-}
+#include <engine/graphics/pipeline.hpp>
 
 namespace Sapphire::Graphics {
-    // A graphics pipeline configuration for Mana
-    // Shares the same underlying render code but changes "defaults" and implements features unique to a certain pipeline
-    // TODO: Allow OpenGL / GLES for mobile or super low end?
-    class Pipeline : public ManaVK::ManaPipeline {
+    class DebugPipeline : public Pipeline {
+    protected:
+        std::shared_ptr<ManaVK::ManaRenderPass> render_pass;
 
+    public:
+        void initialize(ManaVK::ManaInstance *owner) override;
+
+        void new_frame(ManaVK::ManaRenderContext &context) override;
+
+        std::shared_ptr<ManaVK::ManaRenderPass> get_window_render_pass() const override {
+            return render_pass;
+        }
     };
 }
 
-#endif//SAPPHIRE_PIPELINE_HPP
+#endif//SAPPHIRE_DEBUG_PIPELINE_HPP

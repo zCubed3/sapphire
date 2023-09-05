@@ -35,6 +35,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pCmdLine, 
 */
 
 int main(int argc, char** argv) {
-    auto platform = std::make_unique<Sapphire::Win32Platform>(argc, argv);
-    return platform->program_loop();
+    auto platform = Sapphire::Win32Platform(argc, argv);
+    return platform.program_loop();
 }

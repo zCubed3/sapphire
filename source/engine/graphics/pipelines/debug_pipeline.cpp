@@ -22,24 +22,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef SAPPHIRE_PIPELINE_HPP
-#define SAPPHIRE_PIPELINE_HPP
+#include "debug_pipeline.hpp"
 
-#include <memory>
+#include <stdexcept>
 
+#include <mana/mana_instance.hpp>
 #include <mana/mana_pipeline.hpp>
+#include <mana/builders/mana_render_pass_builder.hpp>
 
-namespace ManaVK {
-    class ManaPipeline;
+using namespace Sapphire;
+
+void Graphics::DebugPipeline::initialize(ManaVK::ManaInstance *owner) {
+    //
+    // The pipeline render pass
+    //
+
+    // We do not build this because Mana retains the builder for later usage
+    ManaVK::Builders::ManaRenderPassBuilder render_pass_builder;
+    {
+        {
+            ManaVK::Builders::ManaRenderPassBuilder::ColorAttachment color{};
+            color.format = ManaVK::ManaColorFormat::Default;
+
+            render_pass_builder.push_color_attachment(color);
+        }
+        {
+            ManaVK::Builders::ManaRenderPassBuilder::DepthAttachment depth{};
+            depth.format = ManaVK::ManaDepthFormat::Default;
+
+            render_pass_builder.set_depth_attachment(depth);
+        }
+    }
+
+    render_pass = render_pass_builder.build(owner);
 }
 
-namespace Sapphire::Graphics {
-    // A graphics pipeline configuration for Mana
-    // Shares the same underlying render code but changes "defaults" and implements features unique to a certain pipeline
-    // TODO: Allow OpenGL / GLES for mobile or super low end?
-    class Pipeline : public ManaVK::ManaPipeline {
-
-    };
+void Graphics::DebugPipeline::new_frame(ManaVK::ManaRenderContext &context) {
+    // TODO: Implement a better API for Vulkan drawing inside of Mana?
 }
-
-#endif//SAPPHIRE_PIPELINE_HPP

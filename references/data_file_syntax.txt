@@ -1,0 +1,104 @@
+#
+# Sapphire Engine Data File
+#
+
+# This is a draft of the "Sapphire Engine Data File" or "SEDF" syntax
+
+#
+# Data Types aka "Archetypes"
+#
+
+# These are registered on the C++ side
+# They're paths (with :: accessors like C++)
+
+# An instance of a type is created with an arrow (like a pointer accessor), "->"
+# Omitting the -> will lead to modifying the global instance
+# This is used for types that have no purpose being instanced, e.g. config files
+# Instances will have their names kept intact if requested by the engine
+# If it is not requested then the engine uses the hash, which is faster an smaller for built games!
+
+# Example 1
+[Sapphire::EngineConfig]
+# ...
+
+# Example 2
+[Sapphire::Texture->DevTexture]
+# ...
+
+#
+# Member data types
+#
+
+# "i" = "integer"
+#
+# Ex: 10
+
+# "f" = "float"
+#
+# Ex: 10.0
+
+# "n" = "number" (float or integer)
+#
+# Ex: 12
+# or...
+# Ex: 3.1415
+
+# "b" = "boolean"
+#
+# Ex: true
+
+# "s" = "string"
+#
+# Ex: "Hello, World!"
+
+# "e" = "enum"
+#
+# Ex: Shape2D
+
+# "r" = "ref" (more commonly written as ref)
+#
+# Ex: "engine://cube.smdl"
+
+#
+# The "ref" aka "r" type
+#
+
+# This is a URL inspired string like so...
+refSource = "dev_chunk://dev_tex.png"
+
+# The first part of the reference defines the origin
+# So whatever the engine has mounted to "dev_chunk" is the base of the path
+# After :// we then specify the asset name
+# In this case, dev_tex.png
+
+#
+# Data Segments
+#
+
+# This is a complete piece of data that the engine will parse, cache, and use / release when needed
+# It is constructed using the following syntax
+#
+# Do note, sometimes data instances will have instances of their own
+# This is commonly seen on cubemaps
+# You access this using the accessor, aka ::
+#
+# 1) The "archetype"
+# 2) Members
+
+# Example 1
+#
+# Creating a 2D texture for usage within the engine
+[Sapphire::Texture->DevTexture]
+eShape = Shape2D
+
+refSource = "dev_chunk://dev_tex.png"
+
+# Example 2
+#
+# Creating a cubemap texture for usage within the engine
+[Sapphire::Texture->DevSky]
+eShape = ShapeCube
+
+[Sapphire::Texture->DevSky::Left]
+refSource = "dev_chunk://dev_sky/left.png"
+
