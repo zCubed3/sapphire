@@ -36,8 +36,6 @@ void Graphics::DebugPipeline::initialize(ManaVK::ManaInstance *owner) {
     //
     // The pipeline render pass
     //
-
-    // We do not build this because Mana retains the builder for later usage
     ManaVK::Builders::ManaRenderPassBuilder render_pass_builder;
     {
         {
