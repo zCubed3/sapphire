@@ -28,7 +28,14 @@ SOFTWARE.
 
 #include <mana/mana_instance.hpp>
 #include <mana/mana_pipeline.hpp>
+#include <mana/mana_render_pass.hpp>
+
+#include <mana/internal/vulkan_render_target.hpp>
+#include <mana/internal/vulkan_cmd_buffer.hpp>
+
 #include <mana/builders/mana_render_pass_builder.hpp>
+
+#include <vulkan/vulkan.h>
 
 using namespace Sapphire;
 
@@ -41,12 +48,15 @@ void Graphics::DebugPipeline::initialize(ManaVK::ManaInstance *owner) {
         {
             ManaVK::Builders::ManaRenderPassBuilder::ColorAttachment color{};
             color.format = ManaVK::ManaColorFormat::Default;
+            color.intent = ManaVK::ManaAttachmentIntent::Presentation;
+            color.clearable = true;
 
             render_pass_builder.push_color_attachment(color);
         }
         {
             ManaVK::Builders::ManaRenderPassBuilder::DepthAttachment depth{};
             depth.format = ManaVK::ManaDepthFormat::Default;
+            depth.clearable = true;
 
             render_pass_builder.set_depth_attachment(depth);
         }
@@ -57,4 +67,31 @@ void Graphics::DebugPipeline::initialize(ManaVK::ManaInstance *owner) {
 
 void Graphics::DebugPipeline::new_frame(ManaVK::ManaRenderContext &context) {
     // TODO: Implement a better API for Vulkan drawing inside of Mana?
+    render_pass->begin(context);
+
+    {
+        auto vk_cmd_buffer = context.get_vulkan_rt()->get_vulkan_cmd_buffer()->get_vk_cmd_buffer();
+
+        VkClearAttachment clear {};
+        {
+            VkClearColorValue color;
+            color.float32[0] = 1.0F;
+            color.float32[3] = 1.0F;
+
+            clear.clearValue.color = color;
+            clear.colorAttachment = 0;
+            clear.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        }
+
+        VkClearRect clear_rect {};
+        {
+            clear_rect.rect.offset = {0, 0};
+            clear_rect.rect.extent = context.get_vulkan_rt()->get_vk_extent();
+            clear_rect.layerCount = 1;
+        }
+
+        vkCmdClearAttachments(vk_cmd_buffer, 1, &clear, 1, &clear_rect);
+    }
+
+    render_pass->end(context);
 }

@@ -33,8 +33,16 @@ int Platform::program_loop() {
         // After mana is initialized, we should tell the main window to render
 
         SDL_Event event;
-        while (true) {
-            SDL_PollEvent(&event);
+        bool keep_running = true;
+
+        while (keep_running) {
+            while (SDL_PollEvent(&event)) {
+                if (event.type == SDL_QUIT) {
+                    keep_running = false;
+                }
+
+                instance->process_sdl_event(&event);
+            }
 
             instance->flush();
 

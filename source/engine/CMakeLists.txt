@@ -36,6 +36,7 @@ target_include_directories(Sapphire PUBLIC
 
 target_link_libraries(Sapphire PUBLIC
     SDL2
+    SDL2main
     Mana
 )
 

@@ -26,6 +26,8 @@ SOFTWARE.
 
 #include <engine/platforms/win32/win32_platform.hpp>
 
+#include <SDL.h>
+
 #include <memory>
 
 /*
